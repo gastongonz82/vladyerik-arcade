@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="es">
+<head><base href="https://vladyerik.com/vladi-intruso/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#174b9e">
+
+<title>Encontrá el intruso: juego visual de Vladi | VLADYERIK</title>
+<meta name="description" content="Observá los dibujos y descubrí cuál no pertenece al grupo en Encontrá el intruso. Juego visual gratis con rondas y niveles.">
+<link rel="canonical" href="https://vladyerik.com/vladi-intruso/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VLADYERIK">
+<meta property="og:title" content="Encontrá el intruso: juego visual de Vladi | VLADYERIK">
+<meta property="og:description" content="Observá los dibujos y descubrí cuál no pertenece al grupo en Encontrá el intruso. Juego visual gratis con rondas y niveles.">
+<meta property="og:url" content="https://vladyerik.com/vladi-intruso/">
+<meta property="og:image" content="https://vladyerik.com/assets/vladi-intruso.webp?v=20261009">
+<meta property="og:image:alt" content="Portada de ENCONTRÁ EL INTRUSO en VLADYERIK">
+<meta name="twitter:card" content="summary_large_image"><!-- Responsive layout: five choices on desktop, two columns on mobile. -->
+<link rel="stylesheet" href="../arcade-ui.css?v=1">
+<script src="../arcade-ui.js?v=ga4-20261009" defer></script>
+<script src="../game-audio.js?v=3" defer></script>
+<script src="../music/vladi-educativos.js?v=1" defer></script>
+<script src="../game-music.js?v=4" defer></script>
+<style>
+*{box-sizing:border-box}
+:root{color-scheme:dark;--ink:#fff;--muted:#e4edff;--cyan:#68f2ff;--gold:#ffe45c;--pink:#ff75c8;--green:#7bffb9;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{margin:0;min-height:100svh;color:var(--ink);background:radial-gradient(ellipse at 8% 10%,#00c4d366,transparent 34rem),radial-gradient(ellipse at 94% 58%,#bf32ee66,transparent 34rem),linear-gradient(145deg,#133b85,#462889 58%,#112456)}
+button,a{font:inherit}button{color:inherit}
+.shell{width:min(1180px,calc(100% - 28px));margin:0 auto}
+.top{height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #b4edff55}
+.back{padding:9px 16px;border:2px solid var(--gold);border-radius:999px;background:#265cb5;color:#fff;text-decoration:none;font-size:12px;font-weight:1000;box-shadow:0 3px #a64edf}
+.sound{width:42px;height:42px;border:2px solid var(--gold);border-radius:14px;background:#4f5dd1;cursor:pointer}
+main{padding:17px 0 24px}
+.heading{text-align:center;margin:0 auto 14px}
+.badge{display:inline-block;padding:7px 15px;border:2px solid var(--cyan);border-radius:999px;background:linear-gradient(90deg,#128eb0,#7541c8);font-size:12px;font-weight:1000;letter-spacing:.15em;text-transform:uppercase;box-shadow:0 3px #291b70}
+.heading h1{margin:8px 0 4px;font-size:clamp(32px,5vw,52px);line-height:1;text-transform:uppercase;text-shadow:0 4px #392073}
+.heading h1 span{color:var(--gold)}
+.heading p{margin:7px;color:var(--muted);font-weight:750}
+.panel{width:min(100%,1080px);margin:0 auto;border:2px solid #b8eaff99;border-radius:27px;background:linear-gradient(145deg,#1d59a5ed,#4a2a93ed);box-shadow:0 7px #151950,0 19px 40px #07103c66,inset 0 2px #ffffff2e;padding:clamp(15px,2.5vw,24px)}
+.intro{text-align:center}
+.heroicon{font-size:clamp(48px,8vw,72px);line-height:1;margin:3px}
+.intro h2,.result h2{margin:7px 0;color:var(--gold);font-size:clamp(25px,4vw,36px);text-shadow:0 3px #682d91}
+.intro p{max-width:640px;margin:7px auto 15px;line-height:1.45;font-weight:700;color:#f0f3ff}
+.primary,.secondary{border:0;border-radius:16px;padding:13px 21px;background:linear-gradient(100deg,#fff47a,#ffad4a);color:#4b244a;font-size:16px;font-weight:1000;box-shadow:0 4px #ad4c50;cursor:pointer}
+.secondary{background:#4c5fbe;color:#fff;border:2px solid var(--gold);box-shadow:0 4px #23205d}
+.primary:active,.secondary:active{transform:translateY(2px)}
+.recordline{font-size:14px;color:#f3efff}
+.recordline strong{color:var(--cyan)}
+.intro.hide{display:none}
+.play,.result{display:none}
+.play.active,.result.show{display:block}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 12px}
+.stat{padding:8px 12px;border:1px solid #ffffff55;border-radius:15px;background:#111d5b77}
+.stat small{display:block;font-size:10px;font-weight:1000;letter-spacing:.1em;color:#e0ebff}
+.stat strong{font-size:21px}
+.progress{height:9px;overflow:hidden;border-radius:99px;background:#121a54;margin-bottom:13px}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#61f0dc,#ffe85b,#ff6bc4);border-radius:inherit;transition:width .25s}
+.question{text-align:center;margin:0 0 12px}
+.question-label{color:var(--cyan);font-size:clamp(16px,2vw,20px);font-weight:1000;letter-spacing:.06em}
+.question small{display:block;margin-top:4px;color:#ecedff;font-size:13px;font-weight:750}
+.choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:stretch}
+.choice{min-width:0;min-height:clamp(118px,17vh,158px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:9px 7px;border:2px solid #c7e9ff99;border-radius:20px;background:linear-gradient(145deg,#2373b7,#4b348f);box-shadow:0 5px #15184e;cursor:pointer;transition:transform .13s,border-color .13s,filter .13s}
+.choice:nth-child(2){background:linear-gradient(145deg,#3175aa,#57419e)}
+.choice:nth-child(3){background:linear-gradient(145deg,#236c9d,#683a9f)}
+.choice:nth-child(4){background:linear-gradient(145deg,#2459a0,#7250a8)}
+.choice:nth-child(5){background:linear-gradient(145deg,#19768d,#633f9c)}
+.choice:hover:not(:disabled){transform:translateY(-3px);border-color:var(--gold);filter:brightness(1.1)}
+.choice:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.choice .emoji{font-size:clamp(36px,5vw,54px);line-height:1}
+.choice .name{font-size:clamp(12px,1.5vw,16px);font-weight:1000;text-align:center;text-transform:uppercase;overflow-wrap:anywhere}
+.choice.correct{border-color:#7dffb9;background:linear-gradient(135deg,#0a9276,#246249);box-shadow:0 0 0 3px #7dffb944,0 5px #143f47}
+.choice.wrong{border-color:#ff83aa;background:linear-gradient(135deg,#b14278,#6b2d68)}
+.choice:disabled{cursor:default}
+.feedback{min-height:32px;margin:12px 0 0;text-align:center;font-weight:1000;font-size:clamp(14px,1.7vw,18px)}
+.feedback.ok{color:#91ffc7}.feedback.no{color:#ffc0d4}
+.result{text-align:center}.result .heroicon{font-size:70px}.result p{font-size:17px;line-height:1.45}.result strong{color:var(--cyan)}
+.result-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+@media(max-width:700px){
+ .shell{width:calc(100% - 22px)}
+ main{padding:12px 0 18px}
+ .top{height:54px}
+ .back{font-size:11px;padding:8px 12px}
+ .sound{width:40px;height:40px}
+ .heading{margin-bottom:18px}
+ .heading h1{font-size:clamp(30px,8vw,40px);margin:12px 0 9px;line-height:1.1}
+ .heading p{margin:8px 4px 0;line-height:1.45}
+ .panel{padding:15px;border-radius:23px}
+ .stats{gap:8px;margin-bottom:11px}
+ .stat{padding:8px 10px}
+ .stat strong{font-size:19px}
+ .progress{margin-bottom:12px}
+ .question{margin-bottom:12px}
+ .question-label{font-size:16px}
+ .question small{font-size:12px;margin-top:6px}
+ .choices{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .choice{min-height:clamp(78px,11vh,92px);flex-direction:row;justify-content:flex-start;gap:11px;padding:10px 12px;border-radius:17px}
+ .choice:nth-child(5){grid-column:1/-1;width:calc(50% - 6px);justify-self:center}
+ .choice .emoji{font-size:clamp(32px,9vw,42px);flex:0 0 auto}
+ .choice .name{font-size:clamp(12px,3.4vw,15px);text-align:left}
+ .feedback{min-height:30px;margin-top:11px;font-size:14px}
+}
+@media(max-width:380px){
+ .panel{padding:10px}
+ .stats{gap:5px}
+ .stat{padding:6px 7px}
+ .stat small{font-size:9px}
+ .stat strong{font-size:17px}
+ .choice{min-height:76px;padding:9px 10px;gap:9px}
+ .choice .emoji{font-size:32px}
+ .choice .name{font-size:12px}
+}
+@media(max-width:700px) and (max-height:760px){
+ main{padding:7px 0 12px}
+ .heading{margin-bottom:15px}
+ .heading h1{font-size:clamp(29px,7.3vw,36px);margin:10px 0 7px;line-height:1.1}
+ .heading p{margin:7px 3px 0;line-height:1.4}
+ .panel{padding:10px}
+ .stats{margin-bottom:7px}
+ .progress{margin-bottom:8px}
+ .question{margin-bottom:7px}
+ .choice{min-height:72px}
+ .feedback{margin-top:7px;min-height:24px}
+}
+@media(min-width:701px) and (hover:hover) and (pointer:fine){
+ main{padding-top:12px}
+ .heading{margin-bottom:11px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top"><a class="back" href="../arcade.html">← VOLVER AL ARCADE</a><button class="sound" type="button" data-sound-toggle aria-label="Silenciar sonidos">🔊</button></header>
+<main>
+<div class="heading"><span class="badge">DESAFÍO DE OBSERVACIÓN</span><h1>ENCONTRÁ EL <span>INTRUSO</span></h1><p>¡Mirá bien los dibujos y descubrí cuál no va con los demás!</p></div>
+<section class="panel intro" id="intro"><div class="heroicon" aria-hidden="true">🔎🧩</div><h2>¡Ojos de detective!</h2><p>Encontrá el dibujo que no pertenece. Cada nivel tiene 10 rondas; seguí para sumar puntos y avanzar.</p><button class="primary" id="start" type="button">¡EMPEZAR A JUGAR! ➜</button><p class="recordline">🏆 Tu récord: <strong id="introRecord">0</strong> puntos</p></section>
+<section class="panel play" id="play" aria-live="polite"><div class="stats"><div class="stat"><small>RONDA</small><strong id="round">1 / 100</strong></div><div class="stat"><small>PUNTOS</small><strong id="score">0</strong></div><div class="stat"><small>RÉCORD</small><strong id="record">0</strong></div></div><div class="progress" aria-label="Progreso"><i id="bar"></i></div><div class="question"><div class="question-label">¿CUÁL ES EL INTRUSO?</div><small>TOCÁ EL DIBUJO QUE NO PERTENECE AL GRUPO</small></div><div class="choices" id="choices"></div><p class="feedback" id="feedback" aria-live="polite"></p></section>
+<section class="panel result" id="result"><div class="heroicon" id="endIcon" aria-hidden="true">🏆🌟</div><h2 id="endTitle">¡QUÉ BUEN OJO!</h2><p id="endText"></p><p>Tu récord: <strong id="finalRecord">0</strong> puntos</p><div class="result-actions"><button class="primary" id="again" type="button">¡JUGAR OTRA VEZ! ➜</button><button class="secondary" id="menu" type="button">VOLVER AL INICIO</button></div></section>
+</main>
+</div>
+<script>
+(()=>{const $=id=>document.getElementById(id),STORE="vladiIntrusoRecordV1";
+const GROUPS=[
+{group:"ANIMALES DE GRANJA",items:[["🐮","VACA"],["🐑","OVEJA"],["🐴","CABALLO"],["🐷","CERDO"]],odd:["🍎","MANZANA"]},
+{group:"ANIMALES DEL MAR",items:[["🐬","DELFÍN"],["🐳","BALLENA"],["🦈","TIBURÓN"],["🐙","PULPO"]],odd:["🍌","BANANA"]},
+{group:"AVES",items:[["🦉","BUHO"],["🦜","LORO"],["🐧","PINGÜINO"],["🦚","PAVO REAL"]],odd:["🐟","PEZ"]},
+{group:"INSECTOS",items:[["🐝","ABEJA"],["🦋","MARIPOSA"],["🐜","HORMIGA"],["🐞","MARIQUITA"]],odd:["🐸","RANA"]},
+{group:"MASCOTAS",items:[["🐶","PERRO"],["🐱","GATO"],["🐰","CONEJO"],["🐹","HÁMSTER"]],odd:["🚗","AUTO"]},
+{group:"FRUTAS",items:[["🍎","MANZANA"],["🍐","PERA"],["🍌","BANANA"],["🍊","NARANJA"]],odd:["🥕","ZANAHORIA"]},
+{group:"VERDURAS",items:[["🥕","ZANAHORIA"],["🥦","BRÓCOLI"],["🥬","LECHUGA"],["🌽","CHOCLO"]],odd:["🍇","UVA"]},
+{group:"TRANSPORTES",items:[["🚗","AUTO"],["🚌","COLECTIVO"],["🚆","TREN"],["🚲","BICICLETA"]],odd:["🏠","CASA"]},
+{group:"TRANSPORTES DEL AGUA",items:[["🚤","LANCHA"],["⛵","VELERO"],["🚢","BARCO"],["🛶","CANOA"]],odd:["✈️","AVION"]},
+{group:"ÚTILES ESCOLARES",items:[["✏️","LAPIZ"],["📏","REGLA"],["📓","CUADERNO"],["🖍️","CRAYÓN"]],odd:["🍴","TENEDOR"]},
+{group:"ROPA",items:[["👕","REMERA"],["🧦","MEDIAS"],["👟","ZAPATILLAS"],["🧢","GORRA"]],odd:["🥣","TAZA"]},
+{group:"INSTRUMENTOS MUSICALES",items:[["🎸","GUITARRA"],["🎹","PIANO"],["🥁","TAMBOR"],["🎺","TROMPETA"]],odd:["📚","LIBROS"]},
+{group:"DEPORTES",items:[["⚽","FUTBOL"],["🏀","BASQUET"],["🎾","TENIS"],["🏐","VOLEY"]],odd:["🍕","PIZZA"]},
+{group:"EL CIELO",items:[["☀️","SOL"],["🌙","LUNA"],["⭐","ESTRELLA"],["☁️","NUBE"]],odd:["🌳","ARBOL"]},
+{group:"EL ESPACIO",items:[["🚀","COHETE"],["🪐","PLANETA"],["🌟","ESTRELLA"],["🌙","LUNA"]],odd:["🌻","GIRASOL"]},
+{group:"COSAS DE COCINA",items:[["🥄","CUCHARA"],["🍽️","PLATO"],["🥣","TAZA"],["🍴","TENEDOR"]],odd:["🛏️","CAMA"]},
+{group:"ANIMALES GRANDES",items:[["🐘","ELEFANTE"],["🦒","JIRAFA"],["🦛","HIPOPÓTAMO"],["🦏","RINOCERONTE"]],odd:["🦋","MARIPOSA"]},
+{group:"ANIMALES DE LA SELVA",items:[["🦁","LEÓN"],["🐒","MONO"],["🐅","TIGRE"],["🦓","CEBRA"]],odd:["🐠","PEZ"]},
+{group:"ANIMALES QUE VUELAN",items:[["🦅","AGUILA"],["🦇","MURCIÉLAGO"],["🦜","LORO"],["🦋","MARIPOSA"]],odd:["🐢","TORTUGA"]},
+{group:"ANIMALES CON CAPARAZON",items:[["🐢","TORTUGA"],["🐌","CARACOL"],["🦀","CANGREJO"],["🦞","LANGOSTA"]],odd:["🐕","PERRO"]},
+{group:"COMIDAS",items:[["🍕","PIZZA"],["🍔","HAMBURGUESA"],["🌮","TACO"],["🥪","SANDWICH"]],odd:["🧼","JABON"]},
+{group:"COSAS PARA JUGAR",items:[["⚽","PELOTA"],["🪁","BARRILETE"],["🧸","OSO DE PELUCHE"],["🪀","YOYO"]],odd:["🪥","CEPILLO"]},
+{group:"LUGARES DE LA CASA",items:[["🛏️","CAMA"],["🛋️","SILLÓN"],["🚿","DUCHA"],["🪑","SILLA"]],odd:["🚜","TRACTOR"]},
+{group:"COSAS DEL BAÑO",items:[["🧼","JABON"],["🪥","CEPILLO"],["🧴","SHAMPOO"],["🛁","BAÑERA"]],odd:["⚽","PELOTA"]},
+{group:"CLIMA",items:[["🌧️","LLUVIA"],["❄️","NIEVE"],["🌬️","VIENTO"],["⛈️","TORMENTA"]],odd:["🚘","AUTO"]},
+{group:"FLORES Y PLANTAS",items:[["🌹","ROSA"],["🌻","GIRASOL"],["🌷","TULIPAN"],["🌼","MARGARITA"]],odd:["🍪","GALLETITA"]},
+{group:"ANIMALES DE NOCHE",items:[["🦉","BUHO"],["🦇","MURCIELAGO"],["🦝","MAPACHE"],["🦔","ERIZO"]],odd:["🐓","GALLO"]},
+{group:"FRUTAS ROJAS",items:[["🍓","FRUTILLA"],["🍒","CEREZA"],["🍉","SANDIA"],["🍎","MANZANA"]],odd:["🥒","PEPINO"]},
+{group:"COSAS QUE RUEDAN",items:[["🛹","PATINETA"],["🛼","PATINES"],["🛴","MONOPATIN"],["🚲","BICICLETA"]],odd:["📕","LIBRO"]},
+{group:"ANIMALES DE AGUA",items:[["🐬","DELFIN"],["🐢","TORTUGA"],["🦭","FOCA"],["🐟","PEZ"]],odd:["🦌","CIERVO"]},
+{group:"COSAS QUE TIENEN RUEDAS",items:[["🚕","TAXI"],["🚚","CAMION"],["🏍️","MOTO"],["🚜","TRACTOR"]],odd:["📺","TELE"]},
+{group:"FRÍO Y CALOR",items:[["🧤","GUANTES"],["🧣","BUFANDA"],["🧥","ABRIGO"],["🧦","MEDIAS"]],odd:["🩱","MALLA"]},
+{group:"ANIMALES CON ALAS",items:[["🦜","LORO"],["🦅","AGUILA"],["🦉","BUHO"],["🦢","CISNE"]],odd:["🐍","SERPIENTE"]},
+{group:"FRUTAS AMARILLAS",items:[["🍌","BANANA"],["🍋","LIMON"],["🍍","ANANÁ"],["🥭","MANGO"]],odd:["🍆","BERENJENA"]},
+{group:"COSAS PARA ESCRIBIR",items:[["🖊️","LAPICERA"],["✏️","LAPIZ"],["🖍️","CRAYON"],["🖋️","PLUMA"]],odd:["🍳","SARTEN"]},
+{group:"ANIMALES CON CUATRO PATAS",items:[["🐕","PERRO"],["🐈","GATO"],["🐄","VACA"],["🦒","JIRAFA"]],odd:["🐍","SERPIENTE"]},
+{group:"COSAS DE LA PLAYA",items:[["🏖️","SOMBRILLA"],["🪣","BALDE"],["🩱","MALLA"],["🩴","OJOTAS"]],odd:["🧤","GUANTES"]},
+{group:"BEBIDAS",items:[["🥛","LECHE"],["🧃","JUGO"],["🫖","TE"],["🥤","LICUADO"]],odd:["🧦","MEDIAS"]},
+{group:"ANIMALES LENTOS",items:[["🐢","TORTUGA"],["🐌","CARACOL"],["🦥","PEREZOSO"],["🐛","ORUGA"]],odd:["🐆","GUEPARDO"]}
+,
+{group:"FRUTOS DEL BOSQUE",items:[["🍓","FRUTILLA"],["🫐","ARÁNDANO"],["🍇","MORA"],["🍒","CEREZA"]],odd:["🧀","QUESO"]},
+{group:"FRUTAS CÍTRICAS",items:[["🍋","LIMÓN"],["🍊","NARANJA"],["🍈","LIMA"],["🍊","MANDARINA"]],odd:["🥕","ZANAHORIA"]},
+{group:"FRUTAS TROPICALES",items:[["🍍","PIÑA"],["🥭","MANGO"],["🥥","COCO"],["🍌","BANANA"]],odd:["🧤","GUANTES"]},
+{group:"FRUTAS CON CÁSCARA",items:[["🥥","COCO"],["🍌","BANANA"],["🍊","NARANJA"],["🥝","KIWI"]],odd:["🔨","MARTILLO"]},
+{group:"FRUTOS SECOS",items:[["🥜","MANÍ"],["🌰","CASTAÑA"],["🌰","NUEZ"],["🥜","ALMENDRA"]],odd:["🎈","GLOBO"]},
+{group:"VERDURAS DE RAÍZ",items:[["🥕","ZANAHORIA"],["🥔","PAPA"],["🫜","RABANITO"],["🧅","CEBOLLA"]],odd:["🍪","GALLETITA"]},
+{group:"VERDURAS DE HOJA",items:[["🥬","ESPINACA"],["🥬","ACELGA"],["🥬","LECHUGA"],["🥬","REPOLLO"]],odd:["🚗","AUTO"]},
+{group:"PRODUCTOS LÁCTEOS",items:[["🥛","LECHE"],["🧀","QUESO"],["🧈","MANTECA"],["🥣","YOGUR"]],odd:["🪁","BARRILETE"]},
+{group:"POSTRES HORNEADOS",items:[["🍰","TORTA"],["🧁","CUPCAKE"],["🍪","GALLETITA"],["🥧","TARTA"]],odd:["🐟","PEZ"]},
+{group:"POSTRES HELADOS",items:[["🍦","HELADO"],["🍧","GRANIZADO"],["🍨","COPA HELADA"],["🍡","PALETA"]],odd:["🧦","MEDIAS"]},
+{group:"ALIMENTOS PARA EL DESAYUNO",items:[["🥐","MEDIALUNA"],["🥞","PANQUEQUE"],["🥣","CEREAL"],["🍞","TOSTADA"]],odd:["🛠️","MARTILLO"]},
+{group:"BEBIDAS CALIENTES",items:[["☕","CAFÉ"],["🍵","TÉ"],["🧉","MATE"],["🥛","LECHE CALIENTE"]],odd:["🏀","PELOTA"]},
+{group:"BEBIDAS FRÍAS",items:[["🧃","JUGO"],["🥤","GASEOSA"],["🧋","TÉ CON LECHE"],["🚰","AGUA"]],odd:["🧣","BUFANDA"]},
+{group:"CUBIERTOS",items:[["🍴","TENEDOR"],["🥄","CUCHARA"],["🔪","CUCHILLO"],["🥢","PALITOS"]],odd:["🪴","PLANTA"]},
+{group:"UTENSILIOS DE COCINA",items:[["🥣","BOL"],["🍲","OLLA"],["🍳","SARTÉN"],["🫖","TETERA"]],odd:["🎾","PELOTA DE TENIS"]},
+{group:"ELECTRODOMÉSTICOS",items:[["🧊","HELADERA"],["🧺","LAVARROPAS"],["🔥","HORNO"],["🍞","TOSTADORA"]],odd:["🎸","GUITARRA"]},
+{group:"OBJETOS DEL BAÑO",items:[["🛁","BAÑERA"],["🚿","DUCHA"],["🚽","INODORO"],["🪥","CEPILLO DE DIENTES"]],odd:["🦋","MARIPOSA"]},
+{group:"MUEBLES DEL DORMITORIO",items:[["🛏️","CAMA"],["🪑","MESA DE LUZ"],["🚪","ARMARIO"],["💡","VELADOR"]],odd:["🚲","BICICLETA"]},
+{group:"MUEBLES PARA SENTARSE",items:[["🛋️","SOFÁ"],["🪑","SILLA"],["🪑","SILLÓN"],["🪑","BANQUETA"]],odd:["🍋","LIMÓN"]},
+{group:"COSAS PARA LIMPIAR",items:[["🧹","ESCOBA"],["🧽","ESPONJA"],["🪣","BALDE"],["🧼","JABÓN"]],odd:["🚀","COHETE"]},
+{group:"HERRAMIENTAS",items:[["🔨","MARTILLO"],["🪛","DESTORNILLADOR"],["🔧","LLAVE"],["🪚","SIERRA"]],odd:["🍉","SANDÍA"]},
+{group:"HERRAMIENTAS DE JARDÍN",items:[["🪏","PALA"],["🧤","GUANTES"],["🧹","RASTRILLO"],["🚿","MANGUERA"]],odd:["📚","LIBROS"]},
+{group:"MATERIALES PARA PINTAR",items:[["🖌️","PINCEL"],["🎨","PALETA"],["🖍️","CRAYÓN"],["🖊️","MARCADOR"]],odd:["🥾","BOTAS"]},
+{group:"COSAS PARA VIAJAR",items:[["🧳","VALIJA"],["🗺️","MAPA"],["🎫","BOLETO"],["🎒","MOCHILA"]],odd:["🍳","SARTÉN"]},
+{group:"EQUIPO DE CAMPING",items:[["⛺","CARPA"],["🏮","FAROL"],["🔥","FOGATA"],["🛌","BOLSA DE DORMIR"]],odd:["🧊","HELADERA"]},
+{group:"ROPA DE INVIERNO",items:[["🧣","BUFANDA"],["🧤","GUANTES"],["🧥","ABRIGO"],["🧢","GORRO"]],odd:["🩱","MALLA"]},
+{group:"PRENDAS PARA LA LLUVIA",items:[["☂️","PARAGUAS"],["🧥","PILOTO"],["🥾","BOTAS DE LLUVIA"],["🧢","GORRA IMPERMEABLE"]],odd:["🕶️","ANTEOJOS DE SOL"]},
+{group:"TIPOS DE CALZADO",items:[["👢","BOTAS"],["👟","ZAPATILLAS"],["🩴","OJOTAS"],["🥿","ZAPATOS"]],odd:["👒","SOMBRERO"]},
+{group:"JOYAS",items:[["💍","ANILLO"],["📿","COLLAR"],["👑","CORONA"],["📿","PULSERA"]],odd:["🥣","CEREAL"]},
+{group:"ACCESORIOS PARA VESTIR",items:[["🕶️","ANTEOJOS"],["⌚","RELOJ"],["🧢","GORRA"],["👜","CARTERA"]],odd:["🧽","ESPONJA"]},
+{group:"VEHÍCULOS DE EMERGENCIA",items:[["🚑","AMBULANCIA"],["🚒","AUTOBOMBA"],["🚓","PATRULLERO"],["🚁","HELICÓPTERO DE RESCATE"]],odd:["🚲","BICICLETA"]},
+{group:"VEHÍCULOS DE CONSTRUCCIÓN",items:[["🚜","TRACTOR"],["🏗️","GRÚA"],["🚚","CAMIÓN VOLCADOR"],["🚧","EXCAVADORA"]],odd:["🛶","CANOA"]},
+{group:"VEHÍCULOS DE DOS RUEDAS",items:[["🚲","BICICLETA"],["🏍️","MOTOCICLETA"],["🛵","SCOOTER"],["🛹","MONOPATÍN"]],odd:["✈️","AVIÓN"]},
+{group:"VEHÍCULOS AÉREOS",items:[["✈️","AVIÓN"],["🚁","HELICÓPTERO"],["🚀","COHETE"],["🎈","GLOBO AEROSTÁTICO"]],odd:["🚚","CAMIÓN"]},
+{group:"VEHÍCULOS ACUÁTICOS",items:[["🚤","LANCHA"],["⛵","VELERO"],["🛳️","BARCO"],["🛶","CANOA"]],odd:["🚜","TRACTOR"]},
+{group:"MAQUINARIA DE OBRA",items:[["🚜","EXCAVADORA"],["🏗️","GRÚA"],["🚚","VOLCADOR"],["🦺","CHALECO DE OBRA"]],odd:["🐙","PULPO"]},
+{group:"DEPORTES DE INVIERNO",items:[["🎿","ESQUÍ"],["🏂","SNOWBOARD"],["⛸️","PATÍN DE HIELO"],["🏒","HOCKEY"]],odd:["🍌","BANANA"]},
+{group:"EQUIPO DE NATACIÓN",items:[["🥽","ANTIPARRAS"],["🩱","MALLA"],["🛟","FLOTADOR"],["🤿","MÁSCARA DE BUCEO"]],odd:["🧤","GUANTES DE LANA"]},
+{group:"EQUIPO DE FÚTBOL",items:[["⚽","PELOTA"],["🥅","ARCO"],["👟","BOTINES"],["🧤","GUANTES DE ARQUERO"]],odd:["🎻","VIOLÍN"]},
+{group:"JUEGOS DE MESA",items:[["♟️","AJEDREZ"],["🎲","DADOS"],["🃏","CARTAS"],["🀄","MAHJONG"]],odd:["🧹","ESCOBA"]},
+{group:"JUEGOS DE PLAZA",items:[["🛝","TOBOGÁN"],["🎠","CARRUSEL"],["🎡","RUEDA"],["🪁","BARRILETE"]],odd:["🛏️","CAMA"]},
+{group:"INSTRUMENTOS DE PERCUSIÓN",items:[["🥁","TAMBOR"],["🪇","MARACAS"],["🔔","CAMPANA"],["🎼","CÍMBALOS"]],odd:["🥕","ZANAHORIA"]},
+{group:"INSTRUMENTOS DE CUERDA",items:[["🎸","GUITARRA"],["🎻","VIOLÍN"],["🪕","BANJO"],["🎹","ARPA"]],odd:["🧦","MEDIAS"]},
+{group:"INSTRUMENTOS DE VIENTO",items:[["🎺","TROMPETA"],["🎷","SAXOFÓN"],["🪈","FLAUTA"],["🎶","CLARINETE"]],odd:["🛹","MONOPATÍN"]},
+{group:"OBJETOS DE FOTOGRAFÍA",items:[["📷","CÁMARA"],["📹","VIDEOCÁMARA"],["🔭","LENTE"],["📸","FLASH"]],odd:["🥞","PANQUEQUE"]},
+{group:"OBJETOS QUE DAN LUZ",items:[["💡","BOMBILLA"],["🔦","LINTERNA"],["🕯️","VELA"],["🏮","FAROL"]],odd:["🦀","CANGREJO"]},
+{group:"ASTROS DEL CIELO",items:[["☀️","SOL"],["🌙","LUNA"],["⭐","ESTRELLA"],["🪐","PLANETA"]],odd:["👟","ZAPATILLA"]},
+{group:"PLANETAS CERCANOS AL SOL",items:[["☿️","MERCURIO"],["♀️","VENUS"],["🌍","TIERRA"],["♂️","MARTE"]],odd:["🌙","LUNA"]},
+{group:"FENÓMENOS DEL CLIMA",items:[["🌧️","LLUVIA"],["❄️","NIEVE"],["⚡","RELÁMPAGO"],["🌪️","TORNADO"]],odd:["🍎","MANZANA"]},
+{group:"ESTACIONES DEL AÑO",items:[["🌸","PRIMAVERA"],["☀️","VERANO"],["🍂","OTOÑO"],["❄️","INVIERNO"]],odd:["📺","TELEVISOR"]},
+{group:"PAISAJES NATURALES",items:[["🏔️","MONTAÑA"],["🌋","VOLCÁN"],["🏞️","CASCADA"],["🌲","BOSQUE"]],odd:["🧊","HELADERA"]},
+{group:"ANIMALES NOCTURNOS",items:[["🦉","BÚHO"],["🦇","MURCIÉLAGO"],["🦊","ZORRO"],["🦝","MAPACHE"]],odd:["🦋","MARIPOSA"]},
+{group:"MAMÍFEROS DEL BOSQUE",items:[["🦌","CIERVO"],["🦊","ZORRO"],["🐻","OSO"],["🐿️","ARDILLA"]],odd:["🐬","DELFÍN"]},
+{group:"AVES ACUÁTICAS",items:[["🦆","PATO"],["🪿","GANSO"],["🦢","CISNE"],["🦩","FLAMENCO"]],odd:["🐈","GATO"]},
+{group:"AVES QUE NO VUELAN",items:[["🐧","PINGÜINO"],["🪶","AVESTRUZ"],["🪶","ÑANDÚ"],["🐦","KIWI"]],odd:["🦜","LORO"]},
+{group:"AVES RAPACES",items:[["🦅","ÁGUILA"],["🪶","BUITRE"],["🦉","BÚHO"],["🦅","HALCÓN"]],odd:["🐢","TORTUGA"]},
+{group:"MAMÍFEROS MARINOS",items:[["🐬","DELFÍN"],["🐳","BALLENA"],["🐋","ORCA"],["🦭","FOCA"]],odd:["🕷️","ARAÑA"]},
+{group:"ANIMALES CON ASTAS",items:[["🦌","CIERVO"],["🫎","ALCE"],["🐂","TORO"],["🐐","CABRA"]],odd:["🐟","PEZ"]},
+{group:"ANIMALES QUE SE ARRASTRAN",items:[["🐍","SERPIENTE"],["🐌","CARACOL"],["🪱","GUSANO"],["🐛","ORUGA"]],odd:["🐎","CABALLO"]},
+{group:"INSECTOS QUE CAMBIAN",items:[["🐛","ORUGA"],["🦋","MARIPOSA"],["🦟","MOSQUITO"],["🐞","MARIQUITA"]],odd:["🐕","PERRO"]},
+{group:"PARTES DE UNA PLANTA",items:[["🌸","PÉTALO"],["🍃","HOJA"],["🌱","SEMILLA"],["🌿","TALLO"]],odd:["🥾","BOTA"]}
+];
+let rounds=[],index=0,score=0,best=0,locked=false,level=1,levelStart=0,levelHits=0;try{best=Number(localStorage.getItem(STORE)||0)}catch(_){}$("introRecord").textContent=best;$("record").textContent=best;
+function tone(name){try{if(window.VladiSound)window.VladiSound.play(name)}catch(_){}}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){if(typeof window.gtag==='function')window.gtag('event','game_start',{game_id:'vladi-intruso',game_name:'vladi intruso'});rounds=shuffle(GROUPS);index=0;score=0;level=1;levelStart=0;levelHits=0;locked=false;$("score").textContent="0";$("record").textContent=best;$("intro").classList.add("hide");$("result").classList.remove("show");$("play").classList.add("active");show()}
+function show(){locked=false;const r=rounds[index],options=shuffle([...r.items.map(x=>({item:x,odd:false})),{item:r.odd,odd:true}]);$("round").textContent=(index-levelStart+1)+" / "+Math.min(10,rounds.length-levelStart);$("bar").style.width=(index/rounds.length*100)+"%";$("feedback").textContent="";$("feedback").className="feedback";$("choices").innerHTML=options.map((x,i)=>'<button class="choice" type="button" data-odd="'+x.odd+'" aria-label="Opción '+(i+1)+': '+x.item[1]+'"><span class="emoji" aria-hidden="true">'+x.item[0]+'</span><span class="name">'+x.item[1]+'</span></button>').join("");$("choices").querySelectorAll(".choice").forEach((b,i)=>b.addEventListener("click",()=>answer(b)))}
+function answer(button){if(locked)return;locked=true;const ok=button.dataset.odd==="true",r=rounds[index];document.querySelectorAll(".choice").forEach(b=>b.disabled=true);button.classList.add(ok?"correct":"wrong");if(ok){levelHits++;score+=100;$("score").textContent=score;$("feedback").textContent="¡LO ENCONTRASTE! LOS DEMÁS SON: "+r.group+" ⭐";$("feedback").classList.add("ok");tone("correct")}else{const right=[...document.querySelectorAll(".choice")].find(b=>b.dataset.odd==="true");if(right)right.classList.add("correct");$("feedback").textContent="¡CASI! EL INTRUSO ERA "+r.odd[1]+". LOS DEMÁS SON: "+r.group+" 💡";$("feedback").classList.add("no");tone("wrong")}setTimeout(()=>{index++;if(index>=rounds.length||index-levelStart>=10)finish();else show()},1100)}
+function finish(){if(typeof window.gtag==='function')window.gtag('event','game_end',{game_id:'vladi-intruso',game_name:'vladi intruso'}); $("bar").style.width="100%";$("play").classList.remove("active");$("result").classList.add("show");if(score>best){best=score;try{localStorage.setItem(STORE,String(best))}catch(_){}}$("finalRecord").textContent=best;const total=Math.min(10,rounds.length-levelStart);$("endText").innerHTML="NIVEL "+level+" COMPLETADO: <strong>"+levelHits+" DE "+total+"</strong> INTRUSOS. PUNTAJE ACUMULADO: <strong>"+score+"</strong>.";$("endTitle").textContent=levelHits===total?"¡OJO DE SÚPER DETECTIVE!":"¡SEGUÍ ENTRENANDO EL OJO!";$("endIcon").textContent=levelHits===total?"🕵️🏆":"🧩💪";$("again").textContent="CONTINUAR AL NIVEL "+(level+1)+" ➜"}
+function nextLevel(){level++;levelHits=0;levelStart=index;if(index>=rounds.length){rounds=shuffle(GROUPS);index=0;levelStart=0} $("result").classList.remove("show");$("play").classList.add("active");$("score").textContent=score;$("again").textContent="JUGAR";show()}
+$("start").addEventListener("click",start);$("again").addEventListener("click",nextLevel);$("menu").addEventListener("click",()=>{$("result").classList.remove("show");$("intro").classList.remove("hide")});document.addEventListener("keydown",e=>{if(!$("play").classList.contains("active")||locked)return;if(["1","2","3","4","5"].includes(e.key)){const b=$("choices").querySelectorAll(".choice")[Number(e.key)-1];if(b)b.click()}});
+})();</script>
+<script data-arcade-focus="2">(()=>{'use strict';let previous=[],nextMove=0,chosen=null;function available(){return [...document.querySelectorAll('button,[role="button"],[tabindex="0"],input,select,[data-option],[data-choice]')].filter(e=>e.getClientRects().length&&!e.disabled&&getComputedStyle(e).visibility!=='hidden'&&!e.closest('[hidden],[aria-hidden="true"]'))}function choose(e){if(!e)return;chosen?.classList.remove('arcade-highlight');chosen=e;e.classList.add('arcade-highlight');e.focus?.({preventScroll:true});e.scrollIntoView({block:'nearest',inline:'nearest'})}function move(dir){const a=available();if(!a.length)return;choose(a[(a.indexOf(chosen)+dir+a.length)%a.length])}function action(){if(!chosen||!available().includes(chosen)){choose(available()[0]);return}chosen.click()}function tick(t){const p=[...(navigator.getGamepads?.()||[])].find(Boolean);if(p){const b=i=>!!p.buttons[i]?.pressed,x=p.axes[0]||0,y=p.axes[1]||0,now=[b(0),b(1),b(2),b(3),b(4),b(8),b(9)];if(now[5]&&!previous[5]){if(parent!==window)parent.postMessage({type:'VLADYERIK_ARCADE_EXIT'},location.origin);else location.assign('https://gastongonz82.github.io/vladyerik-arcade/');return}if(now[6]&&!previous[6]){const btn=available().find(e=>/jugar|iniciar|comenzar|continuar|siguiente|reintentar/i.test(e.textContent||''));btn?btn.click():action()}if(now[4]&&!previous[4]){const btn=available().find(e=>/pausa|pausar|continuar/i.test(e.textContent||''));if(btn)btn.click();else dispatchEvent(new KeyboardEvent('keydown',{key:'p',code:'KeyP',bubbles:true}))}if(now[0]&&!previous[0])action();if(now[1]&&!previous[1]){const btn=available().find(e=>/volver|cancelar|atrás/i.test(e.textContent||''));btn?.click()}if(now[2]&&!previous[2])move(-1);if(now[3]&&!previous[3])move(1);const dir=b(14)||b(12)||x<-.55||y<-.55?-1:b(15)||b(13)||x>.55||y>.55?1:0;if(dir&&t>=nextMove){move(dir);nextMove=t+230}else if(!dir)nextMove=0;previous=now}requestAnimationFrame(tick)}const st=document.createElement('style');st.textContent='.arcade-highlight{outline:4px solid #ffce2d!important;outline-offset:3px!important;box-shadow:0 0 0 6px #0c1941!important}';document.head.append(st);requestAnimationFrame(tick)})();</script></body>
+</html>
