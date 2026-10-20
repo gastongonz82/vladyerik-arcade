@@ -124,7 +124,7 @@
     }
     $('nextLevel').addEventListener('click',()=>{state.level++;state.levelRound=0;$('nextLevel').hidden=true;$('nextLevel').style.display='none';document.querySelectorAll('.choice').forEach(b=>b.disabled=false);$('playerChoice').textContent='❔';$('vladiChoice').textContent='❔';$('outcome').textContent='ELEGÍ PIEDRA, PAPEL O TIJERA';$('outcome').className='outcome';render();document.querySelector('.choice')?.focus({preventScroll:true})});
     document.querySelectorAll('.choice').forEach(button=>button.addEventListener('click',()=>play(button.dataset.choice)));
-    document.addEventListener('keydown',event=>{if(event.altKey||event.ctrlKey||event.metaKey)return;const map={'1':'piedra','2':'papel','3':'tijera'};if(map[event.key])play(map[event.key])});
+    document.addEventListener('keydown',event=>{if(event.altKey||event.ctrlKey||event.metaKey)return;const map={'1':'piedra','2':'papel','3':'tijera'};if(map[event.key]&&state.levelRound<10)play(map[event.key])});
     render();
   })();
   </script>
