@@ -139,18 +139,41 @@ function gameArtwork(item){
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="520" height="700" viewBox="0 0 520 700"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="'+palette[0]+'"/><stop offset="1" stop-color="#0c1434"/></linearGradient></defs><rect width="520" height="700" fill="url(#g)"/><path d="M-60 500 L520 50 M-40 650 L600 150" stroke="'+palette[1]+'" stroke-opacity=".25" stroke-width="95"/><circle cx="260" cy="340" r="200" fill="none" stroke="'+palette[1]+'" stroke-width="9" opacity=".5"/><text x="50%" y="75" text-anchor="middle" fill="'+palette[1]+'" font-family="Arial" font-size="28" font-weight="900">VLADYERIK · RETRO</text><g font-family="Arial">'+text+'</g><text x="50%" y="630" text-anchor="middle" fill="'+palette[1]+'" font-family="Arial" font-size="25" font-weight="900">★ ARCADE COLLECTION ★</text></svg>';
  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
+function relatedArtworkCandidates(item){
+ const title=cleanName(item.file.name).toLowerCase();
+ const related={
+  'street fighter ii the world warrior':['Super Street Fighter II - The New Challengers','Street Fighter II - The World Warrior','Street Fighter II Turbo - Hyper Fighting'],
+  '1200 in 1':['Super Mario Bros.','Super Mario Bros. 3'],
+  'sonic the hedgehog 4':['Sonic the Hedgehog','Sonic the Hedgehog 2'],
+  'mortal kombat 3':['Ultimate Mortal Kombat 3','Mortal Kombat 3']
+ };
+ const names=related[title]||[];
+ const output=[];
+ const systems=[item.info?.core,'snes','segaMD','nes'].filter((x,i,a)=>x&&a.indexOf(x)===i&&thumbnailSystems[x]);
+ for(const name of names)for(const system of systems)for(const type of ['Named_Boxarts','Named_Titles','Named_Snaps'])for(const region of [' (USA)',' (Europe)',' (World)','']){
+  output.push({url:'https://thumbnails.libretro.com/'+encodeURIComponent(thumbnailSystems[system])+'/'+type+'/'+encodeURIComponent(name+region)+'.png',system,type:'related'});
+ }
+ return output;
+}
+function reuseRelatedCover(item){
+ const title=cleanName(item.file.name).toLowerCase();
+ const group=title.includes('street fighter')?'street fighter':title.includes('sonic')?'sonic':title.includes('mortal kombat')?'mortal kombat':title.includes('mario')||title.includes('1200 in 1')?'mario':null;
+ if(!group)return null;
+ const other=entries.find(x=>x!==item&&x.cover&&!x.cover.startsWith('data:image/svg')&&((group==='mario'&&(cleanName(x.file.name).toLowerCase().includes('mario')))||(group!=='mario'&&cleanName(x.file.name).toLowerCase().includes(group))));
+ return other?{url:other.cover,system:other.info?.core,type:'related'}:null;
+}
 function applyCover(item){
  if(!item||item.searching||item.coverSource?.type==='custom')return;
  const key=coverKey(item),cached=coverCache.get(key);
  if(cached){item.cover=cached.url;item.coverSource=cached;render();return;}
- const candidates=imageCandidates(item);
- item.cover=gameArtwork(item);item.searching=true;render();
+ const related=reuseRelatedCover(item);const candidates=[...relatedArtworkCandidates(item),...imageCandidates(item)];
+ item.cover=related?.url||gameArtwork(item);item.coverSource=related||null;item.searching=true;render();
  let next=0,done=false,failed=0;
  // Search in parallel: avoid hundreds of serial requests delaying the whole library.
  const workers=Math.min(10,candidates.length);
  const probe=()=>{
   if(done||!entries.includes(item))return;
-  if(next>=candidates.length){failed++;if(failed>=workers){item.searching=false;render();}return;}
+  if(next>=candidates.length){failed++;if(failed>=workers){item.searching=false;const fallback=reuseRelatedCover(item);if(fallback){item.cover=fallback.url;item.coverSource=fallback;saveArt(item);}render();}return;}
   const candidate=candidates[next++],img=new Image();
   img.onload=()=>{
    if(done||!entries.includes(item))return;
