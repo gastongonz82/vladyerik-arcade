@@ -78,7 +78,57 @@ header{align-items:center;min-height:80px}header>div:first-child{display:flex;al
 #featureArt{position:relative;padding:0!important}#featureArt img{display:block;width:100%;height:100%;max-width:none;max-height:none;object-fit:cover!important;object-position:center;padding:0!important;transform:none!important;transition:none!important}#featured:hover #featureArt img{transform:none!important}
 /* Selección por teclado o joystick con la misma animación que hover */
 .romcard.selected,.romcard:focus-visible{transform:translateY(-7px) scale(1.015);border-color:#ffdf70;box-shadow:0 14px 32px #0009,0 0 18px #ffce4270,0 0 0 2px #ffcf42!important;z-index:2}.romcard.selected .romart img,.romcard:focus-visible .romart img{transform:scale(1.055);filter:drop-shadow(0 12px 16px #000b)}.romcard.selected .romart:after,.romcard:focus-visible .romart:after{transform:translateX(115%) rotate(10deg)}@media(prefers-reduced-motion:reduce){.romcard.selected,.romcard:focus-visible{transform:none}.romcard.selected .romart img,.romcard:focus-visible .romart img{transform:none}}
-.tabs button.keyboard-selected{background:linear-gradient(#ffe889,#ffbd35)!important;color:#101a35!important;border-color:#ffda56!important;box-shadow:0 0 0 3px #ffd45166,0 0 24px #ffcd4b55;transform:translateY(-2px)}.tabs button{transition:background .18s,transform .18s,box-shadow .18s}@media(prefers-reduced-motion:reduce){.tabs button.keyboard-selected{transform:none}}.feature-buttons button.keyboard-selected{outline:3px solid #ffda57!important;outline-offset:4px;box-shadow:0 0 0 6px #ffce4430,0 0 24px #ffce4480!important;transform:translateY(-3px);filter:brightness(1.13)}.feature-buttons button{transition:transform .18s,box-shadow .18s,filter .18s}@media(prefers-reduced-motion:reduce){.feature-buttons button.keyboard-selected{transform:none}}#system.keyboard-selected{outline:3px solid #ffcf42;outline-offset:4px;box-shadow:0 0 20px #ffcf4277}.topbar .keyboard-selected,.collection-controls .keyboard-selected{outline:3px solid #ffcf42!important;outline-offset:3px;box-shadow:0 0 22px #ffcf4277!important;filter:brightness(1.2)}.topbar .add-games.keyboard-selected{border-radius:12px}</style></head><body><main>
+.tabs button.keyboard-selected{background:linear-gradient(#ffe889,#ffbd35)!important;color:#101a35!important;border-color:#ffda56!important;box-shadow:0 0 0 3px #ffd45166,0 0 24px #ffcd4b55;transform:translateY(-2px)}.tabs button{transition:background .18s,transform .18s,box-shadow .18s}@media(prefers-reduced-motion:reduce){.tabs button.keyboard-selected{transform:none}}.feature-buttons button.keyboard-selected{outline:3px solid #ffda57!important;outline-offset:4px;box-shadow:0 0 0 6px #ffce4430,0 0 24px #ffce4480!important;transform:translateY(-3px);filter:brightness(1.13)}.feature-buttons button{transition:transform .18s,box-shadow .18s,filter .18s}@media(prefers-reduced-motion:reduce){.feature-buttons button.keyboard-selected{transform:none}}#system.keyboard-selected{outline:3px solid #ffcf42;outline-offset:4px;box-shadow:0 0 20px #ffcf4277}.topbar .keyboard-selected,.collection-controls .keyboard-selected{outline:3px solid #ffcf42!important;outline-offset:3px;box-shadow:0 0 22px #ffcf4277!important;filter:brightness(1.2)}.topbar .add-games.keyboard-selected{border-radius:12px}
+/* VLADYERIK RETRO — premium visual v22. Estilos únicamente: conserva estructura y navegación. */
+body{background:radial-gradient(ellipse 70% 42% at 15% -8%,#164a9c99,transparent 75%),radial-gradient(ellipse 70% 40% at 95% 22%,#53218555,transparent 75%),linear-gradient(145deg,#071333,#080d25 58%,#0d0b2d);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.19;background-image:radial-gradient(#66baff 1px,transparent 1px);background-size:29px 29px;mask-image:linear-gradient(#000,transparent 85%)}
+main{position:relative;z-index:1}
+header{position:relative;border-bottom:1px solid #529bff66;padding-bottom:21px}
+header:after{content:"";position:absolute;left:0;bottom:-2px;width:190px;height:3px;border-radius:8px;background:linear-gradient(90deg,#26dcff,#ffdb65,transparent);box-shadow:0 0 16px #38d9ff77}
+header h1{background:linear-gradient(100deg,#58edff 3%,#fce26a 47%,#ffbd36 85%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 4px 10px #00baff2e);letter-spacing:.018em}
+.topbar .btn,.add-games{transition:transform .22s ease,box-shadow .22s ease,filter .22s ease}
+.topbar .btn:hover,.add-games:hover{transform:translateY(-3px);box-shadow:0 9px 26px #25c8ff45;filter:brightness(1.1)}
+.add-games{box-shadow:0 5px 0 #8c6426,0 0 16px #ffcb4933}
+.tabs{padding:12px 12px 15px;margin:17px 0 18px;background:linear-gradient(110deg,#101f50c9,#10123ac9);border:1px solid #4b70b76b;border-radius:18px;box-shadow:inset 0 1px #ffffff12}
+.tabs button{transition:transform .2s ease,background .2s ease,box-shadow .2s ease;border-radius:11px}
+.tabs button:hover{transform:translateY(-3px);box-shadow:0 7px 16px #0006,0 0 15px #55caff33}
+.tabs button.active{background:linear-gradient(#ffe785,#ffc43e);box-shadow:0 4px 0 #9b6a23,0 0 17px #ffce4455}
+#gameCount{letter-spacing:.06em}
+#featured{isolation:isolate;position:relative;border:1px solid #5aaeff;border-radius:26px;background:radial-gradient(ellipse at 85% 15%,#6a31974a,transparent 52%),radial-gradient(ellipse at 10% 80%,#256cbd45,transparent 65%),linear-gradient(125deg,#173774,#121e4c 56%,#24143f);box-shadow:0 24px 60px #020615b8,0 0 27px #228bff2b,inset 0 1px #ffffff40;transition:border-color .25s,box-shadow .25s}
+#featured:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(110deg,transparent 35%,#ffffff0b 51%,transparent 66%);z-index:-1}
+#featured:after{content:"";position:absolute;inset:auto 3% 0;height:2px;width:50%;border-radius:4px;pointer-events:none;background:linear-gradient(90deg,transparent,#38e3ff9c,#ffdc6e9c,transparent)}
+#featureArt{position:relative;border:1px solid #6ebaff88;border-radius:19px;box-shadow:0 15px 35px #0009,0 0 22px #25bfff2a,inset 0 0 30px #050b23;overflow:hidden;background:radial-gradient(ellipse at center,#284e98,#081332)}
+#featureArt:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 0 22px #0006}
+#featureArt img{object-fit:cover!important;transform:none!important;transition:none!important;filter:none!important}
+#featured:hover #featureArt img{transform:none!important}
+#featureSystem{border-color:#35caff99;background:#0b3659;color:#a6f4ff;box-shadow:0 0 14px #26d9ff1f}
+#featureName{color:#f9faff;text-shadow:0 4px 25px #020722,0 0 28px #a9c9ff17}
+#featureDescription{color:#c9d8ff}
+.feature-buttons button{transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
+.feature-buttons button:hover{transform:translateY(-3px);box-shadow:0 8px 20px #0007,0 0 16px #45caff33}
+#start{box-shadow:0 5px 0 #926522,0 0 17px #ffd45a33}
+#start:hover:not(:disabled){box-shadow:0 6px 0 #926522,0 0 25px #ffd45a77}
+#collection{margin-top:35px}
+.collection-title{border-bottom:1px solid #478fe57a;padding-bottom:16px}
+.collection-title h2{color:#ffe179;text-shadow:0 0 20px #ffcb4b33}
+.collection-controls .view-toggle{border-color:#4b90d8;box-shadow:0 0 15px #1d7bff1c}
+#library{gap:clamp(12px,1.3vw,22px)}
+.romcard{isolation:isolate;position:relative;border:1px solid #5689cf;border-radius:18px;background:linear-gradient(160deg,#213d79,#111d41 70%);box-shadow:0 10px 22px #0008,inset 0 1px #ffffff1c;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s}
+.romcard:before{content:"";position:absolute;inset:0 0 auto;height:55%;pointer-events:none;z-index:2;background:linear-gradient(120deg,transparent 22%,#ffffff00 40%,#ffffff16 49%,#ffffff00 60%);transform:translateX(-180%);transition:transform .55s ease}
+.romcard:hover:before,.romcard.selected:before,.romcard:focus-visible:before{transform:translateX(180%)}
+.romcard:hover,.romcard.selected,.romcard:focus-visible{transform:translateY(-7px) scale(1.015);border-color:#ffe07b;box-shadow:0 17px 32px #000b,0 0 0 2px #ffce4233,0 0 22px #ffcc4266}
+.romart{background:radial-gradient(ellipse at 50% 35%,#365da6,#101a3e 80%);overflow:hidden}
+.romart img{transition:transform .3s ease,filter .3s ease;filter:drop-shadow(0 7px 11px #0008)}
+.romcard:hover .romart img,.romcard.selected .romart img,.romcard:focus-visible .romart img{transform:scale(1.045);filter:drop-shadow(0 10px 16px #000b)}
+.romtext{border-top:1px solid #6499e638}
+.romtext strong{color:#f9fbff}
+#library.console-view{scrollbar-color:#ffcf4e #142453}
+#library.console-view .romcard{scroll-snap-align:center}
+#selectionPanel{padding:14px 16px;border:1px solid #385b9a70;border-radius:15px;background:#0b19375e}
+#systemPanel{border-color:#518bd3;box-shadow:0 12px 30px #0006}
+@media(max-width:750px){.tabs{padding:9px;gap:6px}#featured{border-radius:20px}#featureArt{border-radius:14px}.retro-promo{margin:0}}
+@media(prefers-reduced-motion:reduce){.romcard,.romart img,.romcard:before,.tabs button,.feature-buttons button,.topbar .btn,.add-games{transition:none!important}.romcard:before{display:none}.romcard:hover,.romcard.selected,.romcard:focus-visible,.tabs button:hover,.feature-buttons button:hover{transform:none!important}}
+</style></head><body><main>
 <header><div><h1>🕹️ RETRO ARCADE</h1></div><div class="topbar"><label for="rom" class="add-games">＋ AGREGAR JUEGOS</label><input id="rom" type="file" multiple accept=".nes,.fds,.sfc,.smc,.fig,.md,.gen,.smd,.bin,.rom,.gb,.gbc,.gba,.sms,.gg,.z64,.n64,.v64,.zip"><a class="btn" href="./">← VOLVER AL ARCADE</a></div></header>
 <nav class="tabs" aria-label="Filtros de juegos"><button class="active" data-filter="all">▦ TODOS</button><button data-filter="favorites">★ FAVORITOS</button><button data-filter="recent">◷ RECIENTES</button><button data-filter="nes">NES</button><button data-filter="snes">SUPER NINTENDO</button><button data-filter="segaMD">SEGA</button><button data-filter="other">OTRAS</button><span id="gameCount">0 JUEGOS CARGADOS</span></nav>
 <section id="featured" aria-label="Juego destacado"><div id="featureArt">🎮</div><div><div id="featureSystem">TU CONSOLA RETRO</div><div id="featureName">ELEGÍ TU PRÓXIMA AVENTURA</div><p id="featureDescription" class="hint">Agregá juegos desde tu computadora o pendrive para comenzar.</p><div class="feature-buttons"><button id="start" disabled>▶ JUGAR AHORA</button><button id="favButton" disabled>☆ FAVORITO</button><button id="settingsToggle" type="button">⚙ OPCIONES</button></div></div></section>
