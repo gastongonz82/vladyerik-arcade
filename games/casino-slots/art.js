@@ -1,0 +1,9 @@
+const symbols={"dragon": ["dragon", "flame", "ruby", "swords", "shield", "crown", "star"], "atlantis": ["trident", "dolphin", "shell", "coral", "gem", "octopus", "starfish"], "aztec": ["mask", "sun", "jaguar", "jade", "parrot", "gem", "flower"], "diamonds": ["diamond", "ring", "crown", "sapphire", "topaz", "star", "heart"], "west": ["hat", "horse", "badge", "moneybag", "bell", "cactus", "target"], "pharaoh": ["crown", "diamond", "scarab", "cobra", "vase", "sun", "falcon"], "fortune": ["moneybag", "seven", "bell", "clover", "crown", "diamond", "star"]};
+export function art(game,index){const list=symbols[game]||symbols.pharaoh;const key=list[((index%7)+7)%7];return "../casino-slots/assets/"+(game==="fortune"?"mega-fortune":game+"-premium")+"/"+key+".webp"}
+const labels={dragon:["Dragón","Llama","Rubí","Espadas","Escudo","Corona","Estrella"],atlantis:["Tridente","Delfín","Concha","Coral","Aguamarina","Pulpo","Estrella de mar"],aztec:["Máscara","Sol","Jaguar","Jade","Guacamayo","Esmeralda","Flor"],diamonds:["Diamante","Anillo","Corona","Zafiro","Topacio","Estrella","Amatista"],west:["Sombrero","Caballo","Insignia","Bolsa de monedas","Campana","Cactus","Blanco"],pharaoh:["Corona","Gema","Escarabajo","Cobra","Vasija","Sol","Halcón"],fortune:["Bolsa de monedas","Siete","Campana","Trébol","Corona","Diamante","Estrella"]};
+export function symbolNode(game,index){const img=document.createElement("img");img.src=art(game,index);img.alt=(labels[game]||labels.pharaoh)[((index%7)+7)%7];img.draggable=false;img.className="slot-art";return img}
+// Warm only this cabinet's seven images; shared cached URLs serve both resting and spinning reels.
+if(typeof Image!=="undefined"&&typeof document!=="undefined"){
+ const game=document.body?.dataset.game;
+ if(symbols[game])symbols[game].forEach((_,i)=>{const img=new Image();img.decoding="async";img.src=art(game,i)});
+}
