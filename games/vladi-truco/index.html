@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es-AR">
+<head><base href="https://vladyerik.com/vladi-truco/">
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#082f26"><meta name="description" content="Truco argentino mano a mano con Don Truco. Baraja española, envido, flor y dos mesas de pulpería.">
+ <title>Vladi Truco Argentino online | VLADYERIK</title>
+<link rel="canonical" href="https://vladyerik.com/vladi-truco/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VLADYERIK">
+<meta property="og:title" content="Vladi Truco Argentino online | VLADYERIK">
+<meta property="og:description" content="Truco argentino mano a mano con Don Truco. Baraja española, envido, flor y dos mesas de pulpería.">
+<meta property="og:url" content="https://vladyerik.com/vladi-truco/">
+<meta property="og:image" content="https://vladyerik.com/vladi-truco/assets/cover.webp?v=20261011">
+<meta property="og:image:alt" content="Portada de VLADI TRUCO en VLADYERIK">
+<meta name="twitter:card" content="summary_large_image">
+ <link rel="preload" as="image" href="assets/pulperia.webp"><link rel="stylesheet" href="style.css?v=20261011-fixed-corners">
+</head>
+<body>
+<audio id="tangoAudio" src="assets/audio/por-una-cabeza.mp3" preload="none" loop hidden></audio>
+<main id="game" class="scene" aria-label="VLADI TRUCO — Mesa argentina">
+ <header class="hud">
+  <button id="menu" class="icon menu-button" aria-label="Abrir menú" title="Menú">☰</button>
+  <div class="brand" aria-label="Vladi Truco, edición argentina"><span>VLADI <i class="flag" aria-hidden="true">☀</i></span><strong>TRUCO</strong><small>EL VERDADERO TRUCO ARGENTINO</small><div class="flourish" aria-hidden="true">✧ ━ ❦ ━ ✧</div></div>
+  <div class="rival"><img class="gaucho" src="assets/don-truco.webp" alt="Don Truco, gaucho argentino"><div class="rival-name"><strong>DON TRUCO</strong><span id="rivalLevel">EL PAISANO · NORMAL</span></div></div>
+  <section class="scorebook" aria-label="Marcador tradicional"><div class="rings" aria-hidden="true"></div><div class="scores"><div><span>VOS</span><strong id="humanScore">0</strong><div id="humanTallies" class="tallies"></div></div><div><span>DON TRUCO</span><strong id="aiScore">0</strong><div id="aiTallies" class="tallies"></div></div></div><small id="target">A 30 PUNTOS</small></section>
+  <nav class="tools" aria-label="Audio y ajustes"><button class="icon" id="musicToggle" aria-label="Silenciar música" title="Música">♫</button><button class="icon" id="voiceToggle" aria-label="Silenciar voces" title="Voces">◖))</button><button class="icon" id="settingsButton" aria-label="Ajustar sonido y partida" title="Ajustes">⚙</button></nav>
+ </header>
+ <section class="playfield" aria-label="Mesa de juego">
+  <div id="speech" class="speech" aria-live="polite">¡Bienvenido, paisano!</div>
+  <div id="opponent" class="hand opponent" aria-label="Cartas de Don Truco"></div>
+  <div class="deck" aria-hidden="true"><img src="assets/cards/back.webp" alt=""></div>
+  <div class="table-status"><span id="handLabel">MANO A MANO</span><div id="trickMarks" class="trick-marks" aria-label="Bazas"></div><span id="trucoLabel">1 TANTO EN JUEGO</span></div>
+  <div id="played" class="played" aria-label="Cartas jugadas"></div>
+  <div id="mine" class="hand mine" aria-label="Tus cartas"></div>
+  <div id="handHint" class="hand-hint">Elegí tu carta</div>
+  <div id="notice" class="notice" role="status" aria-live="polite">Una mesa, dos paisanos. Que gane el mejor.</div>
+ </section>
+ <section class="command-bar" aria-label="Cantos y acciones">
+  <div class="player-plaque"><span>TU MANO</span><strong>VOS <b id="playerPoints">0</b></strong><small id="envidoHint">Tus tantos</small></div>
+  <div id="calls" class="calls"></div>
+  <div class="don-plaque"><span>DON TRUCO</span><strong id="donPoints">0</strong><small id="donStatus">En la mesa</small></div>
+  <div class="bottom-actions"><button id="tableButton" class="utility">♧ <span>CAMBIAR MESA</span></button><button id="playButton" class="play-button" disabled>JUGAR CARTA</button><button id="foldButton" class="fold-button" disabled>IR AL MAZO</button><button id="rulesButton" class="utility">♧ <span>VER REGLAS</span></button></div>
+ </section>
+</main>
+<dialog id="welcome" class="modal welcome" aria-labelledby="welcomeTitle"><div class="dialog-frame">
+ <div class="edition">EDICIÓN ARGENTINA · MANO A MANO</div><h1 id="welcomeTitle">VLADI <strong>TRUCO</strong></h1><div class="flourish" aria-hidden="true">✧ ━ ❦ ━ ✧</div>
+ <p id="welcomeText">Sentate a la mesa de Don Truco.<br>Acá las cartas se juegan y los tantos se cantan.</p>
+ <div class="options-grid"><label>EL PARTIDO<select id="length"><option value="30">30 puntos · malas y buenas</option><option value="15">15 puntos · chico</option></select></label><label>EL RIVAL<select id="difficulty"><option value="easy">Aprendiz · Fácil</option><option value="normal" selected>Paisano · Normal</option><option value="hard">Taita · Difícil</option></select></label><label>LA MESA<select id="theme"><option value="classic">Clásica argentina</option><option value="premium">VLADYERIK premium</option></select></label><label>FALTA ENVIDO<select id="falta"><option value="partido">En malas, el partido</option><option value="resto">Siempre lo que falta al puntero</option></select></label></div>
+ <label class="check-label"><input type="checkbox" id="flor"> Jugar con flor <small>3 por flor · contraflor y al resto</small></label>
+ <button id="begin" class="play-button">JUGAR CONTRA DON TRUCO</button><a href="https://vladi-truco-online.sappyclock7.chatgpt.site/?lobby=1" style="display:block;margin-top:14px;padding:14px 18px;border:1px solid #cba45f;border-radius:10px;background:linear-gradient(#254f65,#102b3e);color:#f5e2ae;font-weight:bold;text-decoration:none">JUGAR ONLINE · 2, 4 O 6 JUGADORES</a><small class="welcome-foot">40 naipes españoles · tres dificultades · sin apuestas de dinero</small>
+ <noscript>Este juego necesita JavaScript habilitado para funcionar.</noscript>
+</div></dialog>
+<dialog id="settings" class="modal" aria-labelledby="settingsTitle"><div class="dialog-frame compact"><button class="close" data-close="settings" aria-label="Cerrar ajustes">×</button><h2 id="settingsTitle">La pulpería</h2><p>Tu mesa, a tu gusto.</p>
+ <label class="volume-label">Música · Por una cabeza <output id="musicOutput"></output><input id="musicVolume" type="range" min="0" max="100" value="25"></label>
+ <label class="volume-label">Voces · cantos <output id="voiceOutput"></output><input id="voiceVolume" type="range" min="0" max="100" value="85"></label>
+ <label class="volume-label">Efectos · naipes <output id="fxOutput"></output><input id="fxVolume" type="range" min="0" max="100" value="75"></label>
+ <p id="voiceStatus" class="fine"></p><div class="menu-actions"><button id="fullScreen">PANTALLA COMPLETA</button><button id="newGame">NUEVA PARTIDA</button><button id="resume">SEGUIR JUGANDO</button><a href="../arcade.html">VOLVER AL ARCADE</a></div><small>La partida se pausa mientras este menú está abierto.</small>
+</div></dialog>
+<dialog id="rules" class="modal" aria-labelledby="rulesTitle"><div class="dialog-frame rules-frame"><button class="close" data-close="rules" aria-label="Cerrar reglas">×</button><h2 id="rulesTitle">Así se juega, paisano</h2>
+ <div class="rules-content"><h3>La mano</h3><p>Se reparten tres cartas por jugador. Mano y reparto alternan. Ganás dos de las tres bazas; las cartas jugadas quedan sobre el paño. En una parda vuelve a salir quien abrió esa baza. Primera ganada y segunda parda: gana la primera. Primera parda: decide la segunda. Dos primeras pardas: decide la tercera; tres pardas: gana mano. Primera y segunda repartidas y tercera parda: gana la primera.</p>
+ <h3>La jerarquía</h3><p>1 de espadas › 1 de bastos › 7 de espadas › 7 de oros › todos los 3 › todos los 2 › 1 de oros/copas › 12 › 11 › 10 › 7 de bastos/copas › 6 › 5 › 4.</p><div class="rank-cards"><img src="assets/cards/espada-1.webp" alt="Ancho de espadas"><img src="assets/cards/basto-1.webp" alt="Ancho de bastos"><img src="assets/cards/espada-7.webp" alt="Siete de espadas"><img src="assets/cards/oro-7.webp" alt="Siete de oros"></div>
+ <h3>Truco y sus respuestas</h3><p>Sin canto: 1 tanto. Truco querido: 2; retruco: 3; vale cuatro: 4. Si no querés: 1, 2 o 3, respectivamente. Sólo quien aceptó puede subir. «Quiero retruco» y «Quiero vale cuatro» aceptan el canto anterior y suben. Ir al mazo concede el valor vigente.</p>
+ <h3>El envido está primero</h3><p>Podés iniciarlo antes de jugar tu primera carta y antes de cantar o aceptar truco, aunque el rival ya haya jugado. También podés responder al primer truco con envido: ese truco espera y se responde después. Dos del mismo palo suman sus valores + 20; las figuras valen 0. Sin pareja: tu carta más alta. Sin flor, tres iguales usan las dos mejores. En empate gana mano. Envido: 2; doble envido: 4; real envido suma 3. La cadena máxima de esta mesa es envido, envido, real envido, falta envido. Rechazar el primer canto da 1; rechazar una subida concede lo anterior, sin agregar 1.</p>
+ <h3>Falta envido · regla de esta mesa</h3><p id="faltaRule">A 30: si ambos están en malas, vale el partido; si uno llegó a buenas, lo que le falta al puntero para 30. A 15: lo que le falta al puntero para 15. También podés elegir la variante «siempre lo que falta al puntero» antes de jugar.</p>
+ <h3>Flor opcional</h3><p>Tres del mismo palo: flor obligatoria antes de jugar o de otro canto. Bloquea el envido. Una flor sola vale 3. Si ambos tienen flor, se comparan las tres cartas + 20 (máximo 38): 3 por cada flor, total 6. Contraflor vale 6; contraflor al resto, lo que le falta al puntero + 6. «Con flor me achico» entrega 4. El empate favorece a mano. Los tantos se anotan antes del truco; si completan el partido, no se juega el resto de la mano.</p>
+ <h3>Controles</h3><p>Tocá una carta para elegirla y «Jugar carta» para bajarla. En PC: 1, 2 y 3 seleccionan; Enter juega; Escape pausa. Los controles se habilitan sólo cuando el canto es legal. Usá ajustes para cambiar los tres volúmenes por separado.</p>
+ <h3>Arte y derechos</h3><p>Naipes 1–7 y reverso: Basquetteur / Wikimedia Commons, vectorización de gjenkins20. Conversión a WebP. Figuras 10–12: ilustraciones originales generadas para este proyecto. <a href="https://github.com/gjenkins20/spanish-playing-cards-svg" target="_blank" rel="noopener">Fuente</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener">CC BY-SA 3.0</a>. Ambientación y Don Truco: recursos generados para este proyecto. Música: «Por una cabeza», arreglo para cuerdas de Gregor Quendel / <a href="https://www.classicals.de/gardel-por-una-cabeza" target="_blank" rel="noopener">Classicals.de</a>, <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a>. Efectos originales. <a href="ATTRIBUTIONS.md" target="_blank">Créditos completos</a>.</p><p>Reglas contrastadas con <a href="https://www.pagat.com/put/truco_ar.html" target="_blank" rel="noopener">Pagat</a> y reglamentos argentinos; las variantes elegidas se explican arriba.</p></div><button id="closeRules">VOLVER A LA MESA</button>
+</div></dialog>
+<script type="module" src="app.js?v=20261011-mobile-envido"></script>
+<script data-arcade-gamepad="4">(()=>{'use strict';const type="cards";let held=new Set(),old=[],idx=-1,next=0;const map={left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',action:type==='drive'?' ':type==='runner'?'ArrowUp':'Enter',downAction:'ArrowDown'};function emit(k,t){dispatchEvent(new KeyboardEvent(t,{key:k,code:k===' '?'Space':k==='Enter'?'Enter':k,bubbles:true,cancelable:true}))}function choices(){return [...document.querySelectorAll('button,[role="button"],[tabindex="0"]')].filter(e=>e.getClientRects().length&&!e.disabled)}function focus(d){const a=choices();if(!a.length)return;idx=(idx+d+a.length)%a.length;a[idx].focus({preventScroll:true});a[idx].scrollIntoView({block:'nearest'})}function action(){const a=choices();const target=type==='slots'?a.find(e=>/girar|spin|tirar/i.test(e.textContent||'')):null;(target||a[Math.max(0,idx)])?.click()}function tick(t){const p=[...(navigator.getGamepads?.()||[])].find(Boolean),now=new Set();if(p){const b=i=>!!p.buttons[i]?.pressed,x=p.axes[0]||0,y=p.axes[1]||0;if(b(14)||x<-.45)now.add('left');if(b(15)||x>.45)now.add('right');if(b(12)||y<-.45)now.add('up');if(b(13)||y>.45)now.add('down');if(b(0)||b(7))now.add('action');const states=[b(0),b(1),b(4),b(8),b(9)];if(states[3]&&!old[3]){if(parent!==window)parent.postMessage({type:'VLADYERIK_ARCADE_EXIT'},location.origin);else location.assign('https://gastongonz82.github.io/vladyerik-arcade/');return}if(states[4]&&!old[4]){const start=choices().find(e=>/jugar|iniciar|start|comenzar/i.test(e.textContent||''));start?start.click():action()}if(states[2]&&!old[2]){const pause=document.querySelector('#pauseBtn,#pause');pause?pause.click():emit('p','keydown')}if((type==='cards'||type==='slots')&&states[0]&&!old[0])action();if(type==='cards'||type==='slots'){const dir=now.has('left')||now.has('up')?-1:now.has('right')||now.has('down')?1:0;if(dir&&t>=next){focus(dir);next=t+230}else if(!dir)next=0}else{for(const k of held)if(!now.has(k))emit(map[k],'keyup');for(const k of now)if(!held.has(k))emit(map[k],'keydown');held=now}old=states}requestAnimationFrame(tick)}requestAnimationFrame(tick)})();</script></body></html>
