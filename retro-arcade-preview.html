@@ -68,8 +68,8 @@ h1{font-size:clamp(26px,3.5vw,49px);margin:0;font-style:italic}
 #settingsToggle{background:#142447}
 @media(max-width:750px){#featureArt{height:210px}#library{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.romart{height:195px}.romtext{min-height:100px}#featured{gap:17px}}
 @media(prefers-reduced-motion:reduce){.romcard{transition:none}.romcard:hover{transform:none}}
-</style></head><body><main>
-<header><div><div style="letter-spacing:.25em;color:#7ce7ff;font-weight:900;font-size:12px">VLADYERIK · ARCADE 3.0</div><h1>🕹️ RETRO ARCADE</h1></div><div class="topbar"><label for="rom" class="add-games">＋ AGREGAR JUEGOS</label><input id="rom" type="file" multiple accept=".nes,.fds,.sfc,.smc,.fig,.md,.gen,.smd,.bin,.rom,.gb,.gbc,.gba,.sms,.gg,.z64,.n64,.v64,.zip"><a class="btn" href="arcade-console-preview.html">← VOLVER AL ARCADE</a></div></header>
+header{align-items:center;min-height:80px}header>div:first-child{display:flex;align-items:center}header h1{margin:0}.topbar{display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:nowrap}.topbar .add-games{display:inline-flex;align-items:center;justify-content:center;margin:0;white-space:nowrap;height:45px}.topbar .btn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;height:45px}@media(max-width:600px){.topbar{flex-wrap:wrap;justify-content:flex-start}header{gap:12px}}</style></head><body><main>
+<header><div><h1>🕹️ RETRO ARCADE</h1></div><div class="topbar"><label for="rom" class="add-games">＋ AGREGAR JUEGOS</label><input id="rom" type="file" multiple accept=".nes,.fds,.sfc,.smc,.fig,.md,.gen,.smd,.bin,.rom,.gb,.gbc,.gba,.sms,.gg,.z64,.n64,.v64,.zip"><a class="btn" href="arcade-console-preview.html">← VOLVER AL ARCADE</a></div></header>
 <nav class="tabs" aria-label="Filtros de juegos"><button class="active" data-filter="all">▦ TODOS</button><button data-filter="favorites">★ FAVORITOS</button><button data-filter="recent">◷ RECIENTES</button><button data-filter="nes">NES</button><button data-filter="snes">SUPER NINTENDO</button><button data-filter="segaMD">SEGA</button><button data-filter="other">OTRAS</button><span id="gameCount">0 JUEGOS CARGADOS</span></nav>
 <section id="featured" aria-label="Juego destacado"><div id="featureArt">🎮</div><div><div id="featureSystem">TU CONSOLA RETRO</div><div id="featureName">ELEGÍ TU PRÓXIMA AVENTURA</div><p id="featureDescription" class="hint">Agregá juegos desde tu computadora o pendrive para comenzar.</p><div class="feature-buttons"><button id="start" disabled>▶ JUGAR AHORA</button><button id="favButton" disabled>☆ FAVORITO</button><button id="settingsToggle" type="button">⚙ OPCIONES</button></div></div></section>
 <div id="systemPanel"><label for="system">CONSOLA DEL JUEGO SELECCIONADO</label><select id="system"><option value="auto">✨ Detectar automáticamente</option><option value="nes">Nintendo NES</option><option value="snes">Super Nintendo</option><option value="segaMD">Sega Mega Drive</option><option value="gb">Game Boy</option><option value="gbc">Game Boy Color</option><option value="gba">Game Boy Advance</option><option value="segaMS">Sega Master System</option><option value="segaGG">Game Gear</option><option value="n64">Nintendo 64</option><option value="arcade">Arcade FBNeo</option></select><p id="detected" class="hint" aria-live="polite"></p><p id="romHelp">Si el juego no inicia, verificá su consola. Algunos ROM arcade no son compatibles con el motor web.</p></div>
@@ -100,52 +100,67 @@ function imageCandidates(item){
  const aliases={
  'Super Mario Bros':['Super Mario Bros.','Super Mario Bros'],
  'Super Mario Bros 3':['Super Mario Bros. 3'],
- 'Street Fighter II The World Warrior':['Street Fighter II - The World Warrior'],
+ 'Street Fighter II The World Warrior':['Street Fighter II - The World Warrior','Street Fighter II - The World Warrior (USA)'],
  'Super Street Fighter II The New Challengers':['Super Street Fighter II - The New Challengers'],
- 'Sonic the Hedgehog 4':['Sonic the Hedgehog 4','Sonic the Hedgehog'],
- '1200 in 1':['1200-in-1','1200 in 1'],
+ 'Sonic the Hedgehog 4':['Sonic the Hedgehog 4','Sonic the Hedgehog','Sonic The Hedgehog'],
+ '1200 in 1':['1200-in-1','1200 in 1','Super Mario Bros.'],
  'Mortal Kombat 3':['Mortal Kombat 3'],
  'crusnusa':["Cruis'n USA"]
  };
- const seeds=[...(aliases[title]||[]),title];
- const systems=[item.info?.core,'snes','segaMD','nes','gba','gbc','gb','n64','arcade'].filter((v,i,a)=>v&&a.indexOf(v)===i&&thumbnailSystems[v]);
+ const seeds=[...new Set([...(aliases[title]||[]),title,item.file.name.replace(/\.[^.]+$/,'')])];
+ const systems=[item.info?.core,'snes','segaMD','nes','gba','gbc','gb','n64','segaMS','segaGG'].filter((v,i,a)=>v&&a.indexOf(v)===i&&thumbnailSystems[v]);
  const suffixes=[' (USA)',' (Europe)',' (World)',' (USA, Europe)',' (Japan)',''];
- const types=['Named_Boxarts','Named_Titles','Named_Snaps'];
  const results=[];
  for(const sys of systems){
   const base='https://thumbnails.libretro.com/'+encodeURIComponent(thumbnailSystems[sys])+'/';
-  for(const type of types)for(const seed of seeds){
-   for(const suffix of suffixes){
+  for(const type of ['Named_Boxarts','Named_Titles','Named_Snaps'])
+   for(const seed of seeds)for(const suffix of suffixes){
     const candidate=seed.replace(/\s*\([^)]*\)/g,'').trim()+suffix;
     const safe=candidate.replace(/[&*\/:<>?|"\\]/g,'_');
     results.push({url:base+type+'/'+encodeURIComponent(safe)+'.png',system:sys,type});
    }
-  }
  }
- return results;
+ return [...new Map(results.map(x=>[x.url,x])).values()];
+}
+function gameArtwork(item){
+ const name=cleanName(item.file.name).toUpperCase();
+ const palette=/MARIO/i.test(name)?['#ed423e','#ffbd3c']:/SONIC/i.test(name)?['#1458d8','#35d5ff']:/MORTAL/i.test(name)?['#641d28','#f0b44a']:/STREET FIGHTER/i.test(name)?['#a52d22','#f7ae32']:['#234b9e','#e4bc57'];
+ const lines=name.match(/.{1,17}(?:\s|$)/g)||[name];
+ const text=lines.slice(0,4).map((v,i)=>'<text x="50%" y="'+(210+i*65)+'" text-anchor="middle" font-size="'+(name.length>28?37:49)+'" font-weight="1000" fill="#fff" stroke="#10172d" stroke-width="5" paint-order="stroke">'+v.trim().replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>').join('');
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="520" height="700" viewBox="0 0 520 700"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="'+palette[0]+'"/><stop offset="1" stop-color="#0c1434"/></linearGradient></defs><rect width="520" height="700" fill="url(#g)"/><path d="M-60 500 L520 50 M-40 650 L600 150" stroke="'+palette[1]+'" stroke-opacity=".25" stroke-width="95"/><circle cx="260" cy="340" r="200" fill="none" stroke="'+palette[1]+'" stroke-width="9" opacity=".5"/><text x="50%" y="75" text-anchor="middle" fill="'+palette[1]+'" font-family="Arial" font-size="28" font-weight="900">VLADYERIK · RETRO</text><g font-family="Arial">'+text+'</g><text x="50%" y="630" text-anchor="middle" fill="'+palette[1]+'" font-family="Arial" font-size="25" font-weight="900">★ ARCADE COLLECTION ★</text></svg>';
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 function applyCover(item){
- if(!item||item.cover||item.searching)return;
+ if(!item||item.searching||item.coverSource?.type==='custom')return;
  const key=coverKey(item),cached=coverCache.get(key);
  if(cached){item.cover=cached.url;item.coverSource=cached;render();return;}
  const candidates=imageCandidates(item);
- if(!candidates.length)return;
- item.searching=true;
- let n=0;
- const probe=new Image();probe.referrerPolicy='no-referrer';
- probe.onload=()=>{if(!entries.includes(item))return;const found=candidates[n];item.cover=found.url;item.coverSource=found;item.searching=false;coverCache.set(key,found);render();};
- probe.onerror=()=>{n++;if(n<candidates.length)probe.src=candidates[n].url;else{item.searching=false;render();}};
- probe.src=candidates[0].url;
+ item.cover=gameArtwork(item);item.searching=true;render();
+ let next=0,done=false,failed=0;
+ // Search in parallel: avoid hundreds of serial requests delaying the whole library.
+ const workers=Math.min(10,candidates.length);
+ const probe=()=>{
+  if(done||!entries.includes(item))return;
+  if(next>=candidates.length){failed++;if(failed>=workers){item.searching=false;render();}return;}
+  const candidate=candidates[next++],img=new Image();
+  img.onload=()=>{
+   if(done||!entries.includes(item))return;
+   done=true;item.cover=candidate.url;item.coverSource=candidate;item.searching=false;coverCache.set(key,candidate);render();
+  };
+  img.onerror=probe;
+  img.src=candidate.url;
+ };
+ for(let i=0;i<workers;i++)probe();
 }
 function active(){return entries[selected]||null}
 function currentCore(){const item=active();return !item?null:(system.value==='auto'?item.info?.core:system.value)}
-function render(){library.replaceChildren();$('gameCount').textContent=entries.length+' JUEGO'+(entries.length===1?'':'S')+' CARGADO'+(entries.length===1?'':'S');$('libraryEmpty').hidden=entries.length>0;entries.forEach((item,i)=>{if(filter==='favorites'&&!favoriteKeys.has(coverKey(item)))return;if(filter==='recent'&&!recentKeys.includes(coverKey(item)))return;if(!['all','favorites','recent'].includes(filter)&&((filter==='other'&&['nes','snes','segaMD'].includes(item.info?.core))||(filter!=='other'&&item.info?.core!==filter)))return;const btn=document.createElement('button');btn.type='button';btn.className='romcard'+(i===selected?' selected':'');btn.setAttribute('aria-pressed',String(i===selected));const art=document.createElement('div');art.className='romart';art.textContent=item.searching?'🔎':icons[item.info?.core]||'💾';if(item.cover){const img=document.createElement('img');img.src=item.cover;img.alt='Portada de '+cleanName(item.file.name);img.onerror=()=>{img.remove();item.cover=null};art.append(img);}const tag=document.createElement('small');tag.textContent=item.info?.core?names[item.info.core]:'SIN IDENTIFICAR';art.append(tag);const box=document.createElement('div');box.className='romtext';const title=document.createElement('strong');title.textContent=cleanName(item.file.name);const detail=document.createElement('span');detail.textContent=(item.file.size/1048576).toFixed(1)+' MB'+(favoriteKeys.has(coverKey(item))?'  ·  ★ FAVORITO':'');box.append(title,detail);btn.append(art,box);btn.addEventListener('click',()=>select(i));library.append(btn);});const item=active();const feature=$('featureArt');feature.replaceChildren();if(item?.cover){const pic=document.createElement('img');pic.src=item.cover;pic.alt='Portada de '+cleanName(item.file.name);feature.append(pic)}else feature.textContent=item?(item.searching?'🔎':icons[item.info?.core]||'🎮'):'🎮';$('featureName').textContent=item?cleanName(item.file.name):'ELEGÍ TU PRÓXIMA AVENTURA';$('featureSystem').textContent=item?(names[item.info?.core]||'CONSOLA POR IDENTIFICAR'):'TU CONSOLA RETRO';$('featureDescription').textContent=item?'Tu próxima aventura está lista. Presioná JUGAR AHORA.':'Agregá juegos desde tu computadora o pendrive para comenzar.';$('favButton').disabled=!item;$('favButton').textContent=item&&favoriteKeys.has(coverKey(item))?'★ FAVORITO':'☆ FAVORITO';$('changeCover').disabled=!item;$('retryCover').disabled=!item;$('selectedRom').textContent=item?'🎯 SELECCIONADO: '+cleanName(item.file.name):'Seleccioná un juego de la lista.';detected.textContent=!item?'':item.info?.core?'✓ Detectado: '+names[item.info.core]+' · '+item.info.reason:'⚠ '+(item.info?.reason||'Analizando…');const core=currentCore();start.disabled=!item||!core||(item.info?.blocked&&system.value==='auto');status.textContent=!item?'Agregá ROM y seleccioná un juego.':core?'Listo para jugar con '+names[core]+'.':'Elegí la consola manualmente si conocés el sistema.';}
+function render(){library.replaceChildren();$('gameCount').textContent=entries.length+' JUEGO'+(entries.length===1?'':'S')+' CARGADO'+(entries.length===1?'':'S');$('libraryEmpty').hidden=entries.length>0;entries.forEach((item,i)=>{if(filter==='favorites'&&!favoriteKeys.has(coverKey(item)))return;if(filter==='recent'&&!recentKeys.includes(coverKey(item)))return;if(!['all','favorites','recent'].includes(filter)&&((filter==='other'&&['nes','snes','segaMD'].includes(item.info?.core))||(filter!=='other'&&item.info?.core!==filter)))return;const btn=document.createElement('button');btn.type='button';btn.className='romcard'+(i===selected?' selected':'');btn.setAttribute('aria-pressed',String(i===selected));const art=document.createElement('div');art.className='romart';art.textContent=icons[item.info?.core]||'🎮';if(item.cover){const img=document.createElement('img');img.src=item.cover;img.alt='Portada de '+cleanName(item.file.name);img.onerror=()=>{img.remove();item.cover=null};art.append(img);}const tag=document.createElement('small');tag.textContent=item.info?.core?names[item.info.core]:'SIN IDENTIFICAR';art.append(tag);const box=document.createElement('div');box.className='romtext';const title=document.createElement('strong');title.textContent=cleanName(item.file.name);const detail=document.createElement('span');detail.textContent=(item.file.size/1048576).toFixed(1)+' MB'+(favoriteKeys.has(coverKey(item))?'  ·  ★ FAVORITO':'');box.append(title,detail);btn.append(art,box);btn.addEventListener('click',()=>select(i));library.append(btn);});const item=active();const feature=$('featureArt');feature.replaceChildren();if(item?.cover){const pic=document.createElement('img');pic.src=item.cover;pic.alt='Portada de '+cleanName(item.file.name);feature.append(pic)}else feature.textContent=item?(icons[item.info?.core]||'🎮'):'🎮';$('featureName').textContent=item?cleanName(item.file.name):'ELEGÍ TU PRÓXIMA AVENTURA';$('featureSystem').textContent=item?(names[item.info?.core]||'CONSOLA POR IDENTIFICAR'):'TU CONSOLA RETRO';$('featureDescription').textContent=item?'Tu próxima aventura está lista. Presioná JUGAR AHORA.':'Agregá juegos desde tu computadora o pendrive para comenzar.';$('favButton').disabled=!item;$('favButton').textContent=item&&favoriteKeys.has(coverKey(item))?'★ FAVORITO':'☆ FAVORITO';$('changeCover').disabled=!item;$('retryCover').disabled=!item;$('selectedRom').textContent=item?'🎯 SELECCIONADO: '+cleanName(item.file.name):'Seleccioná un juego de la lista.';detected.textContent=!item?'':item.info?.core?'✓ Detectado: '+names[item.info.core]+' · '+item.info.reason:'⚠ '+(item.info?.reason||'Analizando…');const core=currentCore();start.disabled=!item||!core||(item.info?.blocked&&system.value==='auto');status.textContent=!item?'Agregá ROM y seleccioná un juego.':core?'Listo para jugar con '+names[core]+'.':'Elegí la consola manualmente si conocés el sistema.';}
 function select(i){selected=i;render()}
 input.addEventListener('change',async()=>{const files=[...(input.files||[])];if(!files.length)return;const t=++sequence;let first=entries.length;for(const file of files){if(entries.some(e=>e.file.name===file.name&&e.file.size===file.size))continue;entries.push({file,info:null});}if(selected<0&&entries.length)selected=0;render();for(let i=first;i<entries.length;i++){try{entries[i].info=await detect(entries[i].file)}catch(e){entries[i].info={core:null,reason:'No se pudo analizar; seleccioná manualmente.'}}if(t!==sequence)return;render();applyCover(entries[i]);}input.value='';$('filename').textContent=files.length+' archivo(s) seleccionado(s). Podés agregar más.';});
 system.addEventListener('change',()=>{render();applyCover(active())});$('settingsToggle').addEventListener('click',()=>{$('systemPanel').classList.toggle('open')});document.querySelectorAll('[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{filter=btn.dataset.filter;document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b===btn));render()}));$('favButton').addEventListener('click',()=>{const item=active();if(!item)return;const key=coverKey(item);if(favoriteKeys.has(key))favoriteKeys.delete(key);else favoriteKeys.add(key);localStorage.setItem('vladi_retro_favorites',JSON.stringify([...favoriteKeys]));render()});
 $('changeCover').addEventListener('click',()=>$('coverFile').click());
 $('coverFile').addEventListener('change',async()=>{const f=$('coverFile').files?.[0],item=active();if(!f||!item)return;if(f.size>8000000){status.textContent='La imagen debe pesar menos de 8 MB.';return;}if(!['image/png','image/jpeg','image/webp'].includes(f.type)){status.textContent='Elegí una imagen PNG, JPG o WebP.';return;}const data=await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>resolve(null);r.readAsDataURL(f)});if(data){item.cover=data;coverCache.set(coverKey(item),{url:data,system:item.info?.core,type:'custom'});render();status.textContent='Portada personalizada aplicada a '+cleanName(item.file.name)+'.'}$('coverFile').value='';});
-$('retryCover').addEventListener('click',()=>{const item=active();if(!item)return;coverCache.delete(coverKey(item));item.cover=null;item.searching=false;applyCover(item);render();status.textContent='Buscando portada para '+cleanName(item.file.name)+'…';});
+$('retryCover').addEventListener('click',()=>{const item=active();if(!item)return;coverCache.delete(coverKey(item));item.cover=null;item.coverSource=null;item.searching=false;coverCache.delete(coverKey(item));applyCover(item);render();status.textContent='Buscando portada para '+cleanName(item.file.name)+'…';});
 $('clear').addEventListener('click',()=>{close();sequence++;entries=[];selected=-1;render()});
 function close(){if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});document.body.style.overflow='';frame.removeAttribute('src');area.hidden=true;stop.disabled=true;$('fullscreen').disabled=true;if(url){URL.revokeObjectURL(url);url=null}}
 stop.addEventListener('click',()=>{close();status.textContent='Emulador cerrado.'});
