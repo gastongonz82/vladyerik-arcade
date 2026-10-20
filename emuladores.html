@@ -209,6 +209,42 @@ function close(){if(document.fullscreenElement)document.exitFullscreen().catch((
 stop.addEventListener('click',()=>{close();status.textContent='Emulador cerrado.'});
 start.addEventListener('click',()=>{const item=active(),core=currentCore();if(!item||!core){$('systemPanel').classList.add('open');return;}const key=coverKey(item);recentKeys=[key,...recentKeys.filter(x=>x!==key)].slice(0,30);localStorage.setItem('vladi_retro_recent',JSON.stringify(recentKeys));close();url=URL.createObjectURL(item.file);const doc='<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;background:#000;width:100%;height:100%;overflow:hidden}#game{width:100%;height:100%}</style></head><body><div id="game"></div><script>window.EJS_player="#game";window.EJS_core='+JSON.stringify(core)+';window.EJS_gameUrl='+JSON.stringify(url)+';window.EJS_pathtodata="https://cdn.emulatorjs.org/stable/data/";window.EJS_startOnLoaded=true;window.EJS_gameName='+JSON.stringify(item.file.name)+';<\/script><script src="https://cdn.emulatorjs.org/stable/data/loader.js"><\/script></body></html>';frame.srcdoc=doc;$('playingName').textContent='🎮 '+cleanName(item.file.name);area.hidden=false;document.body.style.overflow='hidden';if(area.requestFullscreen)area.requestFullscreen().catch(()=>{});stop.disabled=false;$('fullscreen').disabled=false;status.textContent='Iniciando '+cleanName(item.file.name)+' con '+names[core]+'…';render();});
 $('fullscreen').addEventListener('click',()=>{if(frame.requestFullscreen)frame.requestFullscreen().catch(()=>{status.textContent='El navegador no permitió pantalla completa.'})});
-$('playerExit').addEventListener('click',()=>{close();render()});$('playerFullscreen').addEventListener('click',()=>{if(area.requestFullscreen)area.requestFullscreen().catch(()=>{})});let navZone='games',navFilter=0;const navButtons=()=>[...document.querySelectorAll('.tabs button[data-filter]')];function focusNavFilter(i){const buttons=navButtons();if(!buttons.length)return;navZone='filters';navFilter=(i+buttons.length)%buttons.length;buttons.forEach((b,n)=>b.classList.toggle('keyboard-selected',n===navFilter));buttons[navFilter].scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}function focusNavGames(){navZone='games';navButtons().forEach(b=>b.classList.remove('keyboard-selected'));const card=library.querySelector('.romcard.selected');if(card){card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}}function navConfirm(){if(navZone==='filters'){navButtons()[navFilter]?.click();}else if(active())start.click();}function navMove(key){if(navZone==='filters'){if(key==='ArrowDown'){focusNavGames();return;}if(key==='ArrowLeft'||key==='ArrowRight')focusNavFilter(navFilter+(key==='ArrowRight'?1:-1));return;}if(key==='ArrowUp'){focusNavFilter(Math.max(0,navButtons().findIndex(b=>b.classList.contains('active'))));return;}if(!entries.length)return;const columns=collectionView==='console'?1:Math.max(1,Math.floor(library.clientWidth/225));const delta=key==='ArrowLeft'?-1:key==='ArrowRight'?1:columns;select(Math.max(0,Math.min(entries.length-1,selected+delta)));}document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close();render();return;}if(!area.hidden||/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||''))return;const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){e.preventDefault();navMove(key);}else if(key==='Enter'||key===' '){e.preventDefault();navConfirm();}});window.addEventListener('pagehide',close);render();restoreLibrary();
+$('playerExit').addEventListener('click',()=>{close();render()});$('playerFullscreen').addEventListener('click',()=>{if(area.requestFullscreen)area.requestFullscreen().catch(()=>{})});let navZone='games',navFilter=0;const navButtons=()=>[...document.querySelectorAll('.tabs button[data-filter]')];function focusNavFilter(i){const buttons=navButtons();if(!buttons.length)return;navZone='filters';navFilter=(i+buttons.length)%buttons.length;buttons.forEach((b,n)=>b.classList.toggle('keyboard-selected',n===navFilter));buttons[navFilter].scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}function focusNavGames(){navZone='games';navButtons().forEach(b=>b.classList.remove('keyboard-selected'));const card=library.querySelector('.romcard.selected');if(card){card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}}function navConfirm(){if(navZone==='filters'){navButtons()[navFilter]?.click();}else if(active())start.click();}function navMove(key){if(navZone==='filters'){if(key==='ArrowDown'){focusNavGames();return;}if(key==='ArrowLeft'||key==='ArrowRight')focusNavFilter(navFilter+(key==='ArrowRight'?1:-1));return;}if(key==='ArrowUp'){focusNavFilter(Math.max(0,navButtons().findIndex(b=>b.classList.contains('active'))));return;}if(!entries.length)return;const columns=collectionView==='console'?1:Math.max(1,Math.floor(library.clientWidth/225));const delta=key==='ArrowLeft'?-1:key==='ArrowRight'?1:columns;select(Math.max(0,Math.min(entries.length-1,selected+delta)));}document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close();render();return;}if(!area.hidden||/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||''))return;const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){e.preventDefault();navMove(key);}else if(key==='Enter'||key===' '){e.preventDefault();navConfirm();}});
+// Navegación de mandos: cruceta y palanca en menú; Share/Back para salir del emulador.
+let padLastMove=0,padPrevConfirm=false,padPrevExit=false,padExitHoldAt=0,padExitHoldDone=false,padNeutralUntil=0;
+function retroPadLoop(now){
+  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
+  const pressed=(pad,i)=>!!pad.buttons?.[i]?.pressed;
+  const exitPressed=pads.some(p=>pressed(p,8)||pressed(p,16));
+  // Alternativa para mandos sin Share/Back: mantener Start + Select durante 1,2 segundos.
+  const combo=pads.some(p=>pressed(p,9)&&pressed(p,8));
+  const exitSignal=exitPressed||combo;
+  if(!area.hidden&&exitSignal&&!padPrevExit){
+    close();render();padNeutralUntil=now+450;
+  }
+  padPrevExit=exitSignal;
+  if(area.hidden&&pads.length&&now>=padNeutralUntil){
+    if(now-padLastMove>185){
+      let direction=null;
+      for(const p of pads){
+        const dx=p.axes?.[0]||0,dy=p.axes?.[1]||0;
+        if(pressed(p,15)||dx>.62)direction='ArrowRight';
+        else if(pressed(p,14)||dx<-.62)direction='ArrowLeft';
+        else if(pressed(p,13)||dy>.62)direction='ArrowDown';
+        else if(pressed(p,12)||dy<-.62)direction='ArrowUp';
+        if(direction)break;
+      }
+      if(direction){navMove(direction);padLastMove=now;}
+    }
+    const confirm=pads.some(p=>[0,1,2,3].some(i=>pressed(p,i))||pressed(p,9));
+    if(confirm&&!padPrevConfirm&&!exitSignal)navConfirm();
+    padPrevConfirm=confirm;
+  }else{
+    padPrevConfirm=pads.some(p=>[0,1,2,3,9].some(i=>pressed(p,i)));
+  }
+  requestAnimationFrame(retroPadLoop);
+}
+requestAnimationFrame(retroPadLoop);
+window.addEventListener('pagehide',close);render();restoreLibrary();
 })();
 </script></body></html>
