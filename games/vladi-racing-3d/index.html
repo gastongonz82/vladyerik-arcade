@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+  <head><base href="https://vladyerik.com/vladi-racing-3d/">
+    <title>Vladi Racing 3D: carreras futuristas online | VLADYERIK</title>
+<meta name="description" content="Manejá en pistas futuristas, esquivá obstáculos y competí por llegar a la meta en Vladi Racing 3D. Juego de carreras arcade.">
+<link rel="canonical" href="https://vladyerik.com/vladi-racing-3d/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="VLADYERIK">
+<meta property="og:title" content="Vladi Racing 3D: carreras futuristas online | VLADYERIK">
+<meta property="og:description" content="Manejá en pistas futuristas, esquivá obstáculos y competí por llegar a la meta en Vladi Racing 3D. Juego de carreras arcade.">
+<meta property="og:url" content="https://vladyerik.com/vladi-racing-3d/">
+<meta property="og:image" content="https://vladyerik.com/assets/vladi-racing-3d-portada.jpg?v=20261011b">
+<meta property="og:image:alt" content="Portada de VLADI RACING 3D en VLADYERIK">
+<meta name="twitter:card" content="summary_large_image">
+    <meta charset="utf-8">
+    
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" href="css/multi.css" type="text/css" charset="utf-8">
+    <link rel="stylesheet" href="css/fonts.css" type="text/css" charset="utf-8">
+    <style>
+      body {
+        padding:0;
+        margin:0;
+      }
+      canvas { pointer-events:none; width: 100%;}
+      #overlay{
+        position: absolute;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+      #title {background:none!important;pointer-events:none;display:flex;align-items:flex-start;justify-content:center;padding-top:min(7vh,55px);box-sizing:border-box;}
+      .vladi-title{font:900 clamp(34px,6vw,76px)/.98 system-ui,Arial,sans-serif;letter-spacing:-.045em;color:#fff;text-shadow:0 4px 22px #000,0 0 30px #0cf;display:block;text-align:center;}
+      .vladi-title strong{color:#57eaff;display:block;letter-spacing:.035em;}
+      .vladi-title small{display:block;margin-top:12px;font-size:clamp(10px,1.2vw,15px);letter-spacing:.32em;color:#ffda76;}
+      .back-arcade{display:block;padding:12px 18px;margin-top:12px;color:#fff;text-decoration:none;font:700 14px system-ui,Arial,sans-serif;background:linear-gradient(100deg,#123267,#145a84);border:1px solid #50d9f3;border-radius:12px;text-align:center;}
+      .back-arcade:hover{background:#176b9d;}
+      @media(max-width:600px){#title{padding-top:3vh}.vladi-title{font-size:clamp(29px,8vw,48px)}.vladi-title small{font-size:10px}}
+    </style>
+
+  </head>
+
+  <body>
+    <div id="step-1">
+      <div id="global"></div>
+      <div id="title"><span class="vladi-title">VLADI <strong>RACING 3D</strong><small>VLADYERIK ARCADE</small></span></div>
+      <div id="menucontainer">
+        <div id="menu">
+          <div id="start">Jugar</div>
+          <div id="s-controlType">Controls: Keyboard</div>
+          <div id="s-quality">Quality: High</div>
+          <div id="s-hud">HUD: On</div>
+          <div id="s-godmode" style="display: none">Godmode: Off</div>
+          <a class="back-arcade" href="../arcade.html">← Volver al Arcade</a>
+        </div>
+      </div>
+    </div>
+    <div id="step-2" style="display: none">
+      <div id="ctrl-help">Hacé clic o tocá para continuar.</div>
+    </div>
+    <div id="step-3" style="display: none">
+      <div id="progressbar"></div>
+    </div>
+    <div id="step-4" style="display: none">
+      <div id="overlay"></div>
+      <div id="main"></div>
+    </div>
+    <div id="step-5" style="display: none">
+      <div id="time"></div>
+      <div id="ctrl-help">Hacé clic o tocá para continuar.</div>
+    </div>
+    <div id="credits" style="display: none"></div>
+
+    <div id="leapinfo" style="display: none"></div>
+
+    <script src="libs/leap-0.4.1.min.js"></script>
+    <script src="libs/Three.dev.js"></script>
+    <script src="libs/ShaderExtras.js"></script>
+    <script src="libs/postprocessing/EffectComposer.js"></script>
+    <script src="libs/postprocessing/RenderPass.js"></script>
+    <script src="libs/postprocessing/BloomPass.js"></script>
+    <script src="libs/postprocessing/ShaderPass.js"></script>
+    <script src="libs/postprocessing/MaskPass.js"></script>
+    <script src="libs/Detector.js"></script>
+    <script src="libs/Stats.js"></script>
+    <script src="libs/DAT.GUI.min.js"></script>
+
+    <script src="bkcore.coffee/controllers/TouchController.js"></script>
+    <script src="bkcore.coffee/controllers/OrientationController.js"></script>
+    <script src="bkcore.coffee/controllers/GamepadController.js"></script>
+
+    <script src="bkcore.coffee/Timer.js"></script>
+    <script src="bkcore.coffee/ImageData.js"></script>
+    <script src="bkcore.coffee/Utils.js"></script>
+
+    <script src="bkcore/threejs/RenderManager.js"></script>
+    <script src="bkcore/threejs/Shaders.js"></script>
+    <script src="bkcore/threejs/Particles.js"></script>
+    <script src="bkcore/threejs/Loader.js"></script>
+
+    <script src="bkcore/Audio.js"></script>
+
+    <script src="bkcore/hexgl/HUD.js"></script>
+    <script src="bkcore/hexgl/RaceData.js"></script>
+    <script src="bkcore/hexgl/ShipControls.js"></script>
+    <script src="bkcore/hexgl/ShipEffects.js"></script>
+    <script src="bkcore/hexgl/CameraChase.js"></script>
+    <script src="bkcore/hexgl/Gameplay.js"></script>
+
+    <script src="bkcore/hexgl/tracks/Cityscape.js"></script>
+
+    <script src="bkcore/hexgl/HexGL.js"></script>
+
+    <script src="launch.js"></script>
+
+  <script data-arcade-racing="1">(()=>{'use strict';let lastShare=false,lastOptions=false;function tick(){const p=[...(navigator.getGamepads?.()||[])].find(Boolean);if(p){const share=!!p.buttons[8]?.pressed,options=!!p.buttons[9]?.pressed;if(share&&!lastShare){if(parent!==window)parent.postMessage({type:'VLADYERIK_ARCADE_EXIT'},location.origin);else location.assign('https://gastongonz82.github.io/vladyerik-arcade/');return}if(options&&!lastOptions){const btn=[...document.querySelectorAll('button,a,[role="button"]')].find(e=>e.getClientRects().length&&/jugar|iniciar|start|play|continuar/i.test(e.textContent||''));btn?.click()}lastShare=share;lastOptions=options}requestAnimationFrame(tick)}requestAnimationFrame(tick)})();</script></body>
+</html>
