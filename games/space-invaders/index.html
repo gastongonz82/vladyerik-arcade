@@ -263,8 +263,9 @@ function buildTargets(){
  world.projectile=null;world.aim=null;world.angle=-.48;world.power=(700+Math.min(level,5)*20+Math.min(3,Math.floor((level-1)/15))*20)*S;
 }
 function init(){prepareMobileAudio();if(typeof window.gtag==='function')window.gtag('event','game_start',{game_id:'vladi-retro-'+(new URLSearchParams(location.search).get('game')||'unknown'),game_name:'vladi retro'});fresh();stage="playing";panel.classList.add("hidden");$("#pause").textContent="Ⅱ";$("#pause").setAttribute("aria-label","Pausar");}
-function start(){if(stage==="ready"||stage==="over"){init()}else if(stage==="paused"){stage="playing";panel.classList.add("hidden");$("#pause").textContent="Ⅱ"}}
+function start(){if(stage==="ready"||stage==="over"){init()}else if(stage==="level-clear"){stage="playing";panel.classList.add("hidden");$("#pause").textContent="Ⅱ";syncHud()}else if(stage==="paused"){stage="playing";panel.classList.add("hidden");$("#pause").textContent="Ⅱ"}}
 function pause(){if(stage==="playing"){stage="paused";flushMobileBest();panel.classList.remove("hidden");$("#title").textContent="Pausa";$("#description").textContent="Tu partida está guardada. Cuando quieras, seguí desde donde quedaste.";$("#instructions").innerHTML="PC: P o ESC · Celular: tocá continuar";$("#start").textContent="CONTINUAR";$("#again").hidden=false;$("#again").textContent="REINICIAR"}else if(stage==="paused"){document.title=cfg.title+" — VLADYERIK";$("#title").textContent=cfg.title;$("#description").textContent=cfg.desc;$("#instructions").innerHTML=cfg.how;$("#start").textContent="JUGAR";$("#again").hidden=true;start()}}
+function completeLevel(){level++;stage="level-clear";panel.classList.remove("hidden");$("#title").textContent="¡NIVEL COMPLETADO!";$("#description").textContent="Nivel "+(level-1)+" superado · Puntaje: "+score+" · Prepará el nivel "+level;$("#instructions").textContent="Presioná X u OPTIONS para continuar";$("#start").textContent="SIGUIENTE NIVEL";$("#again").hidden=true;syncHud();sfx.coin()}
 function finish(){if(typeof window.gtag==='function')window.gtag('event','game_end',{game_id:'vladi-retro-'+(new URLSearchParams(location.search).get('game')||'unknown'),game_name:'vladi retro'});if(stage==="over")return;stage="over";flushMobileBest();panel.classList.remove("hidden");$("#title").textContent="¡Bien jugado, Vladi!";$("#description").textContent="Puntaje: "+score+" · Récord: "+best;$("#instructions").textContent="¿Probamos otra partida y superamos esa marca?";$("#start").textContent="JUGAR OTRA VEZ";$("#again").hidden=true;sfx.boom()}
 function addScore(n){score+=n;if(score>best){best=score;if(key==="arkanoid"){bestPending=true}else{try{localStorage.setItem("vladiRetroBest:"+key,String(best))}catch(e){}}}syncHud()}
 function loseLife(){lives--;sfx.boom();syncHud();if(lives<=0){finish();return}if(key==="space"){world.player.x=W/2;world.player.inv=1.1}else if(key==="arkanoid"){world.ball.stuck=true;world.ball.vx=0;world.ball.vy=0}else if(key==="joust"){world.player.x=W*.25;world.player.y=H*.5;world.player.vy=0;world.player.inv=1}else if(key==="asteroids"){world.ship.x=W/2;world.ship.y=H/2;world.ship.vx=0;world.ship.vy=0;world.ship.inv=1.5}}
@@ -284,7 +285,7 @@ function updateSpace(dt){
  if(p.inv>0)p.inv=Math.max(0,p.inv-dt);
  if(held.left)p.x-=sp*dt;if(held.right)p.x+=sp*dt;p.x=clamp(p.x,22*S,W-22*S);
  shotClock-=dt;if(held.fire&&shotClock<=0){world.bullets.push({x:p.x,y:p.y-20*S,v:430*S});shotClock=.24;sfx.shot()}
- const a=world.aliens;if(!a.length){level++;world.formationY=touch?90*S+level*3*S:88+Math.min(level-1,8)*3;spawnInvaders();addScore(100);return}
+ const a=world.aliens;if(!a.length){addScore(100);completeLevel();world.formationY=touch?90*S+level*3*S:88+Math.min(level-1,8)*3;spawnInvaders();world.enemyShots=[];world.bullets=[];return}
  let edge=false;const speed=(24+level*5)*S;
  for(const e of a){e.x+=world.dir*speed*dt;if(e.x>W-22*S||e.x<22*S)edge=true}
  if(edge){world.dir*=-1;for(const e of a)e.y+=13*S}
@@ -312,7 +313,7 @@ function updateArkanoid(dt){
   else{b.vy*=-1;b.y=b.vy<0?br.y-b.r-.01:br.y+br.h+b.r+.01}
  }
  addScore(20);sfx.hit();break}}
- if(world.bricks.every(x=>x.hp<=0)){level++;buildBricks();b.vy=Math.abs(b.vy)+35*S}
+ if(world.bricks.every(x=>x.hp<=0)){completeLevel();buildBricks();b.stuck=true;b.vx=0;b.vy=0;b.x=p.x;b.y=p.y-22*S}
  if(b.y>H-(touch?85:35)*S){loseLife()}
 }
 function updateJoust(dt){
@@ -335,7 +336,7 @@ function updateAsteroids(dt){
  for(const b of world.shots){const r=world.rocks.find(x=>Math.hypot(x.x-b.x,x.y-b.y)<x.r);if(r){b.life=0;r.dead=true;addScore(30*(r.size));sfx.hit();if(r.size>1){spawnRockAt(r.size-1,r.x,r.y);spawnRockAt(r.size-1,r.x,r.y)}}}
  world.rocks=world.rocks.filter(r=>!r.dead);world.shots=world.shots.filter(b=>b.life>0);
  if(p.inv<=0&&world.rocks.some(r=>Math.hypot(r.x-p.x,r.y-p.y)<r.r+p.r)){loseLife()}
- if(!world.rocks.length){level++;for(let i=0;i<4+level;i++)spawnRock(2)}
+ if(!world.rocks.length){completeLevel();for(let i=0;i<4+level;i++)spawnRock(2)}
 }
 function updateTetris(dt){
  const p=world.piece;world.fall+=dt;world.move+=dt;
