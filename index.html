@@ -12,8 +12,38 @@ footer{padding:12px 4vw;color:#b9c8e6}#player{position:fixed;inset:0;background:
 :root{color-scheme:dark}body{background:radial-gradient(ellipse at 48% -18%,#2458a0 0%,#0a2053 38%,#050b24 88%);background-attachment:fixed}header{padding:22px 4vw 12px}header small{font-size:12px;letter-spacing:1.8px;font-weight:800}#status{border:1px solid #c49a33;border-radius:40px;padding:10px 16px;background:#131f44}nav{padding-bottom:14px;scrollbar-width:thin;scrollbar-color:#d4a837 transparent}.filter{background:#101e44;border-color:#405985;transition:background .15s,border-color .15s}.filter.active,.filter:focus-visible{background:#493918;border-color:#ffd351;color:#ffdf7c;outline:none}main{padding-bottom:18px}#games{grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:18px}.game{min-height:0;aspect-ratio:1.05;background:#142653;border:3px solid #35588e;border-radius:19px;transition:transform .16s,box-shadow .16s,border-color .16s;isolation:isolate}.game img{transition:transform .25s,filter .25s}.game:after{inset:38% 0 0;background:linear-gradient(transparent,rgba(3,9,31,.93) 88%)}.game strong{font-size:clamp(15px,1.4vw,20px);padding:16px 8px 20px;letter-spacing:.25px}.game.selected,.game:focus-visible{transform:translateY(-5px) scale(1.025);border-color:#ffd449;box-shadow:0 0 0 3px #fff0b4,0 0 28px #f3b82a88;z-index:2}.game.selected img,.game:focus-visible img{transform:scale(1.045);filter:saturate(1.15)}.game.selected:before{content:'▶ JUGAR';position:absolute;z-index:3;top:10px;right:10px;border-radius:999px;background:#ffcf43;color:#18121a;font-weight:1000;font-size:12px;padding:7px 12px;box-shadow:0 3px 16px #0009}#selectionInfo{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:62px;margin:0 0 17px;padding:12px 18px;border:1px solid #48649d;border-radius:16px;background:linear-gradient(110deg,#132c63,#0c183c)}#selectionInfo strong{font-size:clamp(17px,2vw,25px);color:#ffda68}#selectionInfo span{font-size:13px;font-weight:800;color:#d1e1ff;text-align:right}footer{padding-top:8px;font-size:13px}@media(min-width:1450px){#games{grid-template-columns:repeat(5,minmax(0,1fr))}}@media(max-width:700px){header{align-items:flex-start;flex-wrap:wrap}#status{padding:7px 12px;font-size:12px}#games{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.game{border-width:2px;border-radius:13px}.game strong{font-size:13px;padding:10px 4px 12px}#selectionInfo{flex-direction:column;align-items:flex-start;gap:4px}#selectionInfo span{text-align:left;font-size:11px}}@media(prefers-reduced-motion:reduce){.game,.game img{transition:none}}
 /* Navegación completa por joystick: categorías y juegos */
 .filter.pad-selected,.filter:focus-visible{border-color:#fff3b0!important;background:#72521b!important;color:#fff!important;box-shadow:0 0 0 3px #ffce3d,0 0 24px #ffcb3980;transform:translateY(-2px)}.filter{min-height:48px;cursor:pointer}.filter:hover{border-color:#eac65c}nav{scroll-padding-inline:4vw}#selectionInfo{box-shadow:inset 0 1px #ffffff15}#games .game:active{transform:scale(.99)}@media(min-width:1000px){header{padding-top:30px}#selectionInfo{min-height:76px}.game{border-radius:23px}}
+
+/* VLADYERIK: cabina gamer arcade, sin modificar las portadas ni los juegos */
+:root{--neon:#36e8ff;--gold:#ffce43;--violet:#a66bff}
+body{background:radial-gradient(ellipse at 18% 0%,#153d8b 0%,transparent 37%),radial-gradient(ellipse at 88% 20%,#3b145e 0%,transparent 35%),linear-gradient(145deg,#05091d,#09163a 54%,#07091b);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.13;background:repeating-linear-gradient(0deg,transparent 0 3px,#a4d7ff 4px,transparent 5px);mask-image:linear-gradient(#0008,transparent 80%)}
+body>header,body>nav,body>main,body>footer{position:relative;z-index:1}
+header{border-bottom:1px solid #6c8ee43b;background:linear-gradient(90deg,#080e28e8,#111a3cb8);box-shadow:0 12px 32px #02061866}
+header h1{font-style:italic;text-shadow:0 3px #050b29,0 0 22px #31cfff42;letter-spacing:-1.8px}
+header h1 span{color:#48e9ff}header h1 em{color:#ffd24e;text-shadow:0 0 18px #ffae364f}
+header small{display:block;margin-top:5px;color:#aebfff}
+#status{background:linear-gradient(120deg,#202650,#151833);border:1px solid #f5bd56;color:#ffe38a;box-shadow:inset 0 1px #ffffff21,0 0 24px #ffb72b24;letter-spacing:.09em}
+nav{margin:14px 4vw 12px;padding:10px 12px 14px;border:1px solid #5167a260;border-radius:19px;background:#070f2abf;box-shadow:inset 0 1px #ffffff18;gap:10px}
+.filter{background:linear-gradient(160deg,#1a2e62,#101a3e);border-color:#526baf;border-radius:11px;box-shadow:inset 0 1px #ffffff16,0 5px 0 #060b22;font-size:14px;letter-spacing:.045em;min-height:47px}
+.filter.active{background:linear-gradient(135deg,#78500e,#3e2b16);border-color:#ffce52;box-shadow:0 0 16px #ffbb3240,inset 0 1px #fff5a54d}
+.filter.pad-selected,.filter:focus-visible{box-shadow:0 0 0 3px #fff3b0,0 0 24px #ffd33b9e,0 5px 0 #08091b!important}
+#selectionInfo{border:1px solid #52b9ee82;background:linear-gradient(100deg,#132d68,#17143f 68%,#25163c);box-shadow:inset 0 1px #ffffff22,0 10px 35px #0004;position:relative;overflow:hidden}
+#selectionInfo:before{content:"▶";color:#46e9ff;font-size:25px;text-shadow:0 0 20px #2ddaff;margin-right:3px}
+#selectionInfo strong{color:#fff2a6;text-shadow:0 0 14px #ffc5324d}
+#selectionInfo span{color:#bde5ff}
+#games{gap:20px}
+.game{border:2px solid #506eb7;background:linear-gradient(145deg,#15275c,#090d26);border-radius:20px;box-shadow:0 10px 0 #030817,0 15px 28px #0007,inset 0 1px #ffffff20;transform-origin:center bottom}
+.game:after{background:linear-gradient(transparent 0%,#070d29a8 47%,#04091cf5 100%)}
+.game strong{font-size:clamp(15px,1.45vw,21px);text-transform:uppercase;letter-spacing:.045em;text-shadow:0 3px 5px #000,0 0 18px #000!important}
+.game.selected,.game:focus-visible{border-color:#ffe282;box-shadow:0 0 0 3px #ffda58,0 0 32px #ffd12b99,0 12px 0 #5c3c0a;transform:translateY(-6px) scale(1.025)}
+.game.selected:before{content:"▶ START";background:linear-gradient(130deg,#ffec79,#ffad2e);border:1px solid #fff5b4;letter-spacing:.08em}
+footer{border-top:1px solid #6485c036;margin-top:20px;background:#050b20b0;color:#b5d9f8}
+#toolbar{background:linear-gradient(90deg,#111f50,#10102f);border-bottom:2px solid #ffcb48}
+#back{background:linear-gradient(#ffe778,#ffb733);box-shadow:0 3px 0 #98671d}
+@media(max-width:700px){nav{margin:8px 3vw 12px;border-radius:12px}.filter{font-size:12px;padding:9px 12px}.game{box-shadow:0 5px 0 #030817,0 10px 18px #0007}#selectionInfo:before{font-size:19px}header h1{letter-spacing:-1px}}
+@media(prefers-reduced-motion:reduce){.game,.filter{transition:none!important}}
 </style></head><body>
-<header><div><h1><span>VLADI</span><em>YERIK</em> ARCADE</h1><small>EDICIÓN ONLINE · CONTROLES DE JUEGOS EN DESARROLLO</small></div><div id="status">Cargando catálogo…</div></header>
+<header><div><h1><span>VLADI</span><em>YERIK</em> ARCADE</h1><small>EDICIÓN ARCADE · ELEGÍ TU PRÓXIMA MISIÓN</small></div><div id="status">Cargando catálogo…</div></header>
 <nav id="filters" aria-label="Categorías"></nav><main><div id="selectionInfo" aria-live="polite"><strong id="selectedTitle">ELEGÍ UN JUEGO</strong><span>↑ DESDE LA PRIMERA FILA: CATEGORÍAS · ↓: JUEGOS · X: ELEGIR · SHARE: VOLVER</span></div><section id="games" aria-label="Juegos"></section><p id="empty" hidden></p></main>
 <footer>← → ↑ ↓ / WASD: navegar categorías y juegos · ENTER: elegir · ESC: volver · Gamepad: cruceta y botón principal (menú). Controles dentro de juegos: en adaptación</footer>
 <div id="player"><div id="toolbar"><strong id="gameTitle"></strong><div style="display:flex;gap:8px;align-items:center"><button id="back">← VOLVER AL ARCADE (ESC)</button></div></div><iframe id="frame" title="Juego" allow="fullscreen; autoplay; gamepad"></iframe></div>
