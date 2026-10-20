@@ -717,7 +717,7 @@ const map={left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',fir
 const held=new Set();let prevButtons=new Map(),activePad=null,lastStatus='',lastPoll=0;
 const status=document.createElement('div');status.id='arcade-pad-status';status.setAttribute('role','status');
 status.style.cssText='position:fixed;left:10px;bottom:10px;z-index:9999;background:#061634e8;color:#ffe27b;border:1px solid #b38c35;border-radius:9px;padding:6px 10px;font:700 12px Arial,sans-serif;pointer-events:none;max-width:75vw';
-document.body.append(status);
+/* Diagnóstico conservado internamente; sin cartel durante el juego. */
 function report(message){if(message!==lastStatus){status.textContent=message;lastStatus=message}}
 function key(k,type){dispatchEvent(new KeyboardEvent(type,{key:k,code:k===' '?'Space':k,bubbles:true,cancelable:true}))}
 function exit(){release();if(parent!==window)parent.postMessage({type:'VLADYERIK_ARCADE_EXIT'},location.origin);else location.assign('https://gastongonz82.github.io/vladyerik-arcade/')}
