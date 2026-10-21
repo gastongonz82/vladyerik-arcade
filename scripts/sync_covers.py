@@ -112,8 +112,8 @@ for index, game in enumerate(catalog["games"]):
             except Exception:
                 continue
     if image is None:
-        print("SIN PORTADA:", game["name"], flush=True)
-        continue
+        image = branded_cover(game)
+        print("PORTADA IDENTIFICADA VLADYERIK:", game["name"], flush=True)
     filename = f"{index:04d}.webp"
     image.thumbnail((480, 640))
     image.save(folder / filename, "WEBP", quality=80)
