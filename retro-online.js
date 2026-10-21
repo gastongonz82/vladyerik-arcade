@@ -92,6 +92,13 @@ const style=document.createElement('style');style.textContent=`
 #retroOnline .online-feature-art{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
 #retroOnline .online-feature-art img{width:auto!important;height:auto!important;max-width:calc(100% - 28px)!important;max-height:calc(100% - 22px)!important;object-fit:contain!important;object-position:center!important;padding:0!important;margin:auto!important}
 @media(max-width:620px){#retroOnline .online-grid:not(.console-mode){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}#retroOnline .online-grid:not(.console-mode) .online-card{min-height:250px!important}#retroOnline .online-grid:not(.console-mode) .online-art{height:165px!important;min-height:165px!important}#retroOnline .online-info{padding:10px!important}#retroOnline .online-card strong{font-size:12px!important}}
+
+/* Destacado online: misma altura y presencia visual que el destacado local */
+#retroOnline .online-feature{min-height:370px!important;align-items:center!important;padding:24px!important}
+#retroOnline .online-feature-art{height:330px!important;min-height:330px!important;align-self:stretch!important;border:1px solid #466ca4!important;border-radius:17px!important;background:radial-gradient(ellipse at 50% 40%,#294b88 0%,#142c5b 56%,#081630 100%)!important}
+#retroOnline .online-feature-art img{max-height:calc(100% - 24px)!important;max-width:calc(100% - 24px)!important;object-fit:contain!important}
+#retroOnline .online-feature .online-feature-tag{font-size:13px!important}
+@media(max-width:650px){#retroOnline .online-feature{min-height:0!important}#retroOnline .online-feature-art{height:240px!important;min-height:240px!important}}
 `;document.head.append(style);
 const section=document.createElement('section');section.id='retroOnline';section.innerHTML='<h2>🌐 RETRO ONLINE</h2><p class="hint">Juegos disponibles para jugar directamente, sin subir archivos.</p><div id="onlineStatus" role="status">Cargando catálogo…</div><div class="online-grid" id="onlineGrid"></div>';
 const nav=document.querySelector('.tabs');nav?.before(section);
