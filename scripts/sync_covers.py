@@ -127,16 +127,39 @@ def wiki_art(name):
             print("Wikipedia no disponible:", name, str(error)[:80], flush=True)
     return None
 
+# Pantalla de selección real documentada para 72-in-1.
+MULTICART_SCREENSHOTS = {
+    "72-in-1": "https://www.retrogames.cz/games/1563/NES_02.gif",
+}
+def multicart_screenshot(name):
+    for prefix, url in MULTICART_SCREENSHOTS.items():
+        if name.startswith(prefix):
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=12) as response:
+                    data = response.read()
+                image = Image.open(BytesIO(data))
+                image.load()
+                if image.width < 100 or image.height < 100:
+                    raise ValueError("Imagen demasiado pequeña")
+                return image.convert("RGB")
+            except Exception as error:
+                print("Captura no disponible:", name, str(error)[:100], flush=True)
+    return None
+
 for index, game in enumerate(catalog["games"]):
     path = game["path"]
     exists = path in manifest and (root / manifest[path]).exists()
     review = any(game["name"].lower().startswith(t.lower()) for t in REVIEW_TITLES)
-    if exists and not review:
+    multicart = game["name"].startswith(("1200-in-1", "72-in-1"))
+    if exists and not review and not multicart:
         continue
     system = systems.get(game.get("system"))
     if not system:
         continue
-    image = wiki_art(game["name"]) if review else None
+    image = multicart_screenshot(game["name"]) if multicart else None
+    if image is None and review:
+        image = wiki_art(game["name"])
     for kind in ("Named_Boxarts", "Named_Titles", "Named_Snaps"):
         if image is not None:
             break
