@@ -132,6 +132,19 @@ function onlineGameArtwork(game){
 
 const thumbSystems={nes:'Nintendo - Nintendo Entertainment System',snes:'Nintendo - Super Nintendo Entertainment System',segaMD:'Sega - Mega Drive - Genesis',segaGG:'Sega - Game Gear',n64:'Nintendo - Nintendo 64'};
 const coverMemory=new Map();
+const COVER_STORAGE_KEY='vladi_online_covers_v1';
+let savedCovers={};
+try{savedCovers=JSON.parse(localStorage.getItem(COVER_STORAGE_KEY)||'{}');if(!savedCovers||typeof savedCovers!=='object'||Array.isArray(savedCovers))savedCovers={}}catch(_){savedCovers={}}
+function rememberCover(key,value){
+ coverMemory.set(key,value);
+ savedCovers[key]=value;
+ try{
+  const keys=Object.keys(savedCovers);
+  if(keys.length>1200)for(const old of keys.slice(0,keys.length-1000))delete savedCovers[old];
+  localStorage.setItem(COVER_STORAGE_KEY,JSON.stringify(savedCovers));
+ }catch(_){}
+}
+
 function coverCandidates(game){
  const system=thumbSystems[game.system];if(!system)return [];
  const raw=cleanName(game.name);
@@ -156,13 +169,14 @@ function setArtwork(target,game,{priority=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
  const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const urls=coverCandidates(game);if(!urls.length)return;
- const cached=coverMemory.get(game.system+'|'+cleanName(game.name));
+ const coverKey=game.system+'|'+cleanName(game.name);
+ const cached=coverMemory.has(coverKey)?coverMemory.get(coverKey):savedCovers[coverKey];
  if(cached===false)return;
  const candidates=typeof cached==='string'?[cached]:urls;
  let idx=0;
  const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
- img.onload=()=>{coverMemory.set(game.system+'|'+cleanName(game.name),img.src);fallbackImage.remove();if(!img.isConnected)target.append(img)};
- img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{coverMemory.set(game.system+'|'+cleanName(game.name),false);img.remove()}};
+ img.onload=()=>{rememberCover(coverKey,img.src);fallbackImage.remove();if(!img.isConnected)target.append(img)};
+ img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{rememberCover(coverKey,false);img.remove()}};
  // Carga diferida real: evita disparar decenas de solicitudes para juegos fuera de pantalla.
  const start=()=>{if(!target.isConnected)return;target.append(img);img.src=candidates[idx++]};
  if(priority||!('IntersectionObserver' in window)){start()}else{
