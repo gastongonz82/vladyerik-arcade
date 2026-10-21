@@ -63,6 +63,16 @@ const style=document.createElement('style');style.textContent=`
 #retroOnline .online-grid.console-mode .online-art{width:100%!important;height:clamp(200px,22vw,295px)!important;min-height:0!important;font-size:65px!important;border-bottom:1px solid #45639a!important}
 #retroOnline .online-grid.console-mode .online-info{display:flex!important;min-height:94px!important;padding:13px 12px 15px!important}
 @media(max-width:650px){#retroOnline .online-feature{grid-template-columns:1fr!important;gap:12px!important;padding:14px!important}#retroOnline .online-feature-art{height:190px!important;font-size:75px!important}#retroOnline .online-feature h3{font-size:clamp(25px,7vw,36px)!important}#retroOnline .online-grid.console-mode .online-card{flex-basis:190px!important;width:190px!important}}
+
+#retroOnline .online-art{position:relative;overflow:hidden}
+#retroOnline .online-art img,#retroOnline .online-feature-art img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 9px 16px #0009);transition:transform .25s ease}
+#retroOnline .online-art img{padding:12px 14px;box-sizing:border-box}
+#retroOnline .online-card:hover .online-art img{transform:scale(1.06)}
+#retroOnline .online-feature-art{overflow:hidden}
+#retroOnline .online-feature-art img{padding:14px 20px;box-sizing:border-box}
+#retroOnline .online-card .online-art:after{content:'';position:absolute;inset:auto 0 0;height:35%;pointer-events:none;background:linear-gradient(transparent,#07132d4d)}
+#retroOnline .online-art .online-fallback,#retroOnline .online-feature-art .online-fallback{display:grid;place-items:center;width:100%;height:100%;font-size:clamp(40px,5vw,74px);font-weight:1000;color:#ffe28d;text-shadow:0 4px 18px #0008}
+#retroOnline .online-card small{color:#91dcff;letter-spacing:.07em}
 `;document.head.append(style);
 const section=document.createElement('section');section.id='retroOnline';section.innerHTML='<h2>🌐 RETRO ONLINE</h2><p class="hint">Juegos disponibles para jugar directamente, sin subir archivos.</p><div id="onlineStatus" role="status">Cargando catálogo…</div><div class="online-grid" id="onlineGrid"></div>';
 const nav=document.querySelector('.tabs');nav?.before(section);
@@ -84,7 +94,48 @@ const search=section.querySelector('#onlineSearch'),sort=section.querySelector('
 const gridView=section.querySelector('#onlineGridView'),favView=section.querySelector('#onlineFavView'),recentView=section.querySelector('#onlineRecentView');
 let games=[],chosen='all',view='all',layout='grid',featuredPath=null;const viewGrid=section.querySelector('#onlineViewGrid'),viewConsole=section.querySelector('#onlineViewConsole');function setLayout(next){layout=next;grid.classList.toggle('console-mode',next==='console');for(const [btn,v] of [[viewGrid,'grid'],[viewConsole,'console']]){btn.classList.toggle('active',v===next);btn.setAttribute('aria-pressed',String(v===next))}try{localStorage.setItem('vladi_retro_online_layout',next)}catch{}}viewGrid.onclick=()=>setLayout('grid');viewConsole.onclick=()=>setLayout('console');setLayout(localStorage.getItem('vladi_retro_online_layout')==='console'?'console':'grid');
 const cleanName=name=>name.replace(/\.[^.]+$/,'').replace(/[_]+/g,' ').replace(/\s+/g,' ').trim();
-function featureGame(game){if(!game)return;featuredPath=game.path;section.querySelector('#onlineFeatureName').textContent=cleanName(game.name);section.querySelector('#onlineFeatureSystem').textContent='🌟 DESTACADO · '+(game.system||'RETRO').toUpperCase();section.querySelector('#onlineFeatureHint').textContent='Jugá directamente en RETRO ONLINE';const b=section.querySelector('#onlineFeatureFav');b.textContent=favorites.includes(game.path)?'★ FAVORITO':'☆ FAVORITO'}function launchGame(game){recents=[game.path,...recents.filter(x=>x!==game.path)].slice(0,30);localStorage.setItem(recentKey,JSON.stringify(recents));featureGame(game);play(game)}section.querySelector('#onlineFeaturePlay').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(g)launchGame(g)};section.querySelector('#onlineFeatureFav').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(!g)return;favorites=favorites.includes(g.path)?favorites.filter(x=>x!==g.path):[g.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));featureGame(g);showGames()};section.querySelector('#onlineFeatureNext').onclick=()=>{if(!games.length)return;const idx=games.findIndex(x=>x.path===featuredPath);featureGame(games[(idx+1)%games.length])};function showGames(){
+
+const thumbSystems={nes:'Nintendo - Nintendo Entertainment System',snes:'Nintendo - Super Nintendo Entertainment System',segaMD:'Sega - Mega Drive - Genesis',segaGG:'Sega - Game Gear',n64:'Nintendo - Nintendo 64'};
+const coverMemory=new Map();
+function coverCandidates(game){
+ const system=thumbSystems[game.system];if(!system)return [];
+ const raw=cleanName(game.name);
+ const noTags=raw.replace(/\s*\[[^\]]*\]/g,'').replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();
+ const region=(raw.match(/\((USA|Europe|Japan|World|U|E|J)\)/i)||[])[1];
+ const regionName=({U:'USA',E:'Europe',J:'Japan'})[region]||region;
+ const baseNames=[raw.replace(/\s*\[[^\]]*\]/g,'').trim(),noTags+' (USA)',noTags+' (Europe)',noTags+' (World)',noTags];
+ if(regionName)baseNames.splice(1,0,noTags+' ('+regionName+')');
+ const alt=noTags.match(/^(.+), The$/i);if(alt)baseNames.push('The '+alt[1]+' (USA)');
+ const names=[...new Set(baseNames.filter(Boolean))].slice(0,7);
+ const prefix='https://thumbnails.libretro.com/'+encodeURIComponent(system)+'/';
+ const urls=[];
+ for(const type of ['Named_Boxarts','Named_Titles','Named_Snaps']){
+  for(const name of names){
+   const safe=name.replace(/[&*\/:<>?|"\\]/g,'_');
+   urls.push(prefix+type+'/'+encodeURIComponent(safe)+'.png');
+  }
+ }
+ return urls;
+}
+function setArtwork(target,game,{priority=false}={}){
+ target.replaceChildren();
+ const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
+ const urls=coverCandidates(game);if(!urls.length)return;
+ const cached=coverMemory.get(game.system+'|'+cleanName(game.name));
+ if(cached===false)return;
+ const candidates=typeof cached==='string'?[cached]:urls;
+ let idx=0;
+ const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
+ img.onload=()=>{coverMemory.set(game.system+'|'+cleanName(game.name),img.src);fallback.remove();if(!img.isConnected)target.append(img)};
+ img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{coverMemory.set(game.system+'|'+cleanName(game.name),false);img.remove()}};
+ // Carga diferida real: evita disparar decenas de solicitudes para juegos fuera de pantalla.
+ const start=()=>{if(!target.isConnected)return;target.append(img);img.src=candidates[idx++]};
+ if(priority||!('IntersectionObserver' in window)){start()}else{
+  const io=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){io.disconnect();start()}},{rootMargin:'260px'});
+  io.observe(target);
+ }
+}
+function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(section.querySelector('#onlineFeatureArt'),game,{priority:true});section.querySelector('#onlineFeatureName').textContent=cleanName(game.name);section.querySelector('#onlineFeatureSystem').textContent='🌟 DESTACADO · '+(game.system||'RETRO').toUpperCase();section.querySelector('#onlineFeatureHint').textContent='Jugá directamente en RETRO ONLINE';const b=section.querySelector('#onlineFeatureFav');b.textContent=favorites.includes(game.path)?'★ FAVORITO':'☆ FAVORITO'}function launchGame(game){recents=[game.path,...recents.filter(x=>x!==game.path)].slice(0,30);localStorage.setItem(recentKey,JSON.stringify(recents));featureGame(game);play(game)}section.querySelector('#onlineFeaturePlay').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(g)launchGame(g)};section.querySelector('#onlineFeatureFav').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(!g)return;favorites=favorites.includes(g.path)?favorites.filter(x=>x!==g.path):[g.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));featureGame(g);showGames()};section.querySelector('#onlineFeatureNext').onclick=()=>{if(!games.length)return;const idx=games.findIndex(x=>x.path===featuredPath);featureGame(games[(idx+1)%games.length])};function showGames(){
  const q=search.value.trim().toLocaleLowerCase();
  let filtered=games.filter(g=>(chosen==='all'||g.system===chosen)&&(!q||(cleanName(g.name)+' '+(g.system||'')).toLocaleLowerCase().includes(q))&&(view==='all'||(view==='favorites'?favorites.includes(g.path):recents.includes(g.path))));
  if(view==='recent')filtered.sort((a,b)=>recents.indexOf(a.path)-recents.indexOf(b.path));
@@ -92,7 +143,7 @@ function featureGame(game){if(!game)return;featuredPath=game.path;section.queryS
  grid.replaceChildren();
  for(const game of filtered){
   const card=document.createElement('div');card.className='online-card';card.tabIndex=0;card.setAttribute('role','button');card.setAttribute('aria-label','Jugar '+cleanName(game.name));
-  const art=document.createElement('div');art.className='online-art';art.textContent='🎮';
+  const art=document.createElement('div');art.className='online-art';setArtwork(art,game);
   const info=document.createElement('div');info.className='online-info';
   const title=document.createElement('strong');title.textContent=cleanName(game.name);
   const meta=document.createElement('small');meta.textContent=(game.system||'SIN IDENTIFICAR').toUpperCase();
