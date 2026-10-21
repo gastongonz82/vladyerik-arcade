@@ -223,7 +223,7 @@ function padMove(dx,dy){
  let best=null,score=Infinity;
  for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}
  if(best)padSetFocus(best);
- else if(dy>0&&card){const local=document.querySelector('#collection .romcard, #collection button, #gridView');if(local){padFocus.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;local.focus();local.scrollIntoView({block:'center'})}}
+ else if(dy>0&&card){enterLocal()}
 }
 function onlinePadLoop(now){
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
@@ -243,23 +243,20 @@ function onlinePadLoop(now){
  }else{padConfirm=false;padBack=false}
  requestAnimationFrame(onlinePadLoop);
 }
-// Teclado global: la navegación local comienza sin foco DOM; permitir entrar a ONLINE desde arriba.
+// Puente único entre la navegación online y la biblioteca local.
+function enterOnline(){if(!player.hidden)return false;const cards=[...section.querySelectorAll('.online-card')];const first=cards[0]||padTargets()[0];if(!first)return false;padSetFocus(first);return true}
+function enterLocal(){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;return window.vladyLocalNavigation?.enter?.()||false}
+window.vladyRetroNavigation={enterOnline,enterLocal,moveOnline:(key)=>padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0)};
 document.addEventListener('keydown',e=>{
  if(!player.hidden||e.defaultPrevented||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
- const inOnline=section.contains(document.activeElement);
- if(inOnline)return; // El controlador de la sección procesa el evento.
- const localHeader=document.querySelector('.keyboard-selected');
- const atLocalTop=!!localHeader&&(localHeader.closest('header')||localHeader.closest('.tabs')||localHeader.closest('.collection-title'));
- const pageAtTop=window.scrollY<90&&!localHeader;
- if(e.key==='ArrowUp'&&(atLocalTop||pageAtTop)){
-  const target=section.querySelector('.online-card')||section.querySelector('#onlineFeaturePlay')||padTargets()[0];
-  if(target){e.preventDefault();e.stopImmediatePropagation();padSetFocus(target)}
- }
+ if(section.contains(document.activeElement))return;
+ if(e.key==='ArrowUp'&&window.scrollY<150&&!document.querySelector('.keyboard-selected')){if(enterOnline()){e.preventDefault();e.stopImmediatePropagation()}}
 },true);
 section.addEventListener('keydown',e=>{
  if(!player.hidden)return;
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
+  if(key==='ArrowDown'&&padFocus?.matches('.online-card')&&padFocus===section.querySelector('.online-card:last-of-type')&&window.vladyLocalNavigation?.enter){e.preventDefault();e.stopPropagation();enterLocal();return}
   if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
   e.preventDefault();e.stopPropagation();padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0);
  }else if((key==='Enter'||key===' ')&&!e.target.matches('input,select,button')){
