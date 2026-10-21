@@ -223,7 +223,7 @@ function padMove(dx,dy){
  let best=null,score=Infinity;
  for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}
  if(best)padSetFocus(best);
- else if(dy>0){enterLocal()}
+ else if(dy>0||dy<0){enterLocal()}
 }
 function onlinePadLoop(now){
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
@@ -242,7 +242,7 @@ function onlinePadLoop(now){
   padPlayerExitHeld=false;padBack=false;padConfirm=false;
  }
  if(!document.querySelector('#playerArea')?.hidden){padConfirm=true;padBack=true;requestAnimationFrame(onlinePadLoop);return}
- if(pads.length&&(window.__vladiOnlinePadActive||section.contains(document.activeElement)||!document.activeElement||document.activeElement===document.body)){
+ if(pads.length&&(window.__vladiOnlinePadActive||section.contains(document.activeElement))){
   const pressed=i=>pads.some(p=>p.buttons?.[i]?.pressed);
   const axis=i=>pads.find(p=>Math.abs(p.axes?.[i]||0)>.6)?.axes[i]||0;
   const dx=pressed(15)||axis(0)>.6?1:pressed(14)||axis(0)<-.6?-1:0;
