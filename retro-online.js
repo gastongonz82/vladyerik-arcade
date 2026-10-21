@@ -121,6 +121,15 @@ const gridView=section.querySelector('#onlineGridView'),favView=section.querySel
 let games=[],chosen='all',view='all',layout='grid',featuredPath=null;const viewGrid=section.querySelector('#onlineViewGrid'),viewConsole=section.querySelector('#onlineViewConsole');function setLayout(next){layout=next;grid.classList.toggle('console-mode',next==='console');for(const [btn,v] of [[viewGrid,'grid'],[viewConsole,'console']]){btn.classList.toggle('active',v===next);btn.setAttribute('aria-pressed',String(v===next))}try{localStorage.setItem('vladi_retro_online_layout',next)}catch{}}viewGrid.onclick=()=>setLayout('grid');viewConsole.onclick=()=>setLayout('console');setLayout(localStorage.getItem('vladi_retro_online_layout')==='console'?'console':'grid');
 const cleanName=name=>name.replace(/\.[^.]+$/,'').replace(/[_]+/g,' ').replace(/\s+/g,' ').trim();
 
+function onlineGameArtwork(game){
+ const name=cleanName(game.name).toUpperCase();
+ const palette=/MARIO/i.test(name)?['#ed423e','#ffbd3c']:/SONIC/i.test(name)?['#1458d8','#35d5ff']:/MORTAL/i.test(name)?['#641d28','#f0b44a']:/STREET FIGHTER/i.test(name)?['#a52d22','#f7ae32']:['#234b9e','#e4bc57'];
+ const lines=name.match(/.{1,17}(?:\s|$)/g)||[name];
+ const text=lines.slice(0,4).map((v,i)=>'<text x="50%" y="'+(210+i*65)+'" text-anchor="middle" font-size="'+(name.length>28?37:49)+'" font-weight="1000" fill="#fff" stroke="#10172d" stroke-width="5" paint-order="stroke">'+v.trim().replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>').join('');
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="520" height="700" viewBox="0 0 520 700"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="'+palette[0]+'"/><stop offset="1" stop-color="#0c1434"/></linearGradient></defs><rect width="520" height="700" fill="url(#g)"/><path d="M-60 500 L520 50 M-40 650 L600 150" stroke="'+palette[1]+'" stroke-opacity=".25" stroke-width="95"/><circle cx="260" cy="340" r="200" fill="none" stroke="'+palette[1]+'" stroke-width="9" opacity=".5"/><text x="50%" y="75" text-anchor="middle" fill="'+palette[1]+'" font-family="Arial" font-size="28" font-weight="900">VLADYERIK · RETRO</text><g font-family="Arial">'+text+'</g><text x="50%" y="630" text-anchor="middle" fill="'+palette[1]+'" font-family="Arial" font-size="25" font-weight="900">★ ARCADE COLLECTION ★</text></svg>';
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+
 const thumbSystems={nes:'Nintendo - Nintendo Entertainment System',snes:'Nintendo - Super Nintendo Entertainment System',segaMD:'Sega - Mega Drive - Genesis',segaGG:'Sega - Game Gear',n64:'Nintendo - Nintendo 64'};
 const coverMemory=new Map();
 function coverCandidates(game){
@@ -146,14 +155,14 @@ function coverCandidates(game){
 function setArtwork(target,game,{priority=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
- const urls=coverCandidates(game);if(!urls.length)return;
+ const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const urls=coverCandidates(game);if(!urls.length)return;
  const cached=coverMemory.get(game.system+'|'+cleanName(game.name));
  if(cached===false)return;
  const candidates=typeof cached==='string'?[cached]:urls;
  let idx=0;
  const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
- img.onload=()=>{coverMemory.set(game.system+'|'+cleanName(game.name),img.src);fallback.remove();if(!img.isConnected)target.append(img)};
- img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{coverMemory.set(game.system+'|'+cleanName(game.name),false);img.remove();fallback.textContent='🎮'}};
+ img.onload=()=>{coverMemory.set(game.system+'|'+cleanName(game.name),img.src);fallbackImage.remove();if(!img.isConnected)target.append(img)};
+ img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{coverMemory.set(game.system+'|'+cleanName(game.name),false);img.remove()}};
  // Carga diferida real: evita disparar decenas de solicitudes para juegos fuera de pantalla.
  const start=()=>{if(!target.isConnected)return;target.append(img);img.src=candidates[idx++]};
  if(priority||!('IntersectionObserver' in window)){start()}else{
@@ -216,6 +225,6 @@ function onlinePadLoop(now){
  }else{padConfirm=false;padBack=false}
  requestAnimationFrame(onlinePadLoop);
 }
-section.addEventListener('focusin',()=>{window.__vladiOnlinePadActive=true});
+section.addEventListener('focusin',()=>{window.__vladiOnlinePadActive=true});document.addEventListener('focusin',e=>{if(!section.contains(e.target)&&player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null}});
 requestAnimationFrame(onlinePadLoop);
 })();
