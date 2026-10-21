@@ -132,7 +132,7 @@ function coverCandidates(game){
  const baseNames=[raw.replace(/\s*\[[^\]]*\]/g,'').trim(),noTags+' (USA)',noTags+' (Europe)',noTags+' (World)',noTags];
  if(regionName)baseNames.splice(1,0,noTags+' ('+regionName+')');
  const alt=noTags.match(/^(.+), The$/i);if(alt)baseNames.push('The '+alt[1]+' (USA)');
- const names=[...new Set(baseNames.filter(Boolean))].slice(0,7);
+ const aliases={'1200-in-1':['Super Mario Bros','Super Mario Bros. 3'],'72-in-1':['Super Mario Bros','Contra'],'diddy kong racing':['Diddy Kong Racing'],'donkey kong country 2':['Donkey Kong Country 2 - Diddy’s Kong Quest'],'donkey kong country 3':['Donkey Kong Country 3 - Dixie Kong’s Double Trouble'],'super mario bros 3':['Super Mario Bros. 3'],'cruis\'n usa':["Cruis'n USA"]};const key=noTags.toLowerCase();const related=Object.entries(aliases).find(([k])=>key.includes(k));if(related)baseNames.push(...related[1].flatMap(x=>[x+' (USA)',x+' (Europe)',x]));if(noTags.includes(' - '))baseNames.push(noTags.split(' - ')[0]+' (USA)');const names=[...new Set(baseNames.filter(Boolean))].slice(0,18);
  const prefix='https://thumbnails.libretro.com/'+encodeURIComponent(system)+'/';
  const urls=[];
  for(const type of ['Named_Boxarts','Named_Titles','Named_Snaps']){
@@ -153,7 +153,7 @@ function setArtwork(target,game,{priority=false}={}){
  let idx=0;
  const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
  img.onload=()=>{coverMemory.set(game.system+'|'+cleanName(game.name),img.src);fallback.remove();if(!img.isConnected)target.append(img)};
- img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{coverMemory.set(game.system+'|'+cleanName(game.name),false);img.remove()}};
+ img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{coverMemory.set(game.system+'|'+cleanName(game.name),false);img.remove();fallback.textContent='🎮'}};
  // Carga diferida real: evita disparar decenas de solicitudes para juegos fuera de pantalla.
  const start=()=>{if(!target.isConnected)return;target.append(img);img.src=candidates[idx++]};
  if(priority||!('IntersectionObserver' in window)){start()}else{
@@ -191,4 +191,31 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Cat�
  for(const sys of ['all',...systems]){const b=document.createElement('button');b.type='button';b.textContent=sys==='all'?'TODOS':sys.toUpperCase();b.className=sys==='all'?'active':'';b.onclick=()=>{chosen=sys;for(const btn of filterBar.children)btn.classList.toggle('active',btn===b);showGames()};filterBar.append(b)}
  featureGame(games.find(g=>g.path===featuredPath)||games[0]);showGames();
 }).catch(()=>{status.textContent='El catálogo online no está disponible. La colección local sigue funcionando.'});
+
+/* Navegación por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
+const padStyle=document.createElement('style');padStyle.textContent='#retroOnline .online-pad-focus{outline:3px solid #ffcf42!important;outline-offset:3px!important;box-shadow:0 0 0 5px #0c204b,0 0 24px #ffcd6488!important}';document.head.append(padStyle);
+let padFocus=null,padLast=0,padConfirm=false,padBack=false;
+function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled)}
+function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
+function padMove(dx,dy){const targets=padTargets();if(!targets.length)return;if(!padFocus||!targets.includes(padFocus)){padSetFocus(targets[0]);return}const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,score=Infinity;for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}if(best)padSetFocus(best)}
+function onlinePadLoop(now){
+ const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
+ if(!player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null;requestAnimationFrame(onlinePadLoop);return}
+ if(pads.length&&(window.__vladiOnlinePadActive||section.contains(document.activeElement)||!document.activeElement||document.activeElement===document.body)){
+  const pressed=i=>pads.some(p=>p.buttons?.[i]?.pressed);
+  const axis=i=>pads.find(p=>Math.abs(p.axes?.[i]||0)>.6)?.axes[i]||0;
+  const dx=pressed(15)||axis(0)>.6?1:pressed(14)||axis(0)<-.6?-1:0;
+  const dy=pressed(13)||axis(1)>.6?1:pressed(12)||axis(1)<-.6?-1:0;
+  if((dx||dy)&&now-padLast>210){padMove(dx,dy);padLast=now}
+  const confirm=[0,1,2,3,9].some(pressed);
+  if(confirm&&!padConfirm){if(!padFocus)padSetFocus(padTargets()[0]);else if(padFocus.tagName==='SELECT'){padFocus.focus();padFocus.showPicker?.()}else if(padFocus.tagName==='INPUT')padFocus.focus();else padFocus.click()}
+  padConfirm=confirm;
+  const back=pressed(8);
+  if(back&&!padBack){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false}
+  padBack=back;
+ }else{padConfirm=false;padBack=false}
+ requestAnimationFrame(onlinePadLoop);
+}
+section.addEventListener('focusin',()=>{window.__vladiOnlinePadActive=true});
+requestAnimationFrame(onlinePadLoop);
 })();
