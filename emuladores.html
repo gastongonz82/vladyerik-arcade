@@ -296,34 +296,37 @@ $('playerExit').addEventListener('click',()=>{close();render()});
 function toggleImmersive(on){area.classList.toggle('immersive',on);$('playerRestore').hidden=!on;requestAnimationFrame(applyAspect);}
 $('playerFullscreen').addEventListener('click',()=>{toggleImmersive(true);if(!document.fullscreenElement&&area.requestFullscreen)area.requestFullscreen().catch(()=>{});});
 $('playerRestore').addEventListener('click',()=>toggleImmersive(false));
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&area.classList.contains('immersive'))toggleImmersive(false);});let navZone='games',navFilter=0,navFeature=0,navHeader=0,navCollection=0;
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&area.classList.contains('immersive'))toggleImmersive(false);});let navZone='games',navFilter=0,navFeature=0,navHeader=0,navCollection=0,navExtra=0;
 const headerButtons=()=>[document.querySelector('.topbar .add-games'),document.querySelector('.topbar a.btn')];
 const collectionButtons=()=>[$('gridView'),$('consoleView'),$('clear')];
+const extraButtons=()=>[$('librarySearch'),$('librarySort'),$('changeCover'),$('retryCover')].filter(el=>el&&!el.disabled&&el.getClientRects().length);
+function focusNavExtra(i=0){const items=extraButtons();if(!items.length){focusNavGames();return}navZone='extra';navExtra=Math.max(0,Math.min(items.length-1,i));clearNavHighlights();items[navExtra].classList.add('keyboard-selected');items[navExtra].scrollIntoView({block:'nearest',behavior:'smooth'});}
 function highlightNavElement(el){clearNavHighlights();if(el){el.classList.add('keyboard-selected');el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}}
 function focusNavHeader(i=0){navZone='header';navHeader=Math.max(0,Math.min(headerButtons().length-1,i));highlightNavElement(headerButtons()[navHeader]);}
 function focusNavCollection(i=0){navZone='collection';navCollection=Math.max(0,Math.min(collectionButtons().length-1,i));highlightNavElement(collectionButtons()[navCollection]);}
 
 const navButtons=()=>[...document.querySelectorAll('.tabs button[data-filter]:not([hidden])')];
 const featureButtons=()=>[$('start'),$('favButton'),$('settingsToggle')];
-function clearNavHighlights(){[...headerButtons(),...collectionButtons()].forEach(b=>b?.classList.remove('keyboard-selected'));$('system').classList.remove('keyboard-selected');navButtons().forEach(b=>b.classList.remove('keyboard-selected'));featureButtons().forEach(b=>b.classList.remove('keyboard-selected'));}
+function clearNavHighlights(){[...headerButtons(),...collectionButtons(),...extraButtons()].forEach(b=>b?.classList.remove('keyboard-selected'));$('system').classList.remove('keyboard-selected');navButtons().forEach(b=>b.classList.remove('keyboard-selected'));featureButtons().forEach(b=>b.classList.remove('keyboard-selected'));}
 function focusNavFilter(i){const buttons=navButtons();if(!buttons.length)return;navZone='filters';navFilter=(i+buttons.length)%buttons.length;clearNavHighlights();buttons[navFilter].classList.add('keyboard-selected');buttons[navFilter].scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}
 function focusNavFeature(i=0){const buttons=featureButtons();navZone='feature';navFeature=Math.max(0,Math.min(buttons.length-1,i));clearNavHighlights();buttons[navFeature].classList.add('keyboard-selected');buttons[navFeature].scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});}
 function focusNavGames(){navZone='games';clearNavHighlights();const card=library.querySelector('.romcard.selected');if(card)card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}
-function navConfirm(){if(navZone==='header'){const el=headerButtons()[navHeader];if(navHeader===0)$('rom').click();else if(el)location.href=el.href;return;}if(navZone==='collection'){collectionButtons()[navCollection]?.click();return;}if(navZone==='options'){const sel=$('system');sel.focus();sel.showPicker?.();return;}if(navZone==='filters'){navButtons()[navFilter]?.click();}else if(navZone==='feature'){const button=featureButtons()[navFeature];if(button&&!button.disabled)button.click();}else if(active())start.click();}
+function navConfirm(){if(navZone==='header'){const el=headerButtons()[navHeader];if(navHeader===0)$('rom').click();else if(el)location.href=el.href;return;}if(navZone==='collection'){collectionButtons()[navCollection]?.click();return;}if(navZone==='extra'){const el=extraButtons()[navExtra];if(el?.tagName==='INPUT'||el?.tagName==='SELECT')el.focus();else el?.click();return;}if(navZone==='extra'){if(key==='ArrowUp')focusNavCollection(0);else if(key==='ArrowDown')focusNavGames();else if(key==='ArrowLeft'||key==='ArrowRight')focusNavExtra(navExtra+(key==='ArrowRight'?1:-1));return;}
+if(navZone==='options'){const sel=$('system');sel.focus();sel.showPicker?.();return;}if(navZone==='filters'){navButtons()[navFilter]?.click();}else if(navZone==='feature'){const button=featureButtons()[navFeature];if(button&&!button.disabled)button.click();}else if(active())start.click();}
 function navMove(key){
 if(navZone==='header'&&key==='ArrowUp'&&window.vladyRetroNavigation?.enterOnline?.())return;
 if(navZone==='header'){if(key==='ArrowUp'&&document.querySelector('#retroOnline .online-card')){const el=document.querySelector('#retroOnline .online-card');el.focus();el.scrollIntoView({block:'center'});return;}if(key==='ArrowDown')focusNavFilter(Math.max(0,navButtons().findIndex(b=>b.classList.contains('active'))));else if(key==='ArrowLeft'||key==='ArrowRight')focusNavHeader(navHeader+(key==='ArrowRight'?1:-1));return;}
-if(navZone==='collection'){if(key==='ArrowUp')focusNavFeature(0);else if(key==='ArrowDown')focusNavGames();else if(key==='ArrowLeft'||key==='ArrowRight')focusNavCollection(navCollection+(key==='ArrowRight'?1:-1));return;}
+if(navZone==='collection'){if(key==='ArrowUp')focusNavFeature(0);else if(key==='ArrowDown')focusNavExtra(0);else if(key==='ArrowLeft'||key==='ArrowRight')focusNavCollection(navCollection+(key==='ArrowRight'?1:-1));return;}
 if(navZone==='options'){const sel=$('system');if(key==='ArrowUp'||key==='ArrowDown'){const step=key==='ArrowDown'?1:-1;sel.selectedIndex=Math.max(0,Math.min(sel.options.length-1,sel.selectedIndex+step));sel.dispatchEvent(new Event('change',{bubbles:true}));sel.scrollIntoView({block:'center',behavior:'smooth'});}else if(key==='ArrowLeft'){navZone='feature';focusNavFeature(2);}return;}
 if(navZone==='filters'){if(key==='ArrowUp')focusNavHeader(0);else if(key==='ArrowDown')focusNavFeature(0);else if(key==='ArrowLeft'||key==='ArrowRight')focusNavFilter(navFilter+(key==='ArrowRight'?1:-1));return;}
 if(navZone==='feature'){if(key==='ArrowDown'&&navFeature===2&&$('systemPanel').classList.contains('open')){navZone='options';$('system').classList.add('keyboard-selected');$('system').scrollIntoView({block:'center',behavior:'smooth'});return;}if(key==='ArrowUp')focusNavFilter(Math.max(0,navButtons().findIndex(b=>b.classList.contains('active'))));else if(key==='ArrowDown')focusNavCollection(0);else if(key==='ArrowLeft'||key==='ArrowRight')focusNavFeature(navFeature+(key==='ArrowRight'?1:-1));return;}
-if(!entries.length)return;
+if(!entries.length){if(key==='ArrowUp')focusNavExtra(0);return;}
 const cards=[...library.querySelectorAll('.romcard')];
-if(!cards.length){if(key==='ArrowUp')focusNavCollection(0);return;}
+if(!cards.length){if(key==='ArrowUp')focusNavExtra(0);return;}
 const current=cards.find(c=>Number(c.dataset.entryIndex)===selected)||cards[0];
 const index=cards.indexOf(current);
 if(collectionView==='console'){
-  if(key==='ArrowUp'){focusNavCollection(0);return;}
+  if(key==='ArrowUp'){focusNavExtra(0);return;}
   if(key==='ArrowDown')return;
   const next=cards[Math.max(0,Math.min(cards.length-1,index+(key==='ArrowRight'?1:-1)))];
   if(next)select(Number(next.dataset.entryIndex));
@@ -337,7 +340,7 @@ if(key==='ArrowLeft'||key==='ArrowRight'){
 // Usar filas reales del DOM, no columnas estimadas: respeta cualquier ancho y cantidad de tarjetas.
 const currentY=current.offsetTop,currentX=current.offsetLeft+current.offsetWidth/2;
 const otherRows=cards.filter(c=>key==='ArrowUp'?c.offsetTop<currentY-3:c.offsetTop>currentY+3);
-if(!otherRows.length){if(key==='ArrowUp')focusNavCollection(0);return;}
+if(!otherRows.length){if(key==='ArrowUp')focusNavExtra(0);return;}
 const targetY=key==='ArrowUp'?Math.max(...otherRows.map(c=>c.offsetTop)):Math.min(...otherRows.map(c=>c.offsetTop));
 const row=otherRows.filter(c=>Math.abs(c.offsetTop-targetY)<3);
 row.sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-currentX)-Math.abs(b.offsetLeft+b.offsetWidth/2-currentX));
