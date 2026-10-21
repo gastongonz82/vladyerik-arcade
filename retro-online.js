@@ -225,6 +225,17 @@ function onlinePadLoop(now){
  }else{padConfirm=false;padBack=false}
  requestAnimationFrame(onlinePadLoop);
 }
+section.addEventListener('keydown',e=>{
+ if(!player.hidden)return;
+ const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
+ if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
+  if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
+  e.preventDefault();e.stopPropagation();padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0);
+ }else if((key==='Enter'||key===' ')&&!e.target.matches('input,select,button')){
+  e.preventDefault();e.stopPropagation();(padFocus||e.target.closest('[role="button"]'))?.click();
+ }
+});
+section.addEventListener('pointerdown',e=>{const t=e.target.closest('button,input,select,[role="button"]');if(t)padSetFocus(t)});
 section.addEventListener('focusin',()=>{window.__vladiOnlinePadActive=true});document.addEventListener('focusin',e=>{if(!section.contains(e.target)&&player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null}});
 requestAnimationFrame(onlinePadLoop);
 })();
