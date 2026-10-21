@@ -223,14 +223,14 @@ function padMove(dx,dy){
  let best=null,score=Infinity;
  for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}
  if(best)padSetFocus(best);
- else if(dy>0&&card){enterLocal()}
+ else if(dy>0){enterLocal()}
 }
 function onlinePadLoop(now){
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
  if(!player.hidden){
   // SHARE / SELECT (botón 8 o 16): salir del emulador online, como en la biblioteca local.
   // Detectar flanco de pulsación para evitar que el mismo botón cierre/active menús varias veces.
-  const exitHeld=pads.some(p=>!!p.buttons?.[8]?.pressed||!!p.buttons?.[16]?.pressed);
+  const exitHeld=pads.some(p=>!!p.buttons?.[16]?.pressed||!!p.buttons?.[8]?.pressed);
   if(exitHeld&&!padPlayerExitHeld&&now>=padExitCooldownUntil){padPlayerExitHeld=true;padExitCooldownUntil=now+550;exit();padLast=now;padConfirm=true;padBack=true}
   else padPlayerExitHeld=exitHeld;
   window.__vladiOnlinePadActive=true;padConfirm=true;padBack=true;
@@ -270,7 +270,7 @@ section.addEventListener('keydown',e=>{
  if(!player.hidden)return;
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
-  if(key==='ArrowDown'&&padFocus?.matches('.online-card')&&padFocus===section.querySelector('.online-card:last-of-type')&&window.vladyLocalNavigation?.enter){e.preventDefault();e.stopPropagation();enterLocal();return}
+  if(key==='ArrowDown'&&padFocus?.matches('.online-card')&&padFocus===grid.querySelector('.online-card:last-child')&&window.vladyLocalNavigation?.enter){e.preventDefault();e.stopPropagation();enterLocal();return}
   if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
   e.preventDefault();e.stopPropagation();padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0);
  }else if((key==='Enter'||key===' ')&&!e.repeat&&!e.target.matches('input,select,button')){
