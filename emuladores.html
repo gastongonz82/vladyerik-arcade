@@ -356,7 +356,7 @@ function retroPadLoop(now){
     close();render();padNeutralUntil=now+450;
   }
   padPrevExit=exitSignal;
-  if(area.hidden&&pads.length&&now>=padNeutralUntil){
+  if(area.hidden&&pads.length&&now>=padNeutralUntil&&!window.__vladiOnlinePadActive){
     if(now-padLastMove>185){
       let direction=null;
       for(const p of pads){
