@@ -148,6 +148,34 @@ function rememberCover(key,value){
 }
 
 function coverCandidates(game){
+ // Arcade box art is indexed separately from console covers in Libretro.
+ if(game.system==='arcade'){
+  const title=cleanName(game.name).replace(/\\s*\\(\\d{4}\\).*$/,'').trim();
+  const rom=decodeURIComponent(game.path.split('/').pop()||'').replace(/\\.zip$/i,'').toLowerCase();
+  const arcadeAliases={
+   simpsons2p2:['The Simpsons (4 Players World, set 1)','The Simpsons (2 Players World)','The Simpsons'],
+   dino:['Cadillacs and Dinosaurs (World 930201)','Cadillacs and Dinosaurs'],
+   punisher:['The Punisher (World 930422)','The Punisher'],
+   avsp:['Alien vs. Predator (Euro 940520)','Alien vs. Predator'],
+   captcomm:['Captain Commando (World 911202)','Captain Commando'],
+   ffight:['Final Fight (World, set 1)','Final Fight'],
+   knights:['Knights of the Round (World 911127)','Knights of the Round'],
+   kod:['The King of Dragons (World 910711)','The King of Dragons'],
+   wof:['Warriors of Fate (World 921031)','Warriors of Fate'],
+   ssriders:['Sunset Riders (4 Players ver EAC)','Sunset Riders'],
+   tmnt:['Teenage Mutant Ninja Turtles (World 4 Players)','Teenage Mutant Ninja Turtles'],
+   tmnt2:['Teenage Mutant Ninja Turtles - Turtles in Time (4 Players ver UAA)','Teenage Mutant Ninja Turtles - Turtles in Time'],
+   xmen:['X-Men (4 Players ver EBA)','X-Men'],
+   mslug:['Metal Slug - Super Vehicle-001','Metal Slug'],
+   mslug2:['Metal Slug 2 - Super Vehicle-001/II','Metal Slug 2'],
+   snowbros:['Snow Bros. - Nick & Tom','Snow Bros.'],
+   bublbobl:['Bubble Bobble','Bubble Bobble (Japan)']
+  };
+  const names=[...new Set([...(arcadeAliases[rom]||[]),title])].slice(0,4);
+  const base='https://thumbnails.libretro.com/MAME/';
+  return ['Named_Boxarts','Named_Titles','Named_Snaps'].flatMap(type=>
+   names.map(name=>base+type+'/'+encodeURIComponent(name.replace(/[&*\\/:<>?|"\\\\]/g,'_'))+'.png'));
+ }
  const system=thumbSystems[game.system];if(!system)return [];
  const raw=cleanName(game.name);
  const noTags=raw.replace(/\s*\[[^\]]*\]/g,'').replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();
