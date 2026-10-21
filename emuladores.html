@@ -311,6 +311,7 @@ function focusNavFeature(i=0){const buttons=featureButtons();navZone='feature';n
 function focusNavGames(){navZone='games';clearNavHighlights();const card=library.querySelector('.romcard.selected');if(card)card.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}
 function navConfirm(){if(navZone==='header'){const el=headerButtons()[navHeader];if(navHeader===0)$('rom').click();else if(el)location.href=el.href;return;}if(navZone==='collection'){collectionButtons()[navCollection]?.click();return;}if(navZone==='options'){const sel=$('system');sel.focus();sel.showPicker?.();return;}if(navZone==='filters'){navButtons()[navFilter]?.click();}else if(navZone==='feature'){const button=featureButtons()[navFeature];if(button&&!button.disabled)button.click();}else if(active())start.click();}
 function navMove(key){
+if(navZone==='header'&&key==='ArrowUp'&&window.vladyRetroNavigation?.enterOnline?.())return;
 if(navZone==='header'){if(key==='ArrowUp'&&document.querySelector('#retroOnline .online-card')){const el=document.querySelector('#retroOnline .online-card');el.focus();el.scrollIntoView({block:'center'});return;}if(key==='ArrowDown')focusNavFilter(Math.max(0,navButtons().findIndex(b=>b.classList.contains('active'))));else if(key==='ArrowLeft'||key==='ArrowRight')focusNavHeader(navHeader+(key==='ArrowRight'?1:-1));return;}
 if(navZone==='collection'){if(key==='ArrowUp')focusNavFeature(0);else if(key==='ArrowDown')focusNavGames();else if(key==='ArrowLeft'||key==='ArrowRight')focusNavCollection(navCollection+(key==='ArrowRight'?1:-1));return;}
 if(navZone==='options'){const sel=$('system');if(key==='ArrowUp'||key==='ArrowDown'){const step=key==='ArrowDown'?1:-1;sel.selectedIndex=Math.max(0,Math.min(sel.options.length-1,sel.selectedIndex+step));sel.dispatchEvent(new Event('change',{bubbles:true}));sel.scrollIntoView({block:'center',behavior:'smooth'});}else if(key==='ArrowLeft'){navZone='feature';focusNavFeature(2);}return;}
@@ -342,6 +343,7 @@ const row=otherRows.filter(c=>Math.abs(c.offsetTop-targetY)<3);
 row.sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-currentX)-Math.abs(b.offsetLeft+b.offsetWidth/2-currentX));
 if(row[0])select(Number(row[0].dataset.entryIndex));
 }
+window.vladyLocalNavigation={enter:()=>{focusNavHeader(0);return true},move:navMove};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close();render();return;}if(!area.hidden||window.__vladiOnlinePadActive||document.activeElement?.closest?.('#retroOnline')||/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||''))return;const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){e.preventDefault();navMove(key);}else if(key==='Enter'||key===' '){e.preventDefault();navConfirm();}});
 // Navegación de mandos: cruceta y palanca en menú; Share/Back para salir del emulador.
 let padLastMove=0,padPrevConfirm=false,padPrevExit=false,padExitHoldAt=0,padExitHoldDone=false,padNeutralUntil=0;
