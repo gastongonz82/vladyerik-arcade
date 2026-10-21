@@ -352,6 +352,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close
 // Navegación de mandos: cruceta y palanca en menú; Share/Back para salir del emulador.
 let padLastMove=0,padPrevConfirm=false,padPrevExit=false,padExitHoldAt=0,padExitHoldDone=false,padNeutralUntil=0;
 function retroPadLoop(now){
+  if(window.__vladiUnifiedNavigation)return;
   const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
   const pressed=(pad,i)=>!!pad.buttons?.[i]?.pressed;
   const exitPressed=pads.some(p=>pressed(p,8)||pressed(p,16));
@@ -386,4 +387,4 @@ function retroPadLoop(now){
 requestAnimationFrame(retroPadLoop);
 window.addEventListener('pagehide',close);render();restoreLibrary();
 })();
-</script></body></html>
+</script><script src="./arcade-navigation.js"></script></body></html>
