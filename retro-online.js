@@ -243,6 +243,19 @@ function onlinePadLoop(now){
  }else{padConfirm=false;padBack=false}
  requestAnimationFrame(onlinePadLoop);
 }
+// Teclado global: la navegación local comienza sin foco DOM; permitir entrar a ONLINE desde arriba.
+document.addEventListener('keydown',e=>{
+ if(!player.hidden||e.defaultPrevented||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
+ const inOnline=section.contains(document.activeElement);
+ if(inOnline)return; // El controlador de la sección procesa el evento.
+ const localHeader=document.querySelector('.keyboard-selected');
+ const atLocalTop=!!localHeader&&(localHeader.closest('header')||localHeader.closest('.tabs')||localHeader.closest('.collection-title'));
+ const pageAtTop=window.scrollY<90&&!localHeader;
+ if(e.key==='ArrowUp'&&(atLocalTop||pageAtTop)){
+  const target=section.querySelector('.online-card')||section.querySelector('#onlineFeaturePlay')||padTargets()[0];
+  if(target){e.preventDefault();e.stopImmediatePropagation();padSetFocus(target)}
+ }
+},true);
 section.addEventListener('keydown',e=>{
  if(!player.hidden)return;
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
