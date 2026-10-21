@@ -344,7 +344,7 @@ row.sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-currentX)-Math.abs(b.offse
 if(row[0])select(Number(row[0].dataset.entryIndex));
 }
 window.vladyLocalNavigation={enter:()=>{focusNavHeader(0);return true},move:navMove};
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close();render();return;}if(!area.hidden||window.__vladiOnlinePadActive||document.activeElement?.closest?.('#retroOnline')||/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||''))return;const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){e.preventDefault();navMove(key);}else if(key==='Enter'||key===' '){e.preventDefault();navConfirm();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close();render();return;}if(!area.hidden||window.__vladiOnlinePlayerActive||window.__vladiOnlinePadActive||document.activeElement?.closest?.('#retroOnline, #onlinePlayer')||/^(INPUT|TEXTAREA|SELECT|IFRAME)$/.test(document.activeElement?.tagName||''))return;const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){e.preventDefault();navMove(key);}else if(key==='Enter'||key===' '){e.preventDefault();navConfirm();}});
 // Navegación de mandos: cruceta y palanca en menú; Share/Back para salir del emulador.
 let padLastMove=0,padPrevConfirm=false,padPrevExit=false,padExitHoldAt=0,padExitHoldDone=false,padNeutralUntil=0;
 function retroPadLoop(now){
@@ -358,7 +358,7 @@ function retroPadLoop(now){
     close();render();padNeutralUntil=now+450;
   }
   padPrevExit=exitSignal;
-  if(area.hidden&&pads.length&&now>=padNeutralUntil&&!window.__vladiOnlinePadActive&&!document.activeElement?.closest?.('#retroOnline')){
+  if(area.hidden&&pads.length&&now>=padNeutralUntil&&!window.__vladiOnlinePlayerActive&&!window.__vladiOnlinePadActive&&!document.activeElement?.closest?.('#retroOnline, #onlinePlayer')){
     if(now-padLastMove>185){
       let direction=null;
       for(const p of pads){
