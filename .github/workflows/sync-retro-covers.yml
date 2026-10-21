@@ -1,5 +1,9 @@
 name: Sincronizar portadas retro
 on:
+  push:
+    paths:
+      - 'scripts/sync_covers.py'
+      - '.github/workflows/sync-retro-covers.yml'
   workflow_dispatch:
   schedule:
     - cron: '25 6 * * *'
