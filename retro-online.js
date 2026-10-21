@@ -51,6 +51,18 @@ const style=document.createElement('style');style.textContent=`
 #retroOnline .online-grid.console-mode .online-art{height:86px;font-size:37px}
 #retroOnline .online-grid.console-mode .online-info{padding:10px 48px 10px 14px}
 @media(max-width:650px){#retroOnline .online-feature{grid-template-columns:1fr;gap:12px;padding:14px}#retroOnline .online-feature-art{height:150px;font-size:65px}#retroOnline .online-feature h3{font-size:28px}}
+
+/* Igualar proporciones del destacado a #featured de la biblioteca local */
+#retroOnline .online-feature{grid-template-columns:minmax(190px,34%) minmax(0,1fr)!important;gap:28px!important;min-height:300px!important;padding:24px!important;box-sizing:border-box!important}
+#retroOnline .online-feature-art{height:270px!important;font-size:100px!important}
+#retroOnline .online-feature h3{font-size:clamp(27px,4vw,59px)!important;line-height:1.08!important}
+#retroOnline .online-feature-actions{margin-top:25px!important;gap:12px!important}
+#retroOnline .online-feature-actions button:first-child{font-size:17px!important;padding:16px 24px!important}
+#retroOnline .online-grid.console-mode{display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;align-items:stretch!important;gap:16px!important;overflow-x:auto!important;overflow-y:hidden!important;padding:12px 7px 24px!important;scroll-snap-type:x proximity!important;scrollbar-color:#ffc74c #121c45!important;scrollbar-width:thin!important;overscroll-behavior-x:contain!important;-webkit-overflow-scrolling:touch!important}
+#retroOnline .online-grid.console-mode .online-card{display:flex!important;flex-direction:column!important;flex:0 0 clamp(175px,18vw,260px)!important;width:clamp(175px,18vw,260px)!important;min-height:0!important;height:auto!important;scroll-snap-align:center!important;grid-template-columns:none!important}
+#retroOnline .online-grid.console-mode .online-art{width:100%!important;height:clamp(200px,22vw,295px)!important;min-height:0!important;font-size:65px!important;border-bottom:1px solid #45639a!important}
+#retroOnline .online-grid.console-mode .online-info{display:flex!important;min-height:94px!important;padding:13px 12px 15px!important}
+@media(max-width:650px){#retroOnline .online-feature{grid-template-columns:1fr!important;gap:12px!important;padding:14px!important}#retroOnline .online-feature-art{height:190px!important;font-size:75px!important}#retroOnline .online-feature h3{font-size:clamp(25px,7vw,36px)!important}#retroOnline .online-grid.console-mode .online-card{flex-basis:190px!important;width:190px!important}}
 `;document.head.append(style);
 const section=document.createElement('section');section.id='retroOnline';section.innerHTML='<h2>🌐 RETRO ONLINE</h2><p class="hint">Juegos disponibles para jugar directamente, sin subir archivos.</p><div id="onlineStatus" role="status">Cargando catálogo…</div><div class="online-grid" id="onlineGrid"></div>';
 const nav=document.querySelector('.tabs');nav?.before(section);
