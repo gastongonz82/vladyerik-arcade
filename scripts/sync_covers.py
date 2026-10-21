@@ -90,14 +90,53 @@ def branded_cover(game):
     draw.text((24, 420), system, fill="#2bd3e5", font=small)
     return canvas
 
+# Covers generadas anteriormente: intentar reemplazarlas por imágenes del juego.
+REVIEW_TITLES = (
+    "1200-in-1", "72-in-1", "Donkey Kong Country 2", "Donkey Kong Country 3",
+    "Prince of Persia 2", "Sonic the Hedgehog 4", "Spider-Man & Venom",
+    "Street Fighter EX", "Street Fighter II", "Wave Race 64", "X-Men vs. Street Fighter"
+)
+WIKI_TITLES = {
+    "Wave Race 64": "Wave_Race_64",
+    "Donkey Kong Country 2": "Donkey_Kong_Country_2:_Diddy's_Kong_Quest",
+    "Donkey Kong Country 3": "Donkey_Kong_Country_3:_Dixie_Kong's_Double_Trouble!",
+    "Prince of Persia 2": "Prince_of_Persia_2:_The_Shadow_and_the_Flame",
+    "Spider-Man & Venom": "Spider-Man_and_Venom:_Maximum_Carnage",
+    "Street Fighter II - The World Warrior": "Street_Fighter_II",
+    "Street Fighter II Turbo": "Street_Fighter_II_Turbo",
+    "X-Men vs. Street Fighter": "X-Men_vs._Street_Fighter",
+}
+def wiki_art(name):
+    for prefix, title in sorted(WIKI_TITLES.items(), key=lambda x: -len(x[0])):
+        if not name.lower().startswith(prefix.lower()):
+            continue
+        url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + urllib.parse.quote(title)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent":"VLADYERIKArcade/1.0 (game-cover-research)"})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                page = json.load(response)
+            source = (page.get("thumbnail") or {}).get("source")
+            if not source or page.get("type") == "disambiguation":
+                return None
+            req = urllib.request.Request(source, headers={"User-Agent":"VLADYERIKArcade/1.0"})
+            with urllib.request.urlopen(req, timeout=12) as response:
+                image = Image.open(BytesIO(response.read()))
+                image.load()
+            return image
+        except Exception as error:
+            print("Wikipedia no disponible:", name, str(error)[:80], flush=True)
+    return None
+
 for index, game in enumerate(catalog["games"]):
     path = game["path"]
-    if path in manifest and (root / manifest[path]).exists():
+    exists = path in manifest and (root / manifest[path]).exists()
+    review = any(game["name"].lower().startswith(t.lower()) for t in REVIEW_TITLES)
+    if exists and not review:
         continue
     system = systems.get(game.get("system"))
     if not system:
         continue
-    image = None
+    image = wiki_art(game["name"]) if review else None
     for kind in ("Named_Boxarts", "Named_Titles", "Named_Snaps"):
         if image is not None:
             break
@@ -111,6 +150,9 @@ for index, game in enumerate(catalog["games"]):
                 break
             except Exception:
                 continue
+    if image is None and exists:
+        print("SE CONSERVA PORTADA EXISTENTE:", game["name"], flush=True)
+        continue
     if image is None:
         image = branded_cover(game)
         print("PORTADA IDENTIFICADA VLADYERIK:", game["name"], flush=True)
