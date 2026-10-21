@@ -259,7 +259,7 @@ function onlinePadLoop(now){
 }
 // Puente único entre la navegación online y la biblioteca local.
 function enterOnline(){if(!player.hidden)return false;const cards=[...section.querySelectorAll('.online-card')];const first=cards[0]||padTargets()[0];if(!first)return false;padSetFocus(first);return true}
-function enterLocal(){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;return window.vladyLocalNavigation?.enter?.()||false}
+function enterLocal(){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;document.activeElement?.blur?.();return window.vladyLocalNavigation?.enter?.()||false}
 window.vladyRetroNavigation={enterOnline,enterLocal,moveOnline:(key)=>padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0)};
 document.addEventListener('keydown',e=>{
  if(!player.hidden||e.defaultPrevented||!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;
