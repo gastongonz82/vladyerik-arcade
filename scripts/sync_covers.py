@@ -130,6 +130,7 @@ def wiki_art(name):
 # Pantalla de selección real documentada para 72-in-1.
 MULTICART_SCREENSHOTS = {
     "72-in-1": "https://www.retrogames.cz/games/1563/NES_02.gif",
+    "1200-in-1": "https://khogamehub.com/emulator/thumbs/c9e13b8d-b0a6-4fc6-9a65-5faacea8450c.png",
 }
 def multicart_screenshot(name):
     for prefix, url in MULTICART_SCREENSHOTS.items():
