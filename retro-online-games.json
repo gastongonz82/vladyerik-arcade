@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "title": "Nova the Squirrel",
+    "console": "Nintendo NES · Homebrew libre",
+    "core": "nes",
+    "rom": "https://raw.githubusercontent.com/dau-in/channel-3/main/public/roms/nova-the-squirrel.nes",
+    "cover": "",
+    "license": "GPLv3",
+    "source": "https://github.com/NovaSquirrel/NovaTheSquirrel"
+  }
+]
