@@ -203,7 +203,7 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Cat�
 
 /* Navegación por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
 const padStyle=document.createElement('style');padStyle.textContent='#retroOnline .online-pad-focus{outline:3px solid #ffcf42!important;outline-offset:3px!important;box-shadow:0 0 0 5px #0c204b,0 0 24px #ffcd6488!important}';document.head.append(padStyle);
-let padFocus=null,padLast=0,padConfirm=false,padBack=false;
+let padFocus=null,padLast=0,padConfirm=false,padBack=false,padPlayerExitHeld=false,padExitCooldownUntil=0;
 function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
 function padMove(dx,dy){
@@ -227,7 +227,20 @@ function padMove(dx,dy){
 }
 function onlinePadLoop(now){
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
- if(!player.hidden){window.__vladiOnlinePadActive=true;padConfirm=true;padBack=true;requestAnimationFrame(onlinePadLoop);return}
+ if(!player.hidden){
+  // SHARE / SELECT (botón 8 o 16): salir del emulador online, como en la biblioteca local.
+  // Detectar flanco de pulsación para evitar que el mismo botón cierre/active menús varias veces.
+  const exitHeld=pads.some(p=>!!p.buttons?.[8]?.pressed||!!p.buttons?.[16]?.pressed);
+  if(exitHeld&&!padPlayerExitHeld&&now>=padExitCooldownUntil){padPlayerExitHeld=true;padExitCooldownUntil=now+550;exit();padLast=now;padConfirm=true;padBack=true}
+  else padPlayerExitHeld=exitHeld;
+  window.__vladiOnlinePadActive=true;padConfirm=true;padBack=true;
+  requestAnimationFrame(onlinePadLoop);return
+ }
+ if(padPlayerExitHeld){
+  const stillHeld=pads.some(p=>!!p.buttons?.[8]?.pressed||!!p.buttons?.[16]?.pressed);
+  if(stillHeld){requestAnimationFrame(onlinePadLoop);return}
+  padPlayerExitHeld=false;padBack=false;padConfirm=false;
+ }
  if(!document.querySelector('#playerArea')?.hidden){padConfirm=true;padBack=true;requestAnimationFrame(onlinePadLoop);return}
  if(pads.length&&(window.__vladiOnlinePadActive||section.contains(document.activeElement)||!document.activeElement||document.activeElement===document.body)){
   const pressed=i=>pads.some(p=>p.buttons?.[i]?.pressed);
