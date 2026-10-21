@@ -73,6 +73,25 @@ const style=document.createElement('style');style.textContent=`
 #retroOnline .online-card .online-art:after{content:'';position:absolute;inset:auto 0 0;height:35%;pointer-events:none;background:linear-gradient(transparent,#07132d4d)}
 #retroOnline .online-art .online-fallback,#retroOnline .online-feature-art .online-fallback{display:grid;place-items:center;width:100%;height:100%;font-size:clamp(40px,5vw,74px);font-weight:1000;color:#ffe28d;text-shadow:0 4px 18px #0008}
 #retroOnline .online-card small{color:#91dcff;letter-spacing:.07em}
+
+/* Tarjetas premium: arte centrado, marco consistente y tamaño legible */
+#retroOnline .online-grid:not(.console-mode){grid-template-columns:repeat(auto-fill,minmax(215px,1fr))!important;gap:18px!important}
+#retroOnline .online-card{border:1px solid #5279b4!important;border-radius:17px!important;background:linear-gradient(145deg,#182e58,#111f40)!important;box-shadow:0 8px 0 #070e24,0 12px 22px #0004!important;isolation:isolate}
+#retroOnline .online-card:hover{border-color:#ffe078!important;box-shadow:0 8px 0 #070e24,0 18px 30px #0007,0 0 0 1px #ffe078!important}
+#retroOnline .online-grid:not(.console-mode) .online-card{min-height:315px!important}
+#retroOnline .online-art{height:225px!important;min-height:225px!important;width:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;background:radial-gradient(ellipse at center,#28467e 0%,#12254c 62%,#0b1734 100%)!important}
+#retroOnline .online-art img{display:block!important;position:relative!important;max-width:calc(100% - 24px)!important;max-height:calc(100% - 24px)!important;width:auto!important;height:auto!important;object-fit:contain!important;object-position:center center!important;margin:auto!important;padding:0!important;filter:drop-shadow(0 10px 12px #0009)!important}
+#retroOnline .online-art .online-fallback{display:flex!important;align-items:center!important;justify-content:center!important;margin:auto!important}
+#retroOnline .online-art:after{display:none!important}
+#retroOnline .online-info{min-height:88px!important;padding:13px 14px 15px!important;gap:10px!important}
+#retroOnline .online-card strong{font-size:14px!important;line-height:1.35!important}
+#retroOnline .online-card small{font-size:11px!important}
+#retroOnline .online-fav{right:9px!important;top:9px!important;display:flex!important;align-items:center!important;justify-content:center!important;width:38px!important;height:38px!important;border-radius:10px!important;background:#09172de8!important;color:#fff!important;font-size:24px!important;line-height:1!important;box-shadow:0 3px 10px #0008!important}
+#retroOnline .online-fav[aria-pressed="true"]{color:#ffdb64!important}
+#retroOnline .online-grid.console-mode .online-art{height:clamp(220px,24vw,310px)!important;min-height:0!important}
+#retroOnline .online-feature-art{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
+#retroOnline .online-feature-art img{width:auto!important;height:auto!important;max-width:calc(100% - 28px)!important;max-height:calc(100% - 22px)!important;object-fit:contain!important;object-position:center!important;padding:0!important;margin:auto!important}
+@media(max-width:620px){#retroOnline .online-grid:not(.console-mode){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}#retroOnline .online-grid:not(.console-mode) .online-card{min-height:250px!important}#retroOnline .online-grid:not(.console-mode) .online-art{height:165px!important;min-height:165px!important}#retroOnline .online-info{padding:10px!important}#retroOnline .online-card strong{font-size:12px!important}}
 `;document.head.append(style);
 const section=document.createElement('section');section.id='retroOnline';section.innerHTML='<h2>🌐 RETRO ONLINE</h2><p class="hint">Juegos disponibles para jugar directamente, sin subir archivos.</p><div id="onlineStatus" role="status">Cargando catálogo…</div><div class="online-grid" id="onlineGrid"></div>';
 const nav=document.querySelector('.tabs');nav?.before(section);
