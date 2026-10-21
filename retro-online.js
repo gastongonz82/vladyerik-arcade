@@ -206,7 +206,25 @@ const padStyle=document.createElement('style');padStyle.textContent='#retroOnlin
 let padFocus=null,padLast=0,padConfirm=false,padBack=false;
 function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled)}
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
-function padMove(dx,dy){const targets=padTargets();if(!targets.length)return;if(!padFocus||!targets.includes(padFocus)){padSetFocus(targets[0]);return}const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let best=null,score=Infinity;for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}if(best)padSetFocus(best)}
+function padMove(dx,dy){
+ const targets=padTargets();if(!targets.length)return;
+ if(!padFocus||!targets.includes(padFocus)){padSetFocus(dy>0?section.querySelector('.online-card')||targets[0]:targets[0]);return}
+ const cards=[...grid.querySelectorAll('.online-card')],currentCard=padFocus.closest('.online-card'),card=cards.includes(padFocus)?padFocus:currentCard;
+ if(card&&cards.length){
+  const index=cards.indexOf(card),step=dx||dy;
+  if(layout==='console'&&dx){const next=cards[Math.max(0,Math.min(cards.length-1,index+dx))];if(next&&next!==card){padSetFocus(next);return}}
+  if(layout==='grid'){
+   if(dx){const next=cards[Math.max(0,Math.min(cards.length-1,index+dx))];if(next&&next!==card){padSetFocus(next);return}}
+   if(dy>0){const y=card.offsetTop;const rows=cards.filter(c=>c.offsetTop>y+3);if(rows.length){const rowY=Math.min(...rows.map(c=>c.offsetTop));const center=card.offsetLeft+card.offsetWidth/2;rows.filter(c=>Math.abs(c.offsetTop-rowY)<3).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-center)-Math.abs(b.offsetLeft+b.offsetWidth/2-center));const row=rows.filter(c=>Math.abs(c.offsetTop-rowY)<3).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-center)-Math.abs(b.offsetLeft+b.offsetWidth/2-center));padSetFocus(row[0]);return}}
+   if(dy<0){const y=card.offsetTop;const rows=cards.filter(c=>c.offsetTop<y-3);if(rows.length){const rowY=Math.max(...rows.map(c=>c.offsetTop));const center=card.offsetLeft+card.offsetWidth/2;const row=rows.filter(c=>Math.abs(c.offsetTop-rowY)<3).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-center)-Math.abs(b.offsetLeft+b.offsetWidth/2-center));padSetFocus(row[0]);return}}
+  }
+ }
+ const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+ let best=null,score=Infinity;
+ for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}
+ if(best)padSetFocus(best);
+ else if(dy>0&&card){const local=document.querySelector('#collection .romcard, #collection button, #gridView');if(local){padFocus.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;local.focus();local.scrollIntoView({block:'center'})}}
+}
 function onlinePadLoop(now){
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
  if(!player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null;requestAnimationFrame(onlinePadLoop);return}
