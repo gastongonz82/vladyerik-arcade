@@ -226,6 +226,7 @@ function padMove(dx,dy){
  else if(dy>0||dy<0){enterLocal()}
 }
 function onlinePadLoop(now){
+ if(window.__vladiUnifiedNavigation)return;
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
  if(!player.hidden){
   // SHARE / SELECT (botón 8 o 16): salir del emulador online, como en la biblioteca local.
