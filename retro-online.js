@@ -163,7 +163,11 @@ function coverCandidates(game){
    captcommb:['Captain Commando (World 911202)','Captain Commando'],
    contra:['Contra (US, set 1)','Contra'],
    ddragon3j:['Double Dragon 3 - The Rosetta Stone (Japan)','Double Dragon 3 - The Rosetta Stone'],
-   fatfursp:['Fatal Fury Special _ Garou Densetsu Special','Fatal Fury Special'],
+   fatfursp:['Fatal Fury Special (NGM-058 ~ NGH-058)','Fatal Fury Special / Garou Densetsu Special (NGM-058 ~ NGH-058)','Fatal Fury Special _ Garou Densetsu Special','Fatal Fury Special'],
+   knights:['Knights of the Round (World 911127)','Knights of the Round (World 911127, B-Board 89624B-3)','Knights of the Round'],
+   mk:['Mortal Kombat (rev 5.0 T-Unit 03_19_93)','Mortal Kombat (rev 5.0 T-Unit 03/19/93)','Mortal Kombat (rev 4.0 09_28_92)','Mortal Kombat'],
+   mk2:['Mortal Kombat II (rev L3.1)','Mortal Kombat II (rev L3.1 12_27_93)','Mortal Kombat II'],
+   wof:['Warriors of Fate (World 921031)','Warriors of Fate (World 921031, B-Board 91634B-2)','Warriors of Fate'],
    galaga:['Galaga (Namco rev. B)','Galaga'],
    kodr1:['The King of Dragons (World 910711)','The King of Dragons'],
    mk4:['Mortal Kombat 4 (version 3.0)','Mortal Kombat 4'],
@@ -175,7 +179,7 @@ function coverCandidates(game){
    sfiii3:['Street Fighter III 3rd Strike - Fight for the Future (USA 990608)','Street Fighter III 3rd Strike'],
    sfa3:['Street Fighter Alpha 3 (USA 980904)','Street Fighter Alpha 3'],
    tmnt2pj:['Teenage Mutant Ninja Turtles - Turtles in Time (4 Players ver UAA)','Teenage Mutant Ninja Turtles - Turtles in Time'],
-   wwfmania:['WWF Wrestlemania (rev 1.30 08_10_95)','WWF Wrestlemania'],
+   wwfmania:['WWF WrestleMania_ The Arcade Game (rev 1.30 08_10_95)','WWF Wrestlemania (rev 1.30 08_10_95)','WWF WrestleMania_ The Arcade Game','WWF WrestleMania'],
    simpsons2p2:['The Simpsons (2 Players World)','The Simpsons (4 Players World, set 1)','The Simpsons'],
    dino:['Cadillacs and Dinosaurs (World 930201)','Cadillacs and Dinosaurs'],
    ddragon2:['Double Dragon II - The Revenge (World)','Double Dragon II - The Revenge'],
@@ -196,10 +200,10 @@ function coverCandidates(game){
    xmvsf:['X-Men Vs. Street Fighter (USA 961023)','X-Men Vs. Street Fighter']
   };
   const names=[...new Set([...(aliases[rom]||[]),title,title.replace(/ vs\.? /ig,' Vs. '),title.replace(/:/g,' -')])].filter(Boolean);
-  const base='https://thumbnails.libretro.com/MAME/';
+  const bases=['https://thumbnails.libretro.com/FBNeo/','https://thumbnails.libretro.com/MAME/'];
   const safe=name=>name.replace(/[&*\/:<>?|"\\]/g,'_');
-  return ['Named_Boxarts','Named_Titles','Named_Snaps'].flatMap(type=>
-   names.map(name=>base+type+'/'+encodeURIComponent(safe(name))+'.png'));
+  return bases.flatMap(base=>['Named_Boxarts','Named_Titles','Named_Snaps'].flatMap(type=>
+   names.map(name=>base+type+'/'+encodeURIComponent(safe(name))+'.png')));
  }
  const system=thumbSystems[game.system];if(!system)return [];
  const raw=cleanName(game.name);
