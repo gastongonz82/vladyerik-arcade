@@ -150,31 +150,33 @@ function rememberCover(key,value){
 function coverCandidates(game){
  // Arcade box art is indexed separately from console covers in Libretro.
  if(game.system==='arcade'){
-  const title=cleanName(game.name).replace(/\\s*\\(\\d{4}\\).*$/,'').trim();
+  const title=cleanName(game.name).replace(/\s*\(\d{4}\).*$/,'').trim();
   const rom=decodeURIComponent(game.path.split('/').pop()||'').replace(/\.zip$/i,'').toLowerCase();
-  const arcadeAliases={
-   simpsons2p2:['The Simpsons (4 Players World, set 1)','The Simpsons (2 Players World)','The Simpsons'],
+  const aliases={
+   simpsons2p2:['The Simpsons (2 Players World)','The Simpsons (4 Players World, set 1)','The Simpsons'],
    dino:['Cadillacs and Dinosaurs (World 930201)','Cadillacs and Dinosaurs'],
-   punisher:['The Punisher (World 930422)','The Punisher'],
-   avsp:['Alien vs. Predator (Euro 940520)','Alien vs. Predator'],
-   captcomm:['Captain Commando (World 911202)','Captain Commando'],
-   ffight:['Final Fight (World, set 1)','Final Fight'],
-   knights:['Knights of the Round (World 911127)','Knights of the Round'],
-   kod:['The King of Dragons (World 910711)','The King of Dragons'],
-   wof:['Warriors of Fate (World 921031)','Warriors of Fate'],
-   ssriders:['Sunset Riders (4 Players ver EAC)','Sunset Riders'],
-   tmnt:['Teenage Mutant Ninja Turtles (World 4 Players)','Teenage Mutant Ninja Turtles'],
-   tmnt2:['Teenage Mutant Ninja Turtles - Turtles in Time (4 Players ver UAA)','Teenage Mutant Ninja Turtles - Turtles in Time'],
-   xmen:['X-Men (4 Players ver EBA)','X-Men'],
+   ddragon2:['Double Dragon II - The Revenge (World)','Double Dragon II - The Revenge'],
+   ffightub:['Final Fight (USA, set 2)','Final Fight (World, set 1)','Final Fight'],
+   ga2:['Golden Axe_ The Revenge of Death Adder (World)','Golden Axe_ The Revenge of Death Adder'],
+   goldnaxe:['Golden Axe (set 6, US)','Golden Axe'],
+   mk3:['Mortal Kombat 3 (rev 2.1)','Mortal Kombat 3'],
+   msh:['Marvel Super Heroes (Euro 951024)','Marvel Super Heroes'],
    mslug:['Metal Slug - Super Vehicle-001','Metal Slug'],
-   mslug2:['Metal Slug 2 - Super Vehicle-001/II','Metal Slug 2'],
+   mslug2:['Metal Slug 2 - Super Vehicle-001_II','Metal Slug 2'],
+   mvscu:['Marvel Vs. Capcom_ Clash of Super Heroes (USA 980123)','Marvel Vs. Capcom_ Clash of Super Heroes'],
+   outrun:['Out Run (sitdown_upright, Rev B)','Out Run'],
+   punisher:['The Punisher (World 930422)','The Punisher'],
    snowbros:['Snow Bros. - Nick & Tom','Snow Bros.'],
-   bublbobl:['Bubble Bobble','Bubble Bobble (Japan)']
+   ssridersubc:['Sunset Riders (4 Players ver UBC)','Sunset Riders'],
+   tmnt:['Teenage Mutant Ninja Turtles (World 4 Players)','Teenage Mutant Ninja Turtles'],
+   wboy:['Wonder Boy (set 1)','Wonder Boy'],
+   xmvsf:['X-Men Vs. Street Fighter (USA 961023)','X-Men Vs. Street Fighter']
   };
-  const names=[...new Set([...(arcadeAliases[rom]||[]),title])].slice(0,4);
+  const names=[...new Set([...(aliases[rom]||[]),title,title.replace(/ vs\.? /ig,' Vs. '),title.replace(/:/g,' -')])].filter(Boolean);
   const base='https://thumbnails.libretro.com/MAME/';
+  const safe=name=>name.replace(/[&*\/:<>?|"\\]/g,'_');
   return ['Named_Boxarts','Named_Titles','Named_Snaps'].flatMap(type=>
-   names.map(name=>base+type+'/'+encodeURIComponent(name.replace(/[&*\\/:<>?|"\\\\]/g,'_'))+'.png'));
+   names.map(name=>base+type+'/'+encodeURIComponent(safe(name))+'.png'));
  }
  const system=thumbSystems[game.system];if(!system)return [];
  const raw=cleanName(game.name);
