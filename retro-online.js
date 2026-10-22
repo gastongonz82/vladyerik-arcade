@@ -158,18 +158,18 @@ function coverCandidates(game){
    ddragon2:['Double Dragon II - The Revenge (World)','Double Dragon II - The Revenge'],
    ffightub:['Final Fight (USA, set 2)','Final Fight (World, set 1)','Final Fight'],
    ga2:['Golden Axe_ The Revenge of Death Adder (World)','Golden Axe_ The Revenge of Death Adder'],
-   goldnaxe:['Golden Axe (set 6, US)','Golden Axe'],
+   goldnaxe:['Golden Axe (Version 1)','Golden Axe (set 6, US, 8751 317-123A)','Golden Axe'],
    mk3:['Mortal Kombat 3 (rev 2.1)','Mortal Kombat 3'],
-   msh:['Marvel Super Heroes (Euro 951024)','Marvel Super Heroes'],
+   msh:['Marvel Super Heroes (Euro 951024)','Marvel Super Heroes (Japan 951024)','Marvel Super Heroes'],
    mslug:['Metal Slug - Super Vehicle-001','Metal Slug'],
    mslug2:['Metal Slug 2 - Super Vehicle-001_II','Metal Slug 2'],
    mvscu:['Marvel Vs. Capcom_ Clash of Super Heroes (USA 980123)','Marvel Vs. Capcom_ Clash of Super Heroes'],
    outrun:['Out Run (sitdown_upright, Rev B)','Out Run'],
    punisher:['The Punisher (World 930422)','The Punisher'],
-   snowbros:['Snow Bros. - Nick & Tom','Snow Bros.'],
-   ssridersubc:['Sunset Riders (4 Players ver UBC)','Sunset Riders'],
+   snowbros:['Snow Bros. - Nick _ Tom (set 1)','Snow Bros. - Nick _ Tom (Japan)','Snow Bros.'],
+   ssridersubc:['Sunset Riders (4 Players ver EAC)','Sunset Riders (World 4 Players ver. EAC)','Sunset Riders (2 Players ver ABD)'],
    tmnt:['Teenage Mutant Ninja Turtles (World 4 Players)','Teenage Mutant Ninja Turtles'],
-   wboy:['Wonder Boy (set 1)','Wonder Boy'],
+   wboy:['Wonder Boy (set 1, 315-5177)','Wonder Boy (not encrypted)','Wonder Boy (set 1, new encryption)'],
    xmvsf:['X-Men Vs. Street Fighter (USA 961023)','X-Men Vs. Street Fighter']
   };
   const names=[...new Set([...(aliases[rom]||[]),title,title.replace(/ vs\.? /ig,' Vs. '),title.replace(/:/g,' -')])].filter(Boolean);
