@@ -186,7 +186,10 @@ function coverCandidates(game){
  const baseNames=[raw.replace(/\s*\[[^\]]*\]/g,'').trim(),noTags+' (USA)',noTags+' (Europe)',noTags+' (World)',noTags];
  if(regionName)baseNames.splice(1,0,noTags+' ('+regionName+')');
  const alt=noTags.match(/^(.+), The$/i);if(alt)baseNames.push('The '+alt[1]+' (USA)');
- const aliases={'1200-in-1':['Super Mario Bros','Super Mario Bros. 3'],'72-in-1':['Super Mario Bros','Contra'],'diddy kong racing':['Diddy Kong Racing'],'donkey kong country 2':['Donkey Kong Country 2 - Diddy’s Kong Quest'],'donkey kong country 3':['Donkey Kong Country 3 - Dixie Kong’s Double Trouble'],'super mario bros 3':['Super Mario Bros. 3'],'cruis\'n usa':["Cruis'n USA"]};const key=noTags.toLowerCase();const related=Object.entries(aliases).find(([k])=>key.includes(k));if(related)baseNames.push(...related[1].flatMap(x=>[x+' (USA)',x+' (Europe)',x]));if(noTags.includes(' - '))baseNames.push(noTags.split(' - ')[0]+' (USA)');const names=[...new Set(baseNames.filter(Boolean))].slice(0,18);
+ const aliases={'1200-in-1':['Super Mario Bros','Super Mario Bros. 3'],'72-in-1':['Super Mario Bros','Contra'],'diddy kong racing':['Diddy Kong Racing'],'donkey kong country 2':['Donkey Kong Country 2 - Diddy’s Kong Quest'],'donkey kong country 3':['Donkey Kong Country 3 - Dixie Kong’s Double Trouble'],'super mario bros 3':['Super Mario Bros. 3'],'cruis\'n usa':["Cruis'n USA"]};const key=noTags.toLowerCase();const related=Object.entries(aliases).find(([k])=>key.includes(k));if(related)baseNames.push(...related[1].flatMap(x=>[x+' (USA)',x+' (Europe)',x]));if(noTags.includes(' - '))baseNames.push(noTags.split(' - ')[0]+' (USA)');// For unlicensed SNES hacks, use recognizable series imagery when exact art is unavailable.
+ if(game.system==='snes'&&/sonic the hedgehog 4/i.test(raw))baseNames.push('Sonic the Hedgehog (USA)','Sonic the Hedgehog 2 (USA)');
+ if(game.system==='snes'&&/street fighter ex/i.test(raw))baseNames.push('Street Fighter II - The World Warrior (USA)','Street Fighter II Turbo - Hyper Fighting (USA)');
+ const names=[...new Set(baseNames.filter(Boolean))].slice(0,18);
  const prefix='https://thumbnails.libretro.com/'+encodeURIComponent(system)+'/';
  const urls=[];
  for(const type of ['Named_Boxarts','Named_Titles','Named_Snaps']){
