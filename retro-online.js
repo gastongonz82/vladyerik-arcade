@@ -190,6 +190,10 @@ function coverCandidates(game){
  if(game.system==='snes'&&/sonic the hedgehog 4/i.test(raw))baseNames.push('Sonic the Hedgehog (USA)','Sonic the Hedgehog 2 (USA)');
  if(game.system==='snes'&&/street fighter ex/i.test(raw))baseNames.push('Street Fighter II - The World Warrior (USA)','Street Fighter II Turbo - Hyper Fighting (USA)');
  const names=[...new Set(baseNames.filter(Boolean))].slice(0,18);
+ if(game.system==='snes'&&/sonic the hedgehog 4/i.test(raw)){
+  const sega='https://thumbnails.libretro.com/Sega%20-%20Mega%20Drive%20-%20Genesis/';
+  return ['Named_Snaps','Named_Titles','Named_Boxarts'].flatMap(type=>['Sonic The Hedgehog (USA, Europe)','Sonic The Hedgehog 2 (World)'].map(name=>sega+type+'/'+encodeURIComponent(name)+'.png'));
+ }
  const prefix='https://thumbnails.libretro.com/'+encodeURIComponent(system)+'/';
  const urls=[];
  for(const type of ['Named_Boxarts','Named_Titles','Named_Snaps']){
