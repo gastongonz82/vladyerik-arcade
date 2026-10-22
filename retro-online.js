@@ -200,6 +200,21 @@ function coverCandidates(game){
    xmvsf:['X-Men Vs. Street Fighter (USA 961023)','X-Men Vs. Street Fighter']
   };
   const names=[...new Set([...(aliases[rom]||[]),title,title.replace(/ vs\.? /ig,' Vs. '),title.replace(/:/g,' -')])].filter(Boolean);
+  // Two arcade titles are absent from the MAME/FBNeo thumbnail index.
+  // Try the same game's original Neo Geo / console box art, never unrelated artwork.
+  if(rom==='fatfursp')return [
+   'https://thumbnails.libretro.com/SNK%20-%20Neo%20Geo/Named_Boxarts/Fatal%20Fury%20Special%20(World).png',
+   'https://thumbnails.libretro.com/SNK%20-%20Neo%20Geo/Named_Boxarts/Fatal%20Fury%20Special.png',
+   'https://thumbnails.libretro.com/SNK%20-%20Neo%20Geo/Named_Titles/Fatal%20Fury%20Special%20(World).png',
+   'https://thumbnails.libretro.com/Nintendo%20-%20Super%20Nintendo%20Entertainment%20System/Named_Boxarts/Fatal%20Fury%20Special%20(USA).png',
+   'https://thumbnails.libretro.com/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Fatal%20Fury%20Special%20(USA).png'
+  ];
+  if(rom==='wwfmania')return [
+   'https://thumbnails.libretro.com/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/WWF%20WrestleMania%20-%20The%20Arcade%20Game%20(USA).png',
+   'https://thumbnails.libretro.com/Nintendo%20-%20Super%20Nintendo%20Entertainment%20System/Named_Boxarts/WWF%20WrestleMania%20-%20The%20Arcade%20Game%20(USA).png',
+   'https://thumbnails.libretro.com/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/WWF%20WrestleMania%20-%20The%20Arcade%20Game%20(Europe).png',
+   'https://thumbnails.libretro.com/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Titles/WWF%20WrestleMania%20-%20The%20Arcade%20Game%20(USA).png'
+  ];
   const bases=['https://thumbnails.libretro.com/FBNeo/','https://thumbnails.libretro.com/MAME/'];
   const safe=name=>name.replace(/[&*\/:<>?|"\\]/g,'_');
   return bases.flatMap(base=>['Named_Boxarts','Named_Titles','Named_Snaps'].flatMap(type=>
