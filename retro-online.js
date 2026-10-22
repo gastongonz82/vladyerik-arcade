@@ -205,8 +205,8 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  const urls=coverCandidates(game);if(!urls.length)return;
  const coverKey=game.system+'|'+cleanName(game.name);
  const cached=coverMemory.has(coverKey)?coverMemory.get(coverKey):savedCovers[coverKey];
- if(cached===false)return;
- const candidates=typeof cached==='string'?[cached]:urls;
+ if(cached===false&&game.system!=='arcade')return;
+ const candidates=typeof cached==='string'?[cached,...urls.filter(url=>url!==cached)]:urls;
  let idx=0;
  const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
  img.onload=()=>{rememberCover(coverKey,img.src);fallbackImage.remove();if(!img.isConnected)target.append(img)};
