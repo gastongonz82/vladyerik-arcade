@@ -105,6 +105,7 @@ const style=document.createElement('style');style.textContent=`
 `;document.head.append(style);
 style.textContent+="\n/* Panel informativo compacto: mantiene el catálogo como protagonista. */\n#retroOnline #onlineControlGuide{margin:11px 0 0;border:1px solid #37557f;border-radius:11px;background:#0e1c38;color:#bcd3f0;font-size:12px}\n#retroOnline #onlineControlGuide summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;cursor:pointer;font-weight:850;list-style:none;color:#ffe08a}\n#retroOnline #onlineControlGuide summary::-webkit-details-marker{display:none}\n#retroOnline #onlineControlGuide summary span{color:#9bb8dc;font-size:10px;letter-spacing:.08em}\n#retroOnline #onlineControlGuide p{margin:0;padding:0 13px 12px;line-height:1.6}\n#retroOnline #onlineInsights{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(190px,.8fr) minmax(0,1fr);gap:10px;margin:10px 0 18px}\n#retroOnline #onlineInsights>div{min-width:0;min-height:103px;border:1px solid #345782;border-radius:13px;background:linear-gradient(135deg,#132d55,#101c37);padding:13px 15px;box-sizing:border-box}\n#retroOnline .online-eyebrow{display:block;color:#ffd677;font-size:10px;font-weight:900;letter-spacing:.1em;margin-bottom:8px}\n#retroOnline .online-insight-name{display:block;color:#fff;font-size:16px;line-height:1.25;overflow-wrap:anywhere}\n#retroOnline #onlineInsights p{margin:6px 0 0;color:#a9c3e5;font-size:11px;line-height:1.4}\n#retroOnline .online-stat-counts{display:flex;gap:22px}\n#retroOnline .online-stat-counts>div{display:flex;flex-direction:column;gap:2px}\n#retroOnline .online-stat-counts b{font-size:22px;line-height:1;color:#fff}\n#retroOnline .online-stat-counts small{font-size:9px;letter-spacing:.06em;color:#aac5e9}\n#retroOnline .online-suggestion-list{display:flex;flex-wrap:wrap;gap:5px}\n#retroOnline .online-suggestion-list span{border:1px solid #365983;background:#1c3863;color:#dbeaff;border-radius:7px;padding:5px 7px;font-size:10px;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n@media(max-width:850px){#retroOnline #onlineInsights{grid-template-columns:repeat(2,minmax(0,1fr))}#retroOnline .online-insight-suggest{grid-column:1/-1}}\n@media(max-width:520px){#retroOnline #onlineInsights{grid-template-columns:1fr}#retroOnline .online-insight-suggest{grid-column:auto}#retroOnline #onlineInsights>div{min-height:0;padding:11px 13px}#retroOnline #onlineControlGuide summary span{font-size:9px}}\n";
 style.textContent+="#retroOnline .online-insight-suggest{overflow:hidden}\n#retroOnline .online-suggestion-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:start}\n#retroOnline .online-suggestion-tile{min-width:0;overflow:hidden;border-radius:9px;border:1px solid #375782;background:#0c1b36}\n#retroOnline .online-suggestion-cover{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:#10244a;display:flex;align-items:center;justify-content:center}\n#retroOnline .online-suggestion-cover img{display:block;width:100%;height:100%;object-fit:cover}\n#retroOnline .online-suggestion-tile>span{display:block;padding:5px 6px;color:#dbe9ff;font-size:10px;line-height:1.25;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}\n@media(max-width:520px){#retroOnline .online-suggestion-cover{aspect-ratio:16/10}}";
+style.textContent+="\n#retroOnline .online-insight-suggest{position:relative}\n#retroOnline .online-recommend-controls{position:absolute;top:7px;right:10px;display:flex;gap:5px}\n#retroOnline .online-recommend-controls button{border:1px solid #4d6b95;background:#213b64;color:#ffe5a2;border-radius:7px;width:26px;height:24px;padding:0;cursor:pointer;font-size:20px;line-height:18px}\n#retroOnline .online-recommend-controls button:disabled{opacity:.35;cursor:default}\n#retroOnline .online-suggestion-tile{display:block;text-align:left;padding:0;cursor:pointer;font-family:inherit;width:100%;color:inherit}\n#retroOnline .online-suggestion-tile:focus-visible,#retroOnline .online-suggestion-tile.online-pad-focus{outline:3px solid #ffe078;outline-offset:2px}\n";
 const section=document.createElement('section');section.id='retroOnline';section.innerHTML='<h2>🌐 RETRO ONLINE</h2><p class="hint">Juegos disponibles para jugar directamente, sin subir archivos.</p><div id="onlineStatus" role="status">Cargando catálogo…</div><div class="online-grid" id="onlineGrid"></div>';
 const nav=document.querySelector('.tabs');nav?.before(section);
 const collection=document.querySelector('#collection .collection-title h2');if(collection)collection.textContent='📂 CARGAR MIS JUEGOS · COLECCIÓN LOCAL';
@@ -310,7 +311,11 @@ const insight=document.createElement('section');insight.id='onlineInsights';
 const stats=document.createElement('div'),detail=document.createElement('div'),suggest=document.createElement('div');
 stats.className='online-insight-stat';detail.className='online-insight-detail';suggest.className='online-insight-suggest';
 insight.append(detail,stats,suggest);guide.after(insight);
-let selectedInfoGame=null;
+let selectedInfoGame=null,recommendOffset=0;
+const recommendControls=document.createElement('div');recommendControls.className='online-recommend-controls';recommendControls.innerHTML='<button type="button" tabindex="-1" aria-label="Recomendaciones anteriores">‹</button><button type="button" tabindex="-1" aria-label="Más recomendaciones">›</button>';
+suggest.append(recommendControls);
+recommendControls.children[0].onclick=()=>{recommendOffset=Math.max(0,recommendOffset-3);refreshInsights()};
+recommendControls.children[1].onclick=()=>{recommendOffset+=3;refreshInsights()};
 function refreshInsights(game){
  const systems=[...new Set(recents.map(p=>games.find(g=>g.path===p)?.system).filter(Boolean))];
  stats.replaceChildren();
@@ -328,15 +333,19 @@ function refreshInsights(game){
  suggest.replaceChildren();
  const eyebrow=document.createElement('span');eyebrow.className='online-eyebrow';eyebrow.textContent='DESCUBRÍ MÁS';
  const row=document.createElement('div');row.className='online-suggestion-list';
- const recommended=games.filter(x=>!recents.includes(x.path)&&!favorites.includes(x.path)).slice(0,3);
+ const pool=games.filter(x=>!recents.includes(x.path)&&!favorites.includes(x.path));
+ if(recommendOffset>=pool.length)recommendOffset=0;
+ const recommended=pool.slice(recommendOffset,recommendOffset+3);
+ recommendControls.children[0].disabled=recommendOffset===0;
+ recommendControls.children[1].disabled=recommendOffset+3>=pool.length;
  for(const item of recommended){
-  const tile=document.createElement('div');tile.className='online-suggestion-tile';
+  const tile=document.createElement('button');tile.type='button';tile.className='online-suggestion-tile';tile.setAttribute('aria-label','Jugar '+cleanName(item.name));tile.onclick=()=>launchGame(item);
   const cover=document.createElement('div');cover.className='online-suggestion-cover';setArtwork(cover,item);
   const label=document.createElement('span');label.textContent=cleanName(item.name);label.title=cleanName(item.name);
   tile.append(cover,label);row.append(tile);
  }
  if(!recommended.length){const tag=document.createElement('span');tag.textContent='Explorá el catálogo';row.append(tag)}
- suggest.append(eyebrow,row);
+ suggest.append(eyebrow,recommendControls,row);
 }
 section.addEventListener('focusin',e=>{const card=e.target.closest?.('.online-card');if(card?.__onlineGame)refreshInsights(card.__onlineGame)});
 function showGames(){
@@ -378,13 +387,21 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Cat�
 /* Navegación por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
 const padStyle=document.createElement('style');padStyle.textContent='#retroOnline .online-pad-focus{outline:3px solid #ffcf42!important;outline-offset:3px!important;box-shadow:0 0 0 5px #0c204b,0 0 24px #ffcd6488!important}';document.head.append(padStyle);
 let padFocus=null,padLast=0,padConfirm=false,padBack=false,padPlayerExitHeld=false,padExitCooldownUntil=0;let padFavoriteHeld=false;
-function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>!el.matches('.online-fav')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
+function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>!el.matches('.online-fav,.online-recommend-controls button')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
 function padMove(dx,dy){
  const targets=padTargets();if(!targets.length)return;
  if(!padFocus||!targets.includes(padFocus)){padSetFocus(section.querySelector('#onlineFeaturePlay')||targets[0]);return}
  const cards=[...grid.querySelectorAll('.online-card')];
  const card=padFocus.closest('.online-card');
+ const recommendations=[...section.querySelectorAll('.online-suggestion-tile')];
+ const recommendationIndex=recommendations.indexOf(padFocus);
+ if(recommendationIndex>=0){
+  if(dx){const next=recommendationIndex+dx;if(next>=0&&next<recommendations.length)padSetFocus(recommendations[next]);else{recommendOffset=Math.max(0,recommendOffset+(dx>0?3:-3));refreshInsights();padSetFocus(section.querySelectorAll('.online-suggestion-tile')[dx>0?0:Math.max(0,section.querySelectorAll('.online-suggestion-tile').length-1)])}}
+  else if(dy>0)padSetFocus(cards[Math.min(recommendationIndex,cards.length-1)]||toolbar[0]);
+  else if(dy<0)padSetFocus(consoles[Math.min(recommendationIndex,consoles.length-1)]||toolbar[0]);
+  return;
+ }
  const featureButtons=[...section.querySelectorAll('.online-feature-actions button')];
  const toolbar=[...section.querySelectorAll('.online-tools button,.online-tools input,.online-tools select')].filter(el=>targets.includes(el));
  const consoles=[...section.querySelectorAll('.online-systems button,.online-filters button')].filter(el=>targets.includes(el));
@@ -407,7 +424,7 @@ function padMove(dx,dy){
    const cx=card.getBoundingClientRect().left+card.getBoundingClientRect().width/2;
    const nearest=[...next.items].sort((a,b)=>Math.abs(a.getBoundingClientRect().left+a.offsetWidth/2-cx)-Math.abs(b.getBoundingClientRect().left+b.offsetWidth/2-cx))[0];
    if(nearest)padSetFocus(nearest);
-  }else if(dy<0)padSetFocus(consoles[0]||toolbar[0]||featureButtons[0]);
+  }else if(dy<0)padSetFocus(recommendations[Math.min(index,recommendations.length-1)]||consoles[0]||toolbar[0]||featureButtons[0]);
   else enterLocal();
   return;
  }
@@ -431,7 +448,7 @@ function padMove(dx,dy){
  if(consoleIndex>=0){
   if(dx)padSetFocus(consoles[Math.max(0,Math.min(consoles.length-1,consoleIndex+dx))]);
   else if(dy<0)padSetFocus(toolbar[Math.min(consoleIndex,toolbar.length-1)]||featureButtons[0]);
-  else if(dy>0)padSetFocus(cards[Math.min(consoleIndex,cards.length-1)]||toolbar[0]);
+  else if(dy>0)padSetFocus(recommendations[Math.min(consoleIndex,recommendations.length-1)]||cards[Math.min(consoleIndex,cards.length-1)]||toolbar[0]);
   return;
  }
  const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
