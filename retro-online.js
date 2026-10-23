@@ -302,7 +302,24 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
   io.observe(target);
  }
 }
-function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(section.querySelector('#onlineFeatureArt'),game,{priority:true});section.querySelector('#onlineFeatureName').textContent=cleanName(game.name);section.querySelector('#onlineFeatureSystem').textContent='🌟 DESTACADO · '+(game.system||'RETRO').toUpperCase();section.querySelector('#onlineFeatureHint').textContent='Jugá directamente en RETRO ONLINE';const b=section.querySelector('#onlineFeatureFav');b.textContent=favorites.includes(game.path)?'★ FAVORITO':'☆ FAVORITO'}function launchGame(game){if(!player.hidden||!document.querySelector('#playerArea')?.hidden)return;recents=[game.path,...recents.filter(x=>x!==game.path)].slice(0,30);localStorage.setItem(recentKey,JSON.stringify(recents));featureGame(game);play(game)}section.querySelector('#onlineFeaturePlay').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(g)launchGame(g)};section.querySelector('#onlineFeatureFav').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(!g)return;favorites=favorites.includes(g.path)?favorites.filter(x=>x!==g.path):[g.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));featureGame(g);showGames()};section.querySelector('#onlineFeatureNext').onclick=()=>{if(!games.length)return;const idx=games.findIndex(x=>x.path===featuredPath);featureGame(games[(idx+1)%games.length])};function showGames(){
+function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(section.querySelector('#onlineFeatureArt'),game,{priority:true});section.querySelector('#onlineFeatureName').textContent=cleanName(game.name);section.querySelector('#onlineFeatureSystem').textContent='🌟 DESTACADO · '+(game.system||'RETRO').toUpperCase();section.querySelector('#onlineFeatureHint').textContent='Jugá directamente en RETRO ONLINE';const b=section.querySelector('#onlineFeatureFav');b.textContent=favorites.includes(game.path)?'★ FAVORITO':'☆ FAVORITO'}function launchGame(game){refreshInsights(game);if(!player.hidden||!document.querySelector('#playerArea')?.hidden)return;recents=[game.path,...recents.filter(x=>x!==game.path)].slice(0,30);localStorage.setItem(recentKey,JSON.stringify(recents));featureGame(game);play(game)}section.querySelector('#onlineFeaturePlay').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(g)launchGame(g)};section.querySelector('#onlineFeatureFav').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(!g)return;favorites=favorites.includes(g.path)?favorites.filter(x=>x!==g.path):[g.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));featureGame(g);showGames()};section.querySelector('#onlineFeatureNext').onclick=()=>{if(!games.length)return;const idx=games.findIndex(x=>x.path===featuredPath);featureGame(games[(idx+1)%games.length])};// Paneles informativos independientes: no incorporan nuevos focos al recorrido por filas.
+const guide=document.createElement('aside');guide.id='onlineControlGuide';guide.innerHTML='<strong>🎮 CONTROLES</strong><span> Flechas / cruceta: navegar · Enter / X: jugar · F / △: favorito · Share: salir del juego</span>';guide.setAttribute('aria-label','Ayuda de controles');guide.style.cssText='padding:12px 15px;margin:12px 0;border:1px solid #456da7;border-radius:12px;background:#0d2044;color:#dcecff;font-size:13px;line-height:1.7';filterBar.after(guide);
+const insight=document.createElement('section');insight.id='onlineInsights';insight.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:14px 0';
+const stats=document.createElement('div'),detail=document.createElement('div'),suggest=document.createElement('div');
+for(const el of [stats,detail,suggest])el.style.cssText='background:#102447;border:1px solid #426aa4;border-radius:12px;padding:13px;color:#e5efff;font-size:13px;line-height:1.65;min-width:0';
+insight.append(stats,detail,suggest);guide.after(insight);
+let selectedInfoGame=null;
+function refreshInsights(game){
+ const systems=[...new Set(recents.map(p=>games.find(g=>g.path===p)?.system).filter(Boolean))];
+ stats.textContent='📊 TU ACTIVIDAD · '+recents.length+' recientes · '+favorites.length+' favoritos'+(systems.length?' · Consolas: '+systems.slice(0,3).join(', '):'');
+ const g=game||selectedInfoGame||games.find(x=>x.path===featuredPath)||games[0];
+ if(g){selectedInfoGame=g;detail.textContent='🕹️ JUEGO SELECCIONADO · '+cleanName(g.name)+' · '+(g.system||'Consola sin identificar')+(g.size?' · '+(Number(g.size)/1048576).toFixed(1)+' MB':'')+' · Enter para jugar, F para favorito';}
+ else detail.textContent='🕹️ Seleccioná una tarjeta para ver su información';
+ const recommended=games.filter(x=>!recents.includes(x.path)&&!favorites.includes(x.path)).slice(0,3);
+ suggest.textContent='✨ PARA DESCUBRIR · '+(recommended.length?recommended.map(x=>cleanName(x.name)).join(' · '):'Explorá el catálogo para descubrir más juegos');
+}
+section.addEventListener('focusin',e=>{const card=e.target.closest?.('.online-card');if(card?.__onlineGame)refreshInsights(card.__onlineGame)});
+function showGames(){
  const q=search.value.trim().toLocaleLowerCase();
  let filtered=games.filter(g=>(chosen==='all'||g.system===chosen)&&(!q||(cleanName(g.name)+' '+(g.system||'')).toLocaleLowerCase().includes(q))&&(view==='all'||(view==='favorites'?favorites.includes(g.path):recents.includes(g.path))));
  if(view==='recent')filtered.sort((a,b)=>recents.indexOf(a.path)-recents.indexOf(b.path));
@@ -316,10 +333,12 @@ function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(sec
   const meta=document.createElement('small');meta.textContent=(game.system||'SIN IDENTIFICAR').toUpperCase();
   const fav=document.createElement('button');fav.className='online-fav';fav.type='button';fav.textContent=favorites.includes(game.path)?'★':'☆';fav.setAttribute('aria-label','Agregar o quitar favorito');fav.setAttribute('aria-pressed',String(favorites.includes(game.path)));
   fav.onclick=e=>{e.stopPropagation();favorites=favorites.includes(game.path)?favorites.filter(x=>x!==game.path):[game.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));fav.textContent=favorites.includes(game.path)?'★':'☆';fav.setAttribute('aria-pressed',String(favorites.includes(game.path)));if(view==='favorites')showGames()};
+  card.__onlineGame=game;
   card.onclick=()=>launchGame(game);
   card.onkeydown=e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();card.click()}};
   info.append(title,meta);card.append(art,info,fav);grid.append(card);
  }
+ refreshInsights();
  status.textContent=games.length+' juegos online disponibles · '+filtered.length+' mostrados';
  if(!filtered.length){const empty=document.createElement('p');empty.className='online-empty';empty.textContent='No hay juegos para estos filtros.';grid.append(empty)}
 }
