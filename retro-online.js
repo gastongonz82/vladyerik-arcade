@@ -343,38 +343,60 @@ function padTargets(){return [...section.querySelectorAll('button,input,select,[
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
 function padMove(dx,dy){
  const targets=padTargets();if(!targets.length)return;
- if(!padFocus||!targets.includes(padFocus)){padSetFocus(dy>0?section.querySelector('.online-card')||targets[0]:targets[0]);return}
+ if(!padFocus||!targets.includes(padFocus)){padSetFocus(section.querySelector('.online-card')||targets[0]);return}
  const cards=[...grid.querySelectorAll('.online-card')];
- const card=cards.includes(padFocus)?padFocus:null;
- if(card&&cards.length){
+ const card=padFocus.closest('.online-card');
+ if(card&&cards.includes(card)){
   const index=cards.indexOf(card);
+  // Recorrido horizontal continuo: el último de una fila conecta con el primero de la siguiente.
+  // También funciona cuando se usa la vista consola (carrusel).
+  if(dx){const next=index+dx;if(next>=0&&next<cards.length)padSetFocus(cards[next]);return}
   if(layout==='console'){
-   if(dx){const next=cards[Math.max(0,Math.min(cards.length-1,index+dx))];if(next!==card)padSetFocus(next);return}
-   // En carrusel vertical significa salir de la fila, nunca mover juegos.
-   if(dy<0){const above=targets.filter(el=>!el.closest('.online-card')&&el.getBoundingClientRect().bottom<=card.getBoundingClientRect().top+8);if(above.length)padSetFocus(above[above.length-1]);return}
    if(dy>0){enterLocal();return}
-  }
-  if(layout==='grid'){
-   const y=card.offsetTop,cx=card.offsetLeft+card.offsetWidth/2;
-   if(dx){
-    const row=cards.filter(c=>Math.abs(c.offsetTop-y)<4);
-    const pos=row.indexOf(card),next=row[pos+dx];
-    if(next)padSetFocus(next);
-    return;
+   if(dy<0){focusOnlineHeader(card);return}
+  }else if(dy){
+   // Agrupar por posición real de fila (no por una cantidad fija de columnas).
+   const rows=[];
+   for(const item of cards){
+    const y=item.getBoundingClientRect().top;
+    let row=rows.find(group=>Math.abs(group.y-y)<12);
+    if(!row){row={y,items:[]};rows.push(row)}
+    row.items.push(item);
    }
-   if(dy){
-    const other=cards.filter(c=>dy>0?c.offsetTop>y+4:c.offsetTop<y-4);
-    if(other.length){const rowY=dy>0?Math.min(...other.map(c=>c.offsetTop)):Math.max(...other.map(c=>c.offsetTop));const row=other.filter(c=>Math.abs(c.offsetTop-rowY)<4).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-cx)-Math.abs(b.offsetLeft+b.offsetWidth/2-cx));if(row[0])padSetFocus(row[0]);return}
-    if(dy>0){enterLocal();return}
-   }
+   rows.sort((x,y)=>x.y-y.y);
+   const current=rows.findIndex(row=>row.items.includes(card));
+   const next=rows[current+dy];
+   if(next){
+    const center=card.getBoundingClientRect().left+card.getBoundingClientRect().width/2;
+    const match=[...next.items].sort((x,y)=>Math.abs(x.getBoundingClientRect().left+x.getBoundingClientRect().width/2-center)-Math.abs(y.getBoundingClientRect().left+y.getBoundingClientRect().width/2-center))[0];
+    if(match)padSetFocus(match);
+   }else if(dy<0)focusOnlineHeader(card);
+   else enterLocal();
+   return;
   }
  }
- // Navegación direccional entre los controles del encabezado y el destacado.
+ // Navegar entre botones del destacado, filtros, buscador y controles.
  const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
  let best=null,score=Infinity;
- for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}
+ for(const el of targets){
+  if(el===padFocus)continue;
+  const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;
+  const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);
+  if(primary<8)continue;
+  const value=primary+secondary*2.4;
+  if(value<score){score=value;best=el}
+ }
  if(best)padSetFocus(best);
  else if(dy>0)enterLocal();
+}
+function focusOnlineHeader(card){
+ const r=card.getBoundingClientRect(),cx=r.left+r.width/2;
+ const above=padTargets().filter(el=>!el.closest('.online-card')&&el.getBoundingClientRect().bottom<=r.top+12);
+ above.sort((a,b)=>{
+  const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();
+  return (r.top-y.bottom)+Math.abs(y.left+y.width/2-cx)*.35-((r.top-x.bottom)+Math.abs(x.left+x.width/2-cx)*.35);
+ });
+ if(above[0])padSetFocus(above[0]);
 }
 function onlinePadLoop(now){
  if(window.__vladiUnifiedNavigation)return;
@@ -422,7 +444,7 @@ section.addEventListener('keydown',e=>{
  if(!player.hidden)return;
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
-  if(key==='ArrowDown'&&layout==='console'&&padFocus?.matches('.online-card')&&window.vladyLocalNavigation?.enter){e.preventDefault();e.stopPropagation();enterLocal();return}
+  
   if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
   e.preventDefault();e.stopPropagation();padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0);
  }else if((key==='Enter'||key===' ')&&!e.repeat&&!e.target.matches('input,select,button')){
@@ -430,6 +452,6 @@ section.addEventListener('keydown',e=>{
  }
 });
 section.addEventListener('pointerdown',e=>{const t=e.target.closest('button,input,select,[role="button"]');if(t)padSetFocus(t)});
-section.addEventListener('focusin',()=>{window.__vladiOnlinePadActive=true});document.addEventListener('focusin',e=>{if(!section.contains(e.target)&&player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null}});
+section.addEventListener('focusin',e=>{window.__vladiOnlinePadActive=true;const el=e.target;if(el.matches('.online-card')&&padFocus!==el){padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus')}});document.addEventListener('focusin',e=>{if(!section.contains(e.target)&&player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null}});
 requestAnimationFrame(onlinePadLoop);
 })();
