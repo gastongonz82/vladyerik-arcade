@@ -344,21 +344,37 @@ function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-fo
 function padMove(dx,dy){
  const targets=padTargets();if(!targets.length)return;
  if(!padFocus||!targets.includes(padFocus)){padSetFocus(dy>0?section.querySelector('.online-card')||targets[0]:targets[0]);return}
- const cards=[...grid.querySelectorAll('.online-card')],currentCard=padFocus.closest('.online-card'),card=cards.includes(padFocus)?padFocus:currentCard;
+ const cards=[...grid.querySelectorAll('.online-card')];
+ const card=cards.includes(padFocus)?padFocus:null;
  if(card&&cards.length){
   const index=cards.indexOf(card);
-  if(layout==='console'&&dx){const next=cards[Math.max(0,Math.min(cards.length-1,index+dx))];if(next&&next!==card){padSetFocus(next);return}}
+  if(layout==='console'){
+   if(dx){const next=cards[Math.max(0,Math.min(cards.length-1,index+dx))];if(next!==card)padSetFocus(next);return}
+   // En carrusel vertical significa salir de la fila, nunca mover juegos.
+   if(dy<0){const above=targets.filter(el=>!el.closest('.online-card')&&el.getBoundingClientRect().bottom<=card.getBoundingClientRect().top+8);if(above.length)padSetFocus(above[above.length-1]);return}
+   if(dy>0){enterLocal();return}
+  }
   if(layout==='grid'){
-   if(dx){const next=cards[Math.max(0,Math.min(cards.length-1,index+dx))];if(next&&next!==card){padSetFocus(next);return}}
-   if(dy>0){const y=card.offsetTop;const rows=cards.filter(c=>c.offsetTop>y+3);if(rows.length){const rowY=Math.min(...rows.map(c=>c.offsetTop));const center=card.offsetLeft+card.offsetWidth/2;const row=rows.filter(c=>Math.abs(c.offsetTop-rowY)<3).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-center)-Math.abs(b.offsetLeft+b.offsetWidth/2-center));padSetFocus(row[0]);return}}
-   if(dy<0){const y=card.offsetTop;const rows=cards.filter(c=>c.offsetTop<y-3);if(rows.length){const rowY=Math.max(...rows.map(c=>c.offsetTop));const center=card.offsetLeft+card.offsetWidth/2;const row=rows.filter(c=>Math.abs(c.offsetTop-rowY)<3).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-center)-Math.abs(b.offsetLeft+b.offsetWidth/2-center));padSetFocus(row[0]);return}}
+   const y=card.offsetTop,cx=card.offsetLeft+card.offsetWidth/2;
+   if(dx){
+    const row=cards.filter(c=>Math.abs(c.offsetTop-y)<4);
+    const pos=row.indexOf(card),next=row[pos+dx];
+    if(next)padSetFocus(next);
+    return;
+   }
+   if(dy){
+    const other=cards.filter(c=>dy>0?c.offsetTop>y+4:c.offsetTop<y-4);
+    if(other.length){const rowY=dy>0?Math.min(...other.map(c=>c.offsetTop)):Math.max(...other.map(c=>c.offsetTop));const row=other.filter(c=>Math.abs(c.offsetTop-rowY)<4).sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-cx)-Math.abs(b.offsetLeft+b.offsetWidth/2-cx));if(row[0])padSetFocus(row[0]);return}
+    if(dy>0){enterLocal();return}
+   }
   }
  }
+ // Navegación direccional entre los controles del encabezado y el destacado.
  const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
  let best=null,score=Infinity;
  for(const el of targets){if(el===padFocus)continue;const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);if(primary<8)continue;const value=primary+secondary*2.4;if(value<score){score=value;best=el}}
  if(best)padSetFocus(best);
- else if(dy>0||dy<0){enterLocal()}
+ else if(dy>0)enterLocal();
 }
 function onlinePadLoop(now){
  if(window.__vladiUnifiedNavigation)return;
@@ -406,7 +422,7 @@ section.addEventListener('keydown',e=>{
  if(!player.hidden)return;
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
-  if(key==='ArrowDown'&&padFocus?.matches('.online-card')&&padFocus===grid.querySelector('.online-card:last-child')&&window.vladyLocalNavigation?.enter){e.preventDefault();e.stopPropagation();enterLocal();return}
+  if(key==='ArrowDown'&&layout==='console'&&padFocus?.matches('.online-card')&&window.vladyLocalNavigation?.enter){e.preventDefault();e.stopPropagation();enterLocal();return}
   if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
   e.preventDefault();e.stopPropagation();padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0);
  }else if((key==='Enter'||key===' ')&&!e.repeat&&!e.target.matches('input,select,button')){
