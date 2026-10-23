@@ -315,7 +315,7 @@ function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(sec
   const title=document.createElement('strong');title.textContent=cleanName(game.name);
   const meta=document.createElement('small');meta.textContent=(game.system||'SIN IDENTIFICAR').toUpperCase();
   const fav=document.createElement('button');fav.className='online-fav';fav.type='button';fav.textContent=favorites.includes(game.path)?'★':'☆';fav.setAttribute('aria-label','Agregar o quitar favorito');fav.setAttribute('aria-pressed',String(favorites.includes(game.path)));
-  fav.onclick=e=>{e.stopPropagation();favorites=favorites.includes(game.path)?favorites.filter(x=>x!==game.path):[game.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));showGames()};
+  fav.onclick=e=>{e.stopPropagation();favorites=favorites.includes(game.path)?favorites.filter(x=>x!==game.path):[game.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));fav.textContent=favorites.includes(game.path)?'★':'☆';fav.setAttribute('aria-pressed',String(favorites.includes(game.path)));if(view==='favorites')showGames()};
   card.onclick=()=>launchGame(game);
   card.onkeydown=e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();card.click()}};
   info.append(title,meta);card.append(art,info,fav);grid.append(card);
@@ -339,64 +339,71 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Cat�
 /* Navegación por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
 const padStyle=document.createElement('style');padStyle.textContent='#retroOnline .online-pad-focus{outline:3px solid #ffcf42!important;outline-offset:3px!important;box-shadow:0 0 0 5px #0c204b,0 0 24px #ffcd6488!important}';document.head.append(padStyle);
 let padFocus=null,padLast=0,padConfirm=false,padBack=false,padPlayerExitHeld=false,padExitCooldownUntil=0;
-function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
+function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>!el.matches('.online-fav')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
 function padMove(dx,dy){
  const targets=padTargets();if(!targets.length)return;
- if(!padFocus||!targets.includes(padFocus)){padSetFocus(section.querySelector('.online-card')||targets[0]);return}
+ if(!padFocus||!targets.includes(padFocus)){padSetFocus(section.querySelector('#onlineFeaturePlay')||targets[0]);return}
  const cards=[...grid.querySelectorAll('.online-card')];
  const card=padFocus.closest('.online-card');
+ const featureButtons=[...section.querySelectorAll('.online-feature-actions button')];
+ const toolbar=[...section.querySelectorAll('.online-tools button,.online-tools input,.online-tools select')].filter(el=>targets.includes(el));
+ const consoles=[...section.querySelectorAll('.online-systems button,.online-filters button')].filter(el=>targets.includes(el));
+ const cardRows=()=>{
+  const rows=[];
+  for(const el of cards){
+   const top=el.getBoundingClientRect().top;
+   let row=rows.find(x=>Math.abs(x.top-top)<12);
+   if(!row){row={top,items:[]};rows.push(row)}
+   row.items.push(el);
+  }
+  return rows.sort((x,y)=>x.top-y.top);
+ };
  if(card&&cards.includes(card)){
   const index=cards.indexOf(card);
-  // Recorrido horizontal continuo: el último de una fila conecta con el primero de la siguiente.
-  // También funciona cuando se usa la vista consola (carrusel).
   if(dx){const next=index+dx;if(next>=0&&next<cards.length)padSetFocus(cards[next]);return}
-  if(layout==='console'){
-   if(dy>0){enterLocal();return}
-   if(dy<0){focusOnlineHeader(card);return}
-  }else if(dy){
-   // Agrupar por posición real de fila (no por una cantidad fija de columnas).
-   const rows=[];
-   for(const item of cards){
-    const y=item.getBoundingClientRect().top;
-    let row=rows.find(group=>Math.abs(group.y-y)<12);
-    if(!row){row={y,items:[]};rows.push(row)}
-    row.items.push(item);
-   }
-   rows.sort((x,y)=>x.y-y.y);
-   const current=rows.findIndex(row=>row.items.includes(card));
-   const next=rows[current+dy];
-   if(next){
-    const center=card.getBoundingClientRect().left+card.getBoundingClientRect().width/2;
-    const match=[...next.items].sort((x,y)=>Math.abs(x.getBoundingClientRect().left+x.getBoundingClientRect().width/2-center)-Math.abs(y.getBoundingClientRect().left+y.getBoundingClientRect().width/2-center))[0];
-    if(match)padSetFocus(match);
-   }else if(dy<0)focusOnlineHeader(card);
-   else enterLocal();
-   return;
-  }
+  if(layout==='console'){if(dy<0)padSetFocus(consoles[0]||toolbar[0]||featureButtons[0]);else enterLocal();return}
+  const rows=cardRows(),rowIndex=rows.findIndex(x=>x.items.includes(card)),next=rows[rowIndex+dy];
+  if(next){
+   const cx=card.getBoundingClientRect().left+card.getBoundingClientRect().width/2;
+   const nearest=[...next.items].sort((a,b)=>Math.abs(a.getBoundingClientRect().left+a.offsetWidth/2-cx)-Math.abs(b.getBoundingClientRect().left+b.offsetWidth/2-cx))[0];
+   if(nearest)padSetFocus(nearest);
+  }else if(dy<0)padSetFocus(consoles[0]||toolbar[0]||featureButtons[0]);
+  else enterLocal();
+  return;
  }
- // Navegar entre botones del destacado, filtros, buscador y controles.
+ // Favorito es una acción dentro de la tarjeta, no otra tarjeta de la cuadrícula.
+ if(padFocus.matches('.online-fav')){
+  if(dx||dy){padSetFocus(card||cards[0]||featureButtons[0]);return}
+ }
+ const toolbarIndex=toolbar.indexOf(padFocus),featureIndex=featureButtons.indexOf(padFocus),consoleIndex=consoles.indexOf(padFocus);
+ if(featureIndex>=0){
+  if(dx)padSetFocus(featureButtons[Math.max(0,Math.min(featureButtons.length-1,featureIndex+dx))]);
+  else if(dy>0)padSetFocus(toolbar[Math.min(featureIndex,toolbar.length-1)]||toolbar[0]);
+  return;
+ }
+ if(toolbarIndex>=0){
+  if(dx)padSetFocus(toolbar[Math.max(0,Math.min(toolbar.length-1,toolbarIndex+dx))]);
+  else if(dy<0)padSetFocus(featureButtons[Math.min(toolbarIndex,featureButtons.length-1)]);
+  else if(dy>0)padSetFocus(consoles[Math.min(toolbarIndex,consoles.length-1)]||cards[0]);
+  return;
+ }
+ if(consoleIndex>=0){
+  if(dx)padSetFocus(consoles[Math.max(0,Math.min(consoles.length-1,consoleIndex+dx))]);
+  else if(dy<0)padSetFocus(toolbar[Math.min(consoleIndex,toolbar.length-1)]||featureButtons[0]);
+  else if(dy>0)padSetFocus(cards[Math.min(consoleIndex,cards.length-1)]||toolbar[0]);
+  return;
+ }
  const r=padFocus.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
  let best=null,score=Infinity;
  for(const el of targets){
-  if(el===padFocus)continue;
+  if(el===padFocus||el.matches('.online-fav'))continue;
   const a=el.getBoundingClientRect(),x=a.left+a.width/2-cx,y=a.top+a.height/2-cy;
   const primary=dx?x*dx:y*dy,secondary=dx?Math.abs(y):Math.abs(x);
   if(primary<8)continue;
-  const value=primary+secondary*2.4;
-  if(value<score){score=value;best=el}
+  const value=primary+secondary*2.4;if(value<score){score=value;best=el}
  }
  if(best)padSetFocus(best);
- else if(dy>0)enterLocal();
-}
-function focusOnlineHeader(card){
- const r=card.getBoundingClientRect(),cx=r.left+r.width/2;
- const above=padTargets().filter(el=>!el.closest('.online-card')&&el.getBoundingClientRect().bottom<=r.top+12);
- above.sort((a,b)=>{
-  const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();
-  return (r.top-y.bottom)+Math.abs(y.left+y.width/2-cx)*.35-((r.top-x.bottom)+Math.abs(x.left+x.width/2-cx)*.35);
- });
- if(above[0])padSetFocus(above[0]);
 }
 function onlinePadLoop(now){
  if(window.__vladiUnifiedNavigation)return;
@@ -451,7 +458,7 @@ section.addEventListener('keydown',e=>{
   e.preventDefault();e.stopPropagation();(padFocus||e.target.closest('[role="button"]'))?.click();
  }
 });
-section.addEventListener('pointerdown',e=>{const t=e.target.closest('button,input,select,[role="button"]');if(t)padSetFocus(t)});
-section.addEventListener('focusin',e=>{window.__vladiOnlinePadActive=true;const el=e.target;if(el.matches('.online-card')&&padFocus!==el){padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus')}});document.addEventListener('focusin',e=>{if(!section.contains(e.target)&&player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null}});
+section.addEventListener('pointerdown',e=>{const t=e.target.closest('button,input,select,[role="button"]');if(t)padSetFocus(t.matches('.online-fav')?t.closest('.online-card'):t)});
+section.addEventListener('focusin',e=>{window.__vladiOnlinePadActive=true;const el=e.target;if(el.matches('.online-fav'))return;if(el.matches('.online-card')&&padFocus!==el){padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus')}});document.addEventListener('focusin',e=>{if(!section.contains(e.target)&&player.hidden){window.__vladiOnlinePadActive=false;padFocus?.classList.remove('online-pad-focus');padFocus=null}});
 requestAnimationFrame(onlinePadLoop);
 })();
