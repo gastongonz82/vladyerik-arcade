@@ -218,6 +218,12 @@ function coverCandidates(game){
    xmvsf:['X-Men Vs. Street Fighter (USA 961023)','X-Men Vs. Street Fighter']
   };
   const names=[...new Set([...(aliases[rom]||[]),title,title.replace(/ vs\.? /ig,' Vs. '),title.replace(/:/g,' -')])].filter(Boolean);
+  // Exact Neo Geo boxart filenames (Libretro directory listing), before fuzzy searches.
+  const neoGeoBoxarts={
+   pbobblen:'Puzzle Bobble _ Bust-A-Move (Neo-Geo) (NGM-083).png',
+   kof98:"The King of Fighters '98 - The Slugfest _ King of Fighters '98 - dream match never ends (NGM-2420).png"
+  };
+  if(neoGeoBoxarts[rom])return ['https://thumbnails.libretro.com/SNK%20-%20Neo%20Geo/Named_Boxarts/'+encodeURIComponent(neoGeoBoxarts[rom])];
   // Verified filenames from Libretro's published thumbnail directory indexes.
   // These exact URLs precede fuzzy name matching for the three missing covers.
   const verifiedArcadeCovers={
