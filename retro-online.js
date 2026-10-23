@@ -153,6 +153,13 @@ function coverCandidates(game){
   const title=cleanName(game.name).replace(/\s*\(\d{4}\).*$/,'').trim();
   const rom=decodeURIComponent(game.path.split('/').pop()||'').replace(/\.zip$/i,'').toLowerCase();
   const aliases={
+   '1941j':['1941 - Counter Attack (Japan)','1941 - Counter Attack (World)','1941 - Counter Attack'],
+   '1944j':['1944 - The Loop Master (Japan 000620)','1944 - The Loop Master (USA 000620)','1944 - The Loop Master'],
+   ddsom:['Dungeons & Dragons - Shadow over Mystara (Euro 960619)','Dungeons & Dragons - Shadow over Mystara (USA 960619)','Dungeons & Dragons - Shadow over Mystara'],
+   gngt:['Ghosts\'n Goblins (US)','Ghosts\'n Goblins (World)','Ghosts\'n Goblins'],
+   megaman2:['Mega Man 2 - The Power Fighters (USA 960708)','Mega Man 2 - The Power Fighters','Rockman 2 - The Power Fighters (Japan 960708)'],
+   mwalk:['Michael Jackson\'s Moonwalker (World) (FD1094_8751 317-0159)','Michael Jackson\'s Moonwalker (World)','Michael Jackson\'s Moonwalker'],
+   toki:['Toki (World, set 1)','Toki (World)','Toki'],
    '39in1':['39 in 1','39-in-1'],
    arkanoid:['Arkanoid (World)','Arkanoid'],
    astdelux:['Asteroids Deluxe (rev 3)','Asteroids Deluxe'],
