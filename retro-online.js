@@ -153,6 +153,17 @@ function coverCandidates(game){
   const title=cleanName(game.name).replace(/\s*\(\d{4}\).*$/,'').trim();
   const rom=decodeURIComponent(game.path.split('/').pop()||'').replace(/\.zip$/i,'').toLowerCase();
   const aliases={
+   '1942':['1942 (Revision B)','1942 (Revision A)','1942'],
+   '1942b':['1942 (Revision B)','1942'],
+   bombjack:['Bomb Jack (set 1)','Bomb Jack'],
+   cadash:['Cadash (World)','Cadash'],
+   dkong:['Donkey Kong (US set 1)','Donkey Kong (Japan set 1)','Donkey Kong'],
+   frogger:['Frogger (Sega set 1)','Frogger'],
+   kof98:["The King of Fighters '98 - The Slugfest (NGM-2420)","The King of Fighters '98 - The Slugfest","The King of Fighters '98"],
+   mslug3:['Metal Slug 3 (NGM-2560)','Metal Slug 3'],
+   pang:['Pang (World)','Pang'],
+   pbobblen:['Puzzle Bobble (Neo-Geo)','Puzzle Bobble / Bust-A-Move','Puzzle Bobble'],
+   rastan:['Rastan (World)','Rastan'],
    '1941j':['1941 - Counter Attack (Japan)','1941 - Counter Attack (World)','1941 - Counter Attack'],
    '1944j':['1944 - The Loop Master (Japan 000620)','1944 - The Loop Master (USA 000620)','1944 - The Loop Master'],
    ddsom:['Dungeons & Dragons - Shadow over Mystara (Euro 960619)','Dungeons & Dragons - Shadow over Mystara (USA 960619)','Dungeons & Dragons - Shadow over Mystara'],
