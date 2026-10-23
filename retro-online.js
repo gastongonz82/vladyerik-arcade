@@ -207,6 +207,14 @@ function coverCandidates(game){
    xmvsf:['X-Men Vs. Street Fighter (USA 961023)','X-Men Vs. Street Fighter']
   };
   const names=[...new Set([...(aliases[rom]||[]),title,title.replace(/ vs\.? /ig,' Vs. '),title.replace(/:/g,' -')])].filter(Boolean);
+  // Verified filenames from Libretro's published thumbnail directory indexes.
+  // These exact URLs precede fuzzy name matching for the three missing covers.
+  const verifiedArcadeCovers={
+   '1944j':'https://thumbnails.libretro.com/MAME/Named_Boxarts/1944_%20The%20Loop%20Master%20(Japan%20000620).png',
+   ddsom:'https://thumbnails.libretro.com/MAME/Named_Boxarts/Dungeons%20_%20Dragons_%20Shadow%20over%20Mystara%20(Japan%20960619).png',
+   megaman2:'https://thumbnails.libretro.com/FBNeo%20-%20Arcade%20Games/Named_Boxarts/Mega%20Man%202%20-%20the%20power%20fighters%20(960708%20USA).png'
+  };
+  if(verifiedArcadeCovers[rom])return [verifiedArcadeCovers[rom],...['Named_Boxarts','Named_Titles'].flatMap(type=>(aliases[rom]||[]).map(name=>'https://thumbnails.libretro.com/FBNeo%20-%20Arcade%20Games/'+type+'/'+encodeURIComponent(name.replace(/[&*\\/:<>?|"\\\\]/g,'_'))+'.png'))];
   // Two arcade titles are absent from the MAME/FBNeo thumbnail index.
   // Try the same game's original Neo Geo / console box art, never unrelated artwork.
   if(rom==='fatfursp')return [
