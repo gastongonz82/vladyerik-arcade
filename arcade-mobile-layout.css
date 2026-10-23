@@ -1,0 +1,11 @@
+/* VLADYERIK Arcade 3.0 - mobile quickbar layout */
+@media screen and (max-width: 700px) {
+  body #quickbar { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px !important; align-items:stretch !important; justify-content:stretch !important; width:100% !important; }
+  body #quickbar #quickTabs { display:grid !important; grid-column:1 / -1 !important; grid-template-columns:repeat(3,minmax(0,1fr)) !important; width:100% !important; gap:7px !important; }
+  body #quickbar #quickTabs button { display:flex !important; align-items:center !important; justify-content:center !important; width:100% !important; min-width:0 !important; min-height:46px !important; padding:9px 4px !important; margin:0 !important; font-size:clamp(10px,2.7vw,13px) !important; white-space:normal !important; text-align:center !important; }
+  body #quickbar #layoutToggle, body #quickbar #soundToggle { display:flex !important; align-items:center !important; justify-content:center !important; width:100% !important; min-width:0 !important; min-height:48px !important; margin:0 !important; padding:9px 5px !important; font-size:clamp(11px,2.8vw,14px) !important; text-align:center !important; white-space:normal !important; }
+  body #quickbar > a[href="emuladores.html"] { display:flex !important; align-items:center !important; justify-content:center !important; grid-column:1 / -1 !important; width:100% !important; min-width:0 !important; min-height:48px !important; margin:0 !important; padding:9px 10px !important; font-size:clamp(12px,3vw,15px) !important; text-align:center !important; white-space:normal !important; }
+  body #quickbar #layoutToggle { order:1 !important; }
+  body #quickbar #soundToggle { order:1 !important; }
+  body #quickbar > a[href="emuladores.html"] { order:2 !important; }
+}
