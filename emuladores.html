@@ -306,11 +306,11 @@ function toggleImmersive(on){area.classList.toggle('immersive',on);$('playerRest
 $('playerFullscreen').addEventListener('click',()=>{toggleImmersive(true);if(!document.fullscreenElement&&area.requestFullscreen)area.requestFullscreen().catch(()=>{});});
 $('playerRestore').addEventListener('click',()=>toggleImmersive(false));
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&area.classList.contains('immersive'))toggleImmersive(false);});let navZone='games',navFilter=0,navFeature=0,navHeader=0,navCollection=0,navExtra=0;
-const headerButtons=()=>[document.querySelector('.topbar .add-games'),document.querySelector('.topbar a.btn')];
+const headerButtons=()=>[document.querySelector('header .add-games'),document.querySelector('header .topbar a.btn')];
 const collectionButtons=()=>[$('gridView'),$('consoleView'),$('clear')];
 const extraButtons=()=>[$('librarySearch'),$('librarySort'),$('changeCover'),$('retryCover')].filter(el=>el&&!el.disabled&&el.getClientRects().length);
 function focusNavExtra(i=0){const items=extraButtons();if(!items.length){focusNavGames();return}navZone='extra';navExtra=Math.max(0,Math.min(items.length-1,i));clearNavHighlights();items[navExtra].classList.add('keyboard-selected');items[navExtra].scrollIntoView({block:'nearest',behavior:'smooth'});}
-function highlightNavElement(el){clearNavHighlights();if(el){el.classList.add('keyboard-selected');el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}}
+function highlightNavElement(el){clearNavHighlights();if(el){el.classList.add('keyboard-selected');if(el.matches('label'))el.tabIndex=0;el.focus?.({preventScroll:true});el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});}}
 function focusNavHeader(i=0){navZone='header';navHeader=Math.max(0,Math.min(headerButtons().length-1,i));highlightNavElement(headerButtons()[navHeader]);}
 function focusNavCollection(i=0){navZone='collection';navCollection=Math.max(0,Math.min(collectionButtons().length-1,i));highlightNavElement(collectionButtons()[navCollection]);}
 
@@ -356,7 +356,7 @@ const row=otherRows.filter(c=>Math.abs(c.offsetTop-targetY)<3);
 row.sort((a,b)=>Math.abs(a.offsetLeft+a.offsetWidth/2-currentX)-Math.abs(b.offsetLeft+b.offsetWidth/2-currentX));
 if(row[0])select(Number(row[0].dataset.entryIndex));
 }
-window.vladyLocalNavigation={enter:()=>{focusNavHeader(0);return true},move:navMove};
+window.vladyLocalNavigation={enter:()=>{focusNavHeader(0);return true},move:navMove,header:()=>{focusNavHeader(0);return true},collection:()=>{focusNavCollection(0);return true}};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!area.hidden){close();render();return;}if(!area.hidden||window.__vladiOnlinePlayerActive||window.__vladiOnlinePadActive||document.activeElement?.closest?.('#retroOnline, #onlinePlayer')||/^(INPUT|TEXTAREA|SELECT|IFRAME)$/.test(document.activeElement?.tagName||''))return;const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){e.preventDefault();navMove(key);}else if(key==='Enter'||key===' '){e.preventDefault();navConfirm();}});
 // Navegación de mandos: cruceta y palanca en menú; Share/Back para salir del emulador.
 let padLastMove=0,padPrevConfirm=false,padPrevExit=false,padExitHoldAt=0,padExitHoldDone=false,padNeutralUntil=0;
