@@ -338,7 +338,7 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Cat�
 
 /* Navegación por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
 const padStyle=document.createElement('style');padStyle.textContent='#retroOnline .online-pad-focus{outline:3px solid #ffcf42!important;outline-offset:3px!important;box-shadow:0 0 0 5px #0c204b,0 0 24px #ffcd6488!important}';document.head.append(padStyle);
-let padFocus=null,padLast=0,padConfirm=false,padBack=false,padPlayerExitHeld=false,padExitCooldownUntil=0;
+let padFocus=null,padLast=0,padConfirm=false,padBack=false,padPlayerExitHeld=false,padExitCooldownUntil=0;let padFavoriteHeld=false;
 function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>!el.matches('.online-fav')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
 function padMove(dx,dy){
@@ -406,6 +406,19 @@ function padMove(dx,dy){
  }
  if(best)padSetFocus(best);
 }
+function toggleFocusedFavorite(){
+ const card=(padFocus?.closest?.('.online-card')||document.activeElement?.closest?.('.online-card'));
+ if(!card||!grid.contains(card)||!player.hidden)return false;
+ const star=card.querySelector('.online-fav');if(!star)return false;
+ const adding=star.getAttribute('aria-pressed')!=='true';
+ star.click();
+ if(card.isConnected){padSetFocus(card)}else{const next=grid.querySelector('.online-card');if(next)padSetFocus(next)}
+ let toast=section.querySelector('#onlineFavoriteToast');
+ if(!toast){toast=document.createElement('div');toast.id='onlineFavoriteToast';toast.setAttribute('role','status');toast.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10009;background:#14264a;color:#ffe18b;border:1px solid #e5bd55;border-radius:12px;padding:11px 18px;font-weight:900;box-shadow:0 8px 25px #0008;pointer-events:none';section.append(toast)}
+ toast.textContent=adding?'★ Agregado a favoritos':'☆ Quitado de favoritos';toast.hidden=false;
+ clearTimeout(toggleFocusedFavorite.timer);toggleFocusedFavorite.timer=setTimeout(()=>{toast.hidden=true},1400);
+ return true;
+}
 function onlinePadLoop(now){
  if(window.__vladiUnifiedNavigation)return;
  const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
@@ -430,13 +443,14 @@ function onlinePadLoop(now){
   const dx=pressed(15)||axis(0)>.6?1:pressed(14)||axis(0)<-.6?-1:0;
   const dy=pressed(13)||axis(1)>.6?1:pressed(12)||axis(1)<-.6?-1:0;
   if((dx||dy)&&now-padLast>210){padMove(dx,dy);padLast=now}
-  const confirm=[0,1,2,3,9].some(pressed);
+  const favorite=pressed(3);if(favorite&&!padFavoriteHeld)toggleFocusedFavorite();padFavoriteHeld=favorite;
+  const confirm=[0,1,2,9].some(pressed);
   if(confirm&&!padConfirm){if(!padFocus)padSetFocus(padTargets()[0]);else if(padFocus.tagName==='SELECT'){padFocus.focus();padFocus.showPicker?.()}else if(padFocus.tagName==='INPUT')padFocus.focus();else padFocus.click()}
   padConfirm=confirm;
   const back=pressed(8);
   if(back&&!padBack){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false}
   padBack=back;
- }else{padConfirm=false;padBack=false}
+ }else{padConfirm=false;padBack=false;padFavoriteHeld=false}
  requestAnimationFrame(onlinePadLoop);
 }
 // Puente único entre la navegación online y la biblioteca local.
@@ -451,6 +465,7 @@ document.addEventListener('keydown',e=>{
 section.addEventListener('keydown',e=>{
  if(!player.hidden)return;
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
+ if(e.key.toLowerCase()==='f'&&!e.repeat&&!e.target.matches('input,select')){if(toggleFocusedFavorite()){e.preventDefault();e.stopPropagation()}return;}
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
   
   if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
