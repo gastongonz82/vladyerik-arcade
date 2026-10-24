@@ -376,7 +376,7 @@ function refreshInsights(game){
   const name=document.createElement('span');name.textContent=cleanName(item.name);name.title=cleanName(item.name);
   tile.append(cover,name);continueRow.append(tile);
  }
- if(continueGames.length){continueTitle.style.cssText='display:block;margin-top:20px';stats.append(continueTitle,continueRow)}
+ if(continueGames.length){continueTitle.style.cssText='display:block;margin-top:34px';stats.append(continueTitle,continueRow)}
  const g=game||selectedInfoGame||games.find(x=>x.path===featuredPath)||games[0];
  detail.replaceChildren();
  const label=document.createElement('span');label.className='online-eyebrow';label.textContent='JUEGO SELECCIONADO';
