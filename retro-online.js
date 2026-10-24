@@ -153,7 +153,7 @@ const thumbSystems={nes:'Nintendo - Nintendo Entertainment System',snes:'Nintend
 const coverMemory=new Map();
 let hostedCovers={};
 let remoteHostedCovers={};
-fetch(base+'retro-hosted-covers.json').then(r=>r.ok?r.json():{}).then(data=>{
+const remoteCoversReady=fetch(base+'retro-hosted-covers.json',{cache:'no-cache'}).then(r=>r.ok?r.json():{}).then(data=>{
  remoteHostedCovers=data&&typeof data==='object'?data:{};
  if(games.length&&Object.keys(remoteHostedCovers).length){showGames();featureGame(games.find(g=>g.path===featuredPath)||games[0]);}
 }).catch(()=>{});
@@ -448,7 +448,7 @@ function showGames(){
 function setView(next){view=next;for(const [el,v] of [[gridView,'all'],[favView,'favorites'],[recentView,'recent']])el.classList.toggle('active',v===view);showGames()}
 gridView.onclick=()=>setView('all');favView.onclick=()=>setView('favorites');recentView.onclick=()=>setView('recent');
 search.addEventListener('input',showGames);sort.addEventListener('change',showGames);
-fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Catálogo no disponible');return r.json()}).then(data=>{
+Promise.all([fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Catálogo no disponible');return r.json()}),remoteCoversReady]).then(([data])=>{
  games=(Array.isArray(data.games)?data.games:[]).filter(g=>g.name&&g.path&&g.path.startsWith('roms/')&&!g.path.includes('..'));
  // Defensive fallback: older Pages catalog snapshots can still mark arcade ZIPs as unknown.
  const arcadeTitles={simpsons2p2:'The Simpsons Arcade (1991)',dino:'Cadillacs and Dinosaurs (1993)',punisher:'The Punisher (1993)',mslug:'Metal Slug (1996)',mslug2:'Metal Slug 2 (1998)',snowbros:'Snow Bros. (1990)',tmnt:'Teenage Mutant Ninja Turtles (1989)',avspu:'Alien vs. Predator (1994)',bloodbro:'Blood Bros. (1990)',crusnusa:"Cruis'n USA Arcade (1994)",ddragon2:'Double Dragon II: The Revenge (1988)',ffightub:'Final Fight (1989)',ga2:'Golden Axe: The Revenge of Death Adder (1992)',goldnaxe:'Golden Axe Arcade (1989)',mk3:'Mortal Kombat 3 Arcade (1995)',msh:'Marvel Super Heroes (1995)',mvscu:'Marvel vs. Capcom: Clash of Super Heroes (1998)',outrun:'Out Run (1986)',ssridersubc:'Sunset Riders (1991)',wboy:'Wonder Boy (1986)',xmvsf:'X-Men vs. Street Fighter (1996)',captcomm:'Captain Commando (1991)',ffight:'Final Fight (1989)',knights:'Knights of the Round (1991)',kod:'The King of Dragons (1991)',wof:'Warriors of Fate (1992)',ssriders:'Sunset Riders (1991)',tmnt2:'Teenage Mutant Ninja Turtles: Turtles in Time (1991)',xmen:'X-Men Arcade (1992)',mk:'Mortal Kombat Arcade (1992)',mk2:'Mortal Kombat II Arcade (1993)',umk3:'Ultimate Mortal Kombat 3 Arcade (1995)',bublbobl:'Bubble Bobble (1986)'};
