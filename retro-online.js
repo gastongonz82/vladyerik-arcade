@@ -354,7 +354,7 @@ function refreshInsights(game){
  const st=document.createElement('span');st.className='online-eyebrow';st.textContent='TU ACTIVIDAD';
  const counts=document.createElement('div');counts.className='online-stat-counts';counts.innerHTML='<div><b>'+favorites.length+'</b><small>FAVORITOS</small></div><div><b>'+recents.length+'</b><small>RECIENTES</small></div>';
  const caption=document.createElement('p');caption.textContent=systems.length?'CONSOLAS · '+systems.slice(0,3).join(' · '):'Tu historial se guarda en este navegador';
- stats.append(st,counts,caption);
+ stats.append(st,counts);
  // Resumen compacto con partidas realmente registradas; sin alterar el diseño de las tarjetas.
  const ranked=games.filter(g=>(Number(playCounts[g.path])||0)>0).sort((a,b)=>(Number(playCounts[b.path])||0)-(Number(playCounts[a.path])||0));
  if(ranked.length){
@@ -364,7 +364,7 @@ function refreshInsights(game){
   const summary=document.createElement('p');summary.className='online-activity-summary';
   summary.textContent='🎮 '+sessions+' partidas iniciadas · 🏆 '+(favoriteSystem?.[0]||'—')+' · ⭐ '+cleanName(ranked[0].name)+' ('+playCounts[ranked[0].path]+')';
   summary.title='Consola más jugada y juego más iniciado en este navegador';
-  stats.append(summary);
+  detail.append(summary);
  }
  const continueTitle=document.createElement('span');continueTitle.className='online-eyebrow';continueTitle.textContent='SEGUIR JUGANDO';
  const continueRow=document.createElement('div');continueRow.className='online-continue-list';
@@ -381,7 +381,7 @@ function refreshInsights(game){
  const label=document.createElement('span');label.className='online-eyebrow';label.textContent='JUEGO SELECCIONADO';
  const name=document.createElement('strong');name.className='online-insight-name';name.textContent=g?cleanName(g.name):'Elegí un juego';
  const meta=document.createElement('p');meta.textContent=g?(g.system||'Consola sin identificar')+(g.size?' · '+(Number(g.size)/1048576).toFixed(1)+' MB':''):'Seleccioná una tarjeta del catálogo';
- detail.append(label,name,meta);
+ detail.append(label,name,meta,caption);
  if(g)selectedInfoGame=g;
  suggest.replaceChildren();
  const eyebrow=document.createElement('span');eyebrow.className='online-eyebrow';eyebrow.textContent='DESCUBRÍ MÁS';
