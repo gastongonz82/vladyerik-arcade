@@ -305,7 +305,36 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
   io.observe(target);
  }
 }
-function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(section.querySelector('#onlineFeatureArt'),game,{priority:true});section.querySelector('#onlineFeatureName').textContent=cleanName(game.name);section.querySelector('#onlineFeatureSystem').textContent='🌟 DESTACADO · '+(game.system||'RETRO').toUpperCase();section.querySelector('#onlineFeatureHint').textContent='Jugá directamente en RETRO ONLINE';const b=section.querySelector('#onlineFeatureFav');b.textContent=favorites.includes(game.path)?'★ FAVORITO':'☆ FAVORITO'}function launchGame(game){refreshInsights(game);if(!player.hidden||!document.querySelector('#playerArea')?.hidden)return;recents=[game.path,...recents.filter(x=>x!==game.path)].slice(0,30);localStorage.setItem(recentKey,JSON.stringify(recents));featureGame(game);play(game)}section.querySelector('#onlineFeaturePlay').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(g)launchGame(g)};section.querySelector('#onlineFeatureFav').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(!g)return;favorites=favorites.includes(g.path)?favorites.filter(x=>x!==g.path):[g.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));featureGame(g);showGames()};section.querySelector('#onlineFeatureNext').onclick=()=>{if(!games.length)return;const idx=games.findIndex(x=>x.path===featuredPath);featureGame(games[(idx+1)%games.length])};// Paneles informativos independientes: no incorporan nuevos focos al recorrido por filas.
+/* Destacado diario personalizado: solo metadatos locales, sin modificar ROM ni emulador. */
+const featureHistoryKey='vladi_retro_online_play_counts_v1';
+const featureDayKey='vladi_retro_online_daily_feature_v1';
+let playCounts={};try{const saved=JSON.parse(localStorage.getItem(featureHistoryKey)||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))playCounts=saved}catch(_){}
+const featureGenres=[
+ ['PLATAFORMAS',/mario|sonic|aladdin|donkey kong|kirby|megaman|mega man|castlevania|wonder boy|adventure island|rayman|contra|earthworm jim/i],
+ ['CARRERAS',/racing|racer|kart|f-zero|f zero|outrun|out run|top gear|road rash|speed|rally|formula|grand prix|cruis|daytona/i],
+ ['LUCHA',/fighter|fighting|mortal kombat|street fighter|tekken|samurai shodown|fatal fury|king of fighters|virtua fighter|killer instinct/i],
+ ['DEPORTES',/soccer|football|basket|nba|fifa|tennis|golf|baseball|hockey|wrestling|olympic/i],
+ ['AVENTURA',/zelda|metroid|final fantasy|chrono|secret of mana|pokemon|pokémon|earthbound|dragon quest|adventure/i],
+ ['PUZZLE',/tetris|puzzle|columns|dr mario|bust.a.move|bubble bobble|puyo|lemmings/i],
+ ['DISPAROS',/194[0-9]|shoot|space invaders|galaga|gradius|r-type|metal slug|1942|1943|1944/i]
+];
+function genreOf(g){const n=cleanName(g.name);return featureGenres.find(([,rx])=>rx.test(n))?.[0]||'OTROS'}
+function localDay(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function dailyFeatured(){
+ if(!games.length)return null;
+ const day=localDay();
+ try{const saved=JSON.parse(localStorage.getItem(featureDayKey)||'null');const match=games.find(g=>g.path===saved?.path);if(saved?.day===day&&match)return match}catch(_){}
+ const systemScores={},genreScores={};
+ for(const g of games){const count=Math.min(30,Number(playCounts[g.path])||0);if(!count)continue;systemScores[g.system]=(systemScores[g.system]||0)+count;const genre=genreOf(g);if(genre!=='OTROS')genreScores[genre]=(genreScores[genre]||0)+count}
+ for(const [index,path] of recents.entries()){const g=games.find(item=>item.path===path);if(!g)continue;const weight=Math.max(1,10-index);systemScores[g.system]=(systemScores[g.system]||0)+weight;const genre=genreOf(g);if(genre!=='OTROS')genreScores[genre]=(genreScores[genre]||0)+weight}
+ const seed=Array.from(day).reduce((v,c)=>((v*33+c.charCodeAt(0))>>>0),5381);
+ const ranked=games.map((g,i)=>{const genre=genreOf(g),neverPlayed=!recents.includes(g.path)&&!(playCounts[g.path]>0);const hash=Array.from(g.path).reduce((v,c)=>((v*31+c.charCodeAt(0))>>>0),seed);const variety=(hash%1000)/100;const score=(systemScores[g.system]||0)*.3+(genreScores[genre]||0)*.4+(neverPlayed?14:0)+(favorites.includes(g.path)?4:0)+variety-Math.min(20,Number(playCounts[g.path])||0)*2;return {g,score,i}}).sort((a,b)=>b.score-a.score||a.i-b.i);
+ const picked=ranked[0]?.g||games[0];
+ try{localStorage.setItem(featureDayKey,JSON.stringify({day,path:picked.path}))}catch(_){}
+ return picked;
+}
+function nextFeatured(){if(!games.length)return;const current=games.findIndex(g=>g.path===featuredPath);const next=games[(current+1+games.length)%games.length];featureGame(next)}
+function featureGame(game){if(!game)return;featuredPath=game.path;setArtwork(section.querySelector('#onlineFeatureArt'),game,{priority:true});section.querySelector('#onlineFeatureName').textContent=cleanName(game.name);section.querySelector('#onlineFeatureSystem').textContent='🌟 DESTACADO · '+(game.system||'RETRO').toUpperCase();section.querySelector('#onlineFeatureHint').textContent='Jugá directamente en RETRO ONLINE';const b=section.querySelector('#onlineFeatureFav');b.textContent=favorites.includes(game.path)?'★ FAVORITO':'☆ FAVORITO'}function launchGame(game){refreshInsights(game);if(!player.hidden||!document.querySelector('#playerArea')?.hidden)return;recents=[game.path,...recents.filter(x=>x!==game.path)].slice(0,30);localStorage.setItem(recentKey,JSON.stringify(recents));playCounts[game.path]=Math.min(99999,(Number(playCounts[game.path])||0)+1);try{localStorage.setItem(featureHistoryKey,JSON.stringify(playCounts))}catch(_){}featureGame(game);play(game)}section.querySelector('#onlineFeaturePlay').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(g)launchGame(g)};section.querySelector('#onlineFeatureFav').onclick=()=>{const g=games.find(x=>x.path===featuredPath);if(!g)return;favorites=favorites.includes(g.path)?favorites.filter(x=>x!==g.path):[g.path,...favorites];localStorage.setItem(favKey,JSON.stringify(favorites));featureGame(g);showGames()};section.querySelector('#onlineFeatureNext').onclick=()=>{if(!games.length)return;nextFeatured()};// Paneles informativos independientes: no incorporan nuevos focos al recorrido por filas.
 const guide=document.createElement('details');guide.id='onlineControlGuide';guide.innerHTML='<summary>🎮 GUÍA DE CONTROLES <span>FLECHAS · ENTER · F · △</span></summary><p>Flechas / cruceta: navegar · Enter / X: jugar · F / △: favorito · Share: salir del juego.</p>';guide.setAttribute('aria-label','Ayuda de controles');filterBar.after(guide);
 const insight=document.createElement('section');insight.id='onlineInsights';
 const stats=document.createElement('div'),detail=document.createElement('div'),suggest=document.createElement('div');
@@ -381,7 +410,7 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Cat�
  for(const g of games){const id=decodeURIComponent(g.path.split('/').pop()||'').replace(/\.zip$/i,'').toLowerCase();if(arcadeTitles[id]){g.system='arcade';g.name=arcadeTitles[id]+'.zip';}}
  const systems=[...new Set(games.map(g=>g.system).filter(Boolean))];
  for(const sys of ['all',...systems]){const b=document.createElement('button');b.type='button';b.textContent=sys==='all'?'TODOS':sys.toUpperCase();b.className=sys==='all'?'active':'';b.onclick=()=>{chosen=sys;for(const btn of filterBar.children)btn.classList.toggle('active',btn===b);showGames()};filterBar.append(b)}
- featureGame(games.find(g=>g.path===featuredPath)||games[0]);showGames();
+ featureGame(dailyFeatured());showGames();
 }).catch(()=>{status.textContent='El catálogo online no está disponible. La colección local sigue funcionando.'});
 
 /* Navegación por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
