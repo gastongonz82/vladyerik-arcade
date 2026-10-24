@@ -108,6 +108,7 @@ style.textContent+="#retroOnline .online-insight-suggest{overflow:hidden}\n#retr
 style.textContent+="\n#retroOnline .online-insight-suggest{position:relative}\n#retroOnline .online-recommend-controls{position:absolute;top:7px;right:10px;display:flex;gap:5px}\n#retroOnline .online-recommend-controls button{border:1px solid #4d6b95;background:#213b64;color:#ffe5a2;border-radius:7px;width:26px;height:24px;padding:0;cursor:pointer;font-size:20px;line-height:18px}\n#retroOnline .online-recommend-controls button:disabled{opacity:.35;cursor:default}\n#retroOnline .online-suggestion-tile{display:block;text-align:left;padding:0;cursor:pointer;font-family:inherit;width:100%;color:inherit}\n#retroOnline .online-suggestion-tile:focus-visible,#retroOnline .online-suggestion-tile.online-pad-focus{outline:3px solid #ffe078;outline-offset:2px}\n";
 style.textContent+="\n#retroOnline .online-insight-stat{min-width:0}#retroOnline .online-continue-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}#retroOnline .online-continue-tile{display:flex;align-items:center;gap:5px;min-width:0;padding:4px;border-radius:8px;border:1px solid #365983;background:#0e2447;color:#e7f2ff;text-align:left;cursor:pointer}#retroOnline .online-continue-cover{width:30px;height:34px;flex:0 0 30px;overflow:hidden;border-radius:4px;background:#102b55}#retroOnline .online-continue-cover img{width:100%;height:100%;object-fit:cover}#retroOnline .online-continue-tile span{font-size:9px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}#retroOnline .online-continue-tile:focus-visible,#retroOnline .online-continue-tile.online-pad-focus{outline:3px solid #ffe078;outline-offset:2px}#retroOnline .online-insight-stat>.online-eyebrow{display:block;margin-top:7px}\n";
 style.textContent+="\n/* Mantener diseño original: separar únicamente Favoritos y Recientes. */#retroOnline .online-insight-stat .online-stat-counts{column-gap:42px}\n";
+style.textContent+="\n/* En escritorio, equilibrar los tres paneles sin alterar móvil. */@media(min-width:851px){#retroOnline #onlineInsights{grid-template-columns:minmax(0,.85fr) minmax(0,1.05fr) minmax(0,1.25fr)}#retroOnline #onlineInsights>div{min-height:0}#retroOnline .online-insight-suggest .online-suggestion-cover{aspect-ratio:5/4}}\n";
 const section=document.createElement('section');section.id='retroOnline';section.innerHTML='<h2>🌐 RETRO ONLINE</h2><p class="hint">Juegos disponibles para jugar directamente, sin subir archivos.</p><div id="onlineStatus" role="status">Cargando catálogo…</div><div class="online-grid" id="onlineGrid"></div>';
 const nav=document.querySelector('.tabs');nav?.before(section);
 const collection=document.querySelector('#collection .collection-title h2');if(collection)collection.textContent='📂 CARGAR MIS JUEGOS · COLECCIÓN LOCAL';
@@ -435,6 +436,9 @@ function padMove(dx,dy){
  if(!padFocus||!targets.includes(padFocus)){padSetFocus(section.querySelector('#onlineFeaturePlay')||targets[0]);return}
  const cards=[...grid.querySelectorAll('.online-card')];
  const card=padFocus.closest('.online-card');
+ const featureButtons=[...section.querySelectorAll('.online-feature-actions button')];
+ const toolbar=[...section.querySelectorAll('.online-tools button,.online-tools input,.online-tools select')].filter(el=>targets.includes(el));
+ const consoles=[...section.querySelectorAll('.online-systems button,.online-filters button')].filter(el=>targets.includes(el));
  const recommendations=[...section.querySelectorAll('.online-suggestion-tile')];
  const recommendationIndex=recommendations.indexOf(padFocus);
  if(recommendationIndex>=0){
@@ -443,9 +447,6 @@ function padMove(dx,dy){
   else if(dy<0)padSetFocus(consoles[Math.min(recommendationIndex,consoles.length-1)]||toolbar[0]);
   return;
  }
- const featureButtons=[...section.querySelectorAll('.online-feature-actions button')];
- const toolbar=[...section.querySelectorAll('.online-tools button,.online-tools input,.online-tools select')].filter(el=>targets.includes(el));
- const consoles=[...section.querySelectorAll('.online-systems button,.online-filters button')].filter(el=>targets.includes(el));
  const cardRows=()=>{
   const rows=[];
   for(const el of cards){
