@@ -355,6 +355,17 @@ function refreshInsights(game){
  const counts=document.createElement('div');counts.className='online-stat-counts';counts.innerHTML='<div><b>'+favorites.length+'</b><small>FAVORITOS</small></div><div><b>'+recents.length+'</b><small>RECIENTES</small></div>';
  const caption=document.createElement('p');caption.textContent=systems.length?'CONSOLAS · '+systems.slice(0,3).join(' · '):'Tu historial se guarda en este navegador';
  stats.append(st,counts,caption);
+ // Resumen compacto con partidas realmente registradas; sin alterar el diseño de las tarjetas.
+ const ranked=games.filter(g=>(Number(playCounts[g.path])||0)>0).sort((a,b)=>(Number(playCounts[b.path])||0)-(Number(playCounts[a.path])||0));
+ if(ranked.length){
+  const sessions=ranked.reduce((sum,g)=>sum+(Number(playCounts[g.path])||0),0);
+  const bySystem={};for(const g of ranked)bySystem[g.system]=(bySystem[g.system]||0)+(Number(playCounts[g.path])||0);
+  const favoriteSystem=Object.entries(bySystem).sort((a,b)=>b[1]-a[1])[0];
+  const summary=document.createElement('p');summary.className='online-activity-summary';
+  summary.textContent='🎮 '+sessions+' partidas iniciadas · 🏆 '+(favoriteSystem?.[0]||'—')+' · ⭐ '+cleanName(ranked[0].name)+' ('+playCounts[ranked[0].path]+')';
+  summary.title='Consola más jugada y juego más iniciado en este navegador';
+  stats.append(summary);
+ }
  const continueTitle=document.createElement('span');continueTitle.className='online-eyebrow';continueTitle.textContent='SEGUIR JUGANDO';
  const continueRow=document.createElement('div');continueRow.className='online-continue-list';
  const continueGames=recents.map(path=>games.find(g=>g.path===path)).filter(Boolean).slice(0,2);
