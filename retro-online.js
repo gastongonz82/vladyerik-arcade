@@ -152,6 +152,11 @@ function onlineGameArtwork(game){
 const thumbSystems={nes:'Nintendo - Nintendo Entertainment System',snes:'Nintendo - Super Nintendo Entertainment System',segaMD:'Sega - Mega Drive - Genesis',segaGG:'Sega - Game Gear',n64:'Nintendo - Nintendo 64'};
 const coverMemory=new Map();
 let hostedCovers={};
+let remoteHostedCovers={};
+fetch(base+'retro-hosted-covers.json').then(r=>r.ok?r.json():{}).then(data=>{
+ remoteHostedCovers=data&&typeof data==='object'?data:{};
+ if(games.length&&Object.keys(remoteHostedCovers).length){showGames();featureGame(games.find(g=>g.path===featuredPath)||games[0]);}
+}).catch(()=>{});
 fetch('./retro-covers.json').then(r=>r.ok?r.json():{}).then(data=>{hostedCovers=data||{};if(games.length){showGames();featureGame(games.find(g=>g.path===featuredPath)||games[0]);}}).catch(()=>{});
 const COVER_STORAGE_KEY='vladi_online_covers_v1';
 let savedCovers={};
@@ -300,8 +305,9 @@ function coverCandidates(game){
 function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
- const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const localCover=ignoreHosted?null:hostedCovers[game.path];
+ const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const localCover=ignoreHosted?null:hostedCovers[game.path];const remoteCover=ignoreHosted?null:remoteHostedCovers[game.path];
  if(localCover){const localImg=document.createElement('img');localImg.alt='Portada de '+cleanName(game.name);localImg.loading=priority?'eager':'lazy';localImg.decoding='async';localImg.onload=()=>fallbackImage.remove();localImg.onerror=()=>{localImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(localImg);localImg.src='./'+localCover;return;}
+ if(remoteCover){const hostedImg=document.createElement('img');hostedImg.alt='Portada de '+cleanName(game.name);hostedImg.loading=priority?'eager':'lazy';hostedImg.decoding='async';hostedImg.onload=()=>fallbackImage.remove();hostedImg.onerror=()=>{hostedImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(hostedImg);hostedImg.src=base+remoteCover;return;}
  const urls=coverCandidates(game);if(!urls.length)return;
  const coverKey=game.system+'|'+cleanName(game.name);
  const cached=coverMemory.has(coverKey)?coverMemory.get(coverKey):savedCovers[coverKey];
