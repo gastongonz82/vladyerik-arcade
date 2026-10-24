@@ -2,6 +2,16 @@
 (()=>{'use strict';
 const host=document.querySelector('main');if(!host)return;
 const base='https://gastongonz82.github.io/vladyerik-retro-games/';
+/* Portadas persistentes entre visitas; el worker solo almacena imágenes de portadas. */
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+ navigator.serviceWorker.register('./retro-cover-sw.js',{scope:'./'}).catch(()=>{});
+}
+function discardFailedCover(url){
+ if(!url||!('serviceWorker' in navigator))return;
+ const worker=navigator.serviceWorker.controller;
+ if(worker)worker.postMessage({type:'vladi-cover-failed',url});
+}
+
 const style=document.createElement('style');style.textContent=`
 #retroOnline{margin:24px 0 30px;padding:20px;border:1px solid #557fc1;border-radius:20px;background:linear-gradient(115deg,#152d5b,#15152f)}
 #retroOnline h2{margin:0 0 8px;color:#ffe078}#retroOnline .online-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-top:16px}
@@ -300,7 +310,7 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  let idx=0;
  const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
  img.onload=()=>{rememberCover(coverKey,img.src);fallbackImage.remove();if(!img.isConnected)target.append(img)};
- img.onerror=()=>{if(idx<candidates.length){img.src=candidates[idx++]}else{rememberCover(coverKey,false);img.remove()}};
+ img.onerror=()=>{discardFailedCover(img.src);if(idx<candidates.length){img.src=candidates[idx++]}else{rememberCover(coverKey,false);img.remove()}};
  // Carga diferida real: evita disparar decenas de solicitudes para juegos fuera de pantalla.
  const start=()=>{if(!target.isConnected)return;target.append(img);img.src=candidates[idx++]};
  if(priority||!('IntersectionObserver' in window)){start()}else{
