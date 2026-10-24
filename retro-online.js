@@ -555,7 +555,7 @@ function onlinePadLoop(now){
  requestAnimationFrame(onlinePadLoop);
 }
 // Puente único entre la navegación online y la biblioteca local.
-function enterOnline(){if(!player.hidden)return false;const cards=[...section.querySelectorAll('.online-card')];const first=cards[0]||padTargets()[0];if(!first)return false;padSetFocus(first);return true}
+function enterOnline(){if(!player.hidden)return false;const targets=padTargets();const first=section.querySelector('#onlineFeaturePlay')||section.querySelector('.online-feature-actions button')||targets[0];if(!first||!targets.includes(first))return false;padSetFocus(first);return true}
 function enterLocal(){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;document.activeElement?.blur?.();return window.vladyLocalNavigation?.collection?.()||false}
 window.vladyRetroNavigation={enterOnline,enterLocal,moveOnline:(key)=>padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0)};
 document.addEventListener('keydown',e=>{
