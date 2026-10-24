@@ -353,7 +353,7 @@ function refreshInsights(game){
  stats.replaceChildren();
  const st=document.createElement('span');st.className='online-eyebrow';st.textContent='TU ACTIVIDAD';
  const counts=document.createElement('div');counts.className='online-stat-counts';counts.innerHTML='<div><b>'+favorites.length+'</b><small>FAVORITOS</small></div><div><b>'+recents.length+'</b><small>RECIENTES</small></div>';
- const caption=document.createElement('p');caption.textContent=systems.length?'CONSOLAS · '+systems.slice(0,3).join(' · '):'Tu historial se guarda en este navegador';
+ const caption=document.createElement('p');caption.textContent=systems.length?'CONSOLAS · '+systems.slice(0,3).join(' · ').toUpperCase():'Tu historial se guarda en este navegador';
  stats.append(st,counts);
  // Resumen compacto con partidas realmente registradas; sin alterar el diseño de las tarjetas.
  let activitySummary=null;
@@ -363,7 +363,7 @@ function refreshInsights(game){
   const bySystem={};for(const g of ranked)bySystem[g.system]=(bySystem[g.system]||0)+(Number(playCounts[g.path])||0);
   const favoriteSystem=Object.entries(bySystem).sort((a,b)=>b[1]-a[1])[0];
   const summary=document.createElement('p');summary.className='online-activity-summary';
-  summary.textContent='🎮 '+sessions+' partidas iniciadas · 🏆 '+(favoriteSystem?.[0]||'—')+' · ⭐ '+cleanName(ranked[0].name)+' ('+playCounts[ranked[0].path]+')';
+  summary.textContent='🎮 '+sessions+' PARTIDAS INICIADAS · 🏆 '+(favoriteSystem?.[0]||'—').toUpperCase()+' · ⭐ '+cleanName(ranked[0].name).toUpperCase()+' ('+playCounts[ranked[0].path]+')';
   summary.title='Consola más jugada y juego más iniciado en este navegador';
   activitySummary=summary;
  }
@@ -376,13 +376,16 @@ function refreshInsights(game){
   const name=document.createElement('span');name.textContent=cleanName(item.name);name.title=cleanName(item.name);
   tile.append(cover,name);continueRow.append(tile);
  }
- if(continueGames.length){stats.append(continueTitle,continueRow)}
+ if(continueGames.length){continueTitle.style.cssText='display:block;margin-top:20px';stats.append(continueTitle,continueRow)}
  const g=game||selectedInfoGame||games.find(x=>x.path===featuredPath)||games[0];
  detail.replaceChildren();
  const label=document.createElement('span');label.className='online-eyebrow';label.textContent='JUEGO SELECCIONADO';
  const name=document.createElement('strong');name.className='online-insight-name';name.textContent=g?cleanName(g.name):'Elegí un juego';
  const meta=document.createElement('p');meta.textContent=g?(g.system||'Consola sin identificar')+(g.size?' · '+(Number(g.size)/1048576).toFixed(1)+' MB':''):'Seleccioná una tarjeta del catálogo';
- detail.append(label,name,meta,caption);
+ detail.append(label,name,meta);
+ const activityHeading=document.createElement('span');activityHeading.className='online-eyebrow';activityHeading.textContent='ESTADÍSTICAS';activityHeading.style.cssText='display:block;margin-top:24px;margin-bottom:10px';
+ caption.style.marginBottom='10px';
+ detail.append(activityHeading,caption);
  if(activitySummary)detail.append(activitySummary);
  if(g)selectedInfoGame=g;
  suggest.replaceChildren();
