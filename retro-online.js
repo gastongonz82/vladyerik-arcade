@@ -429,17 +429,20 @@ fetch(base+'juegos.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('CatÃ
 /* NavegaciÃ³n por joystick en RETRO ONLINE; la biblioteca local conserva su propio controlador. */
 const padStyle=document.createElement('style');padStyle.textContent='#retroOnline .online-pad-focus{outline:3px solid #ffcf42!important;outline-offset:3px!important;box-shadow:0 0 0 5px #0c204b,0 0 24px #ffcd6488!important}';document.head.append(padStyle);
 let padFocus=null,padLast=0,padConfirm=false,padBack=false,padPlayerExitHeld=false,padExitCooldownUntil=0;let padFavoriteHeld=false;
-function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>!el.matches('.online-fav,.online-recommend-controls button')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
+function padTargets(){return [...section.querySelectorAll('button,input,select,[role="button"]')].filter(el=>!el.matches('.online-fav')&&el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.disabled&&!el.closest('[hidden]'))}
 function padSetFocus(el){if(!el)return;padFocus?.classList.remove('online-pad-focus');padFocus=el;el.classList.add('online-pad-focus');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'});window.__vladiOnlinePadActive=true}
 function padMove(dx,dy){
  const targets=padTargets();if(!targets.length)return;
- if(!padFocus||!targets.includes(padFocus)){padSetFocus(section.querySelector('#onlineFeaturePlay')||targets[0]);return}
+ if(!padFocus||!targets.includes(padFocus)){if(dy<0&&window.vladyLocalNavigation?.header){window.__vladiOnlinePadActive=false;window.vladyLocalNavigation.header();return}padSetFocus(section.querySelector('#onlineFeaturePlay')||targets[0]);return}
  const cards=[...grid.querySelectorAll('.online-card')];
  const card=padFocus.closest('.online-card');
  const featureButtons=[...section.querySelectorAll('.online-feature-actions button')];
  const toolbar=[...section.querySelectorAll('.online-tools button,.online-tools input,.online-tools select')].filter(el=>targets.includes(el));
  const consoles=[...section.querySelectorAll('.online-systems button,.online-filters button')].filter(el=>targets.includes(el));
  const recommendations=[...section.querySelectorAll('.online-suggestion-tile')];
+ const recommendButtons=[...section.querySelectorAll('.online-recommend-controls button')].filter(el=>el.getClientRects().length&&!el.disabled);
+ const recommendButtonIndex=recommendButtons.indexOf(padFocus);
+ if(recommendButtonIndex>=0){if(dx)padSetFocus(recommendButtons[Math.max(0,Math.min(recommendButtons.length-1,recommendButtonIndex+dx))]);else if(dy>0)padSetFocus(recommendations[Math.min(recommendButtonIndex,recommendations.length-1)]||cards[0]);else if(dy<0)padSetFocus(consoles[0]||toolbar[0]);return}
  const recommendationIndex=recommendations.indexOf(padFocus);
  if(recommendationIndex>=0){
   if(dx){const next=recommendationIndex+dx;if(next>=0&&next<recommendations.length)padSetFocus(recommendations[next]);else{recommendOffset=Math.max(0,recommendOffset+(dx>0?3:-3));refreshInsights();padSetFocus(section.querySelectorAll('.online-suggestion-tile')[dx>0?0:Math.max(0,section.querySelectorAll('.online-suggestion-tile').length-1)])}}
