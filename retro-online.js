@@ -555,7 +555,7 @@ function onlinePadLoop(now){
  requestAnimationFrame(onlinePadLoop);
 }
 // Puente único entre la navegación online y la biblioteca local.
-function enterOnline(){if(!player.hidden)return false;const targets=padTargets();const first=section.querySelector('#onlineFeaturePlay')||section.querySelector('.online-feature-actions button')||targets[0];if(!first||!targets.includes(first))return false;padSetFocus(first);return true}
+function enterOnline(){if(!player.hidden)return false;const targets=padTargets();const first=section.querySelector('#onlineFeaturePlay')||section.querySelector('.online-feature-actions button')||targets[0];if(!first||!targets.includes(first))return false;padSetFocus(first);padLast=performance.now()+420;return true}
 function enterLocal(){padFocus?.classList.remove('online-pad-focus');padFocus=null;window.__vladiOnlinePadActive=false;document.activeElement?.blur?.();return window.vladyLocalNavigation?.collection?.()||false}
 window.vladyRetroNavigation={enterOnline,enterLocal,moveOnline:(key)=>padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0)};
 document.addEventListener('keydown',e=>{
@@ -568,7 +568,7 @@ section.addEventListener('keydown',e=>{
  const key=({a:'ArrowLeft',d:'ArrowRight',w:'ArrowUp',s:'ArrowDown'})[e.key.toLowerCase()]||e.key;
  if(e.key.toLowerCase()==='f'&&!e.repeat&&!e.target.matches('input,select')){if(toggleFocusedFavorite()){e.preventDefault();e.stopPropagation()}return;}
  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(key)){
-  
+  if(e.repeat&&performance.now()-padLast<450){e.preventDefault();return}
   if(e.target.matches('input,select')&&!e.altKey){if(e.target.tagName==='INPUT'&&(key==='ArrowLeft'||key==='ArrowRight'))return;if(e.target.tagName==='SELECT'&&(key==='ArrowUp'||key==='ArrowDown'))return}
   e.preventDefault();e.stopPropagation();padMove(key==='ArrowRight'?1:key==='ArrowLeft'?-1:0,key==='ArrowDown'?1:key==='ArrowUp'?-1:0);
  }else if((key==='Enter'||key===' ')&&!e.repeat&&!e.target.matches('input,select,button')){
