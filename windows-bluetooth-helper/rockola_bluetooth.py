@@ -42,7 +42,11 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Vary", "Origin")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+            # Browser timed out or closed the request; the helper stays available.
+            pass
 
     def do_OPTIONS(self):
         origin = self.headers.get("Origin", "")
