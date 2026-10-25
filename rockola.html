@@ -38,6 +38,16 @@ async function trimMusicCache(cache){
   const old=entries.shift();await cache.delete(old.key);total-=old.size;
  }
 }
+async function cachedOnlineBlob(track){
+ if(!track.sha||!('caches' in window))return null;
+ try{
+  const cache=await caches.open(musicCacheName);
+  const hit=await cache.match(musicCacheKey(track.sha));
+  if(!hit)return null;
+  const blob=await hit.blob();
+  return blob.size?URL.createObjectURL(blob):null;
+ }catch(e){return null}
+}
 async function loadOnlineBlob(track){
  if(!track.sha)throw Error('No se encontró la versión del archivo en GitHub');
  const ext=track.path.split('.').pop().toLowerCase();
@@ -82,6 +92,17 @@ async function playOnline(id){
  const i=songs.findIndex(x=>x.id===id),upcoming=queue.length?songs.find(x=>x.id===queue[0]):songs[i+1];
  $('#fullUpNext').textContent=upcoming?'PRÓXIMA CANCIÓN · '+upcoming.title:'Última canción online';
  render();
+ const cachedUrl=await cachedOnlineBlob(track);
+ if(onlinePlayToken!==token||onlineCurrent!==id){if(cachedUrl)URL.revokeObjectURL(cachedUrl);return}
+ if(cachedUrl){
+  onlineBlobUrl=cachedUrl;audio.removeAttribute('crossorigin');audio.src=cachedUrl;
+  try{await audio.play();if(onlinePlayToken===token)status('Reproduciendo online: '+track.title);return}
+  catch(e){
+   if(onlinePlayToken!==token||onlineCurrent!==id)return;
+   URL.revokeObjectURL(cachedUrl);onlineBlobUrl=null;
+   audio.crossOrigin='anonymous';audio.src=track.url;
+  }
+ }
  if(!onlineDirectFailures.has(track.sha)){
   try{await audio.play();if(onlinePlayToken===token)status('Reproduciendo online: '+track.title);return}
   catch(e){
