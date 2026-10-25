@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import subprocess
 import os
+import ctypes
 
 HOST, PORT = "127.0.0.1", 8765
 ORIGINS = {"https://arcade.vladyerik.com", "https://vladyerik.com"}
@@ -19,6 +20,15 @@ def find_receiver():
         return result.stdout.strip() if result.returncode == 0 else ""
     except (OSError, subprocess.TimeoutExpired):
         return ""
+
+MEDIA_KEYS = {"/test-play-pause": 0xB3, "/test-next": 0xB0, "/test-previous": 0xB1}
+KEYEVENTF_KEYUP = 0x0002
+
+def send_windows_media_key(vk):
+    # Experimental: sends a Windows media key, not a direct Bluetooth AVRCP command.
+    user32 = ctypes.windll.user32
+    user32.keybd_event(vk, 0, 0, 0)
+    user32.keybd_event(vk, 0, KEYEVENTF_KEYUP, 0)
 
 class Handler(BaseHTTPRequestHandler):
     def respond(self, code, obj):
@@ -55,11 +65,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.headers.get("Origin", "") not in ORIGINS:
             return self.respond(403, {"error": "Origin not allowed"})
-        if self.path not in ("/open-receiver", "/open-settings"):
+        if self.path not in ("/open-receiver", "/open-settings", *MEDIA_KEYS):
             return self.respond(404, {"error": "Not found"})
         if self.headers.get("Content-Length", "0") not in ("", "0"):
             return self.respond(400, {"error": "Body not supported"})
         try:
+            if self.path in MEDIA_KEYS:
+                send_windows_media_key(MEDIA_KEYS[self.path])
+                return self.respond(200, {"ok": True, "experimental": True, "note": "Windows media key sent; phone response not verified."})
             if self.path == "/open-settings":
                 os.startfile("ms-settings:bluetooth")
             else:
