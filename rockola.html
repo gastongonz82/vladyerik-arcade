@@ -128,7 +128,7 @@ const keyboardLayout=[...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789','ESPACIO','BOR
 function toggleSearchKeyboard(open){arcadeKeyboard.hidden=!open;if(open){keyboardKeys.querySelector('button')?.focus({preventScroll:true});arcadeKeyboard.scrollIntoView({block:'nearest'})}else $('#openSearchKeyboard').focus({preventScroll:true})}
 for(const key of keyboardLayout){const b=document.createElement('button');b.type='button';b.dataset.key=key;b.textContent=key==='BORRAR'?'⌫ BORRAR':key;b.onclick=()=>{if(key==='LISTO'){toggleSearchKeyboard(false);return}if(key==='LIMPIAR')searchInput.value='';else if(key==='BORRAR')searchInput.value=searchInput.value.slice(0,-1);else searchInput.value+=key==='ESPACIO'?' ':key.toLowerCase();searchInput.dispatchEvent(new Event('input',{bubbles:true}));b.focus({preventScroll:true})};keyboardKeys.append(b)}
 $('#openSearchKeyboard').onclick=()=>toggleSearchKeyboard(true);$('#closeSearchKeyboard').onclick=()=>toggleSearchKeyboard(false);
-document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,[contenteditable="true"]')&&e.target!==searchInput&&e.target!==$('#seek'))return;if(e.target===searchInput&&!e.key.startsWith('Arrow'))return;if(e.code==='KeyF'&&arcadeMode){e.preventDefault();$('#screenMode').click();return}if(e.code==='Space'&&!e.target.closest('button,a,summary,[role="button"]')){e.preventDefault();$('#toggle').click();return}if(e.key==='Escape'){if(!$('#overlay').classList.contains('hidden'))$('#overlay').classList.add('hidden');else if(!$('#btModal').classList.contains('hidden'))$('#btModal').classList.add('hidden');else document.querySelector('.back').focus();return}const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(dir){e.preventDefault();move(dir)}});function move([dx,dy]){
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,[contenteditable="true"]')&&e.target!==searchInput&&e.target!==$('#seek')&&e.target!==$('#volume'))return;if(e.target===searchInput&&!e.key.startsWith('Arrow'))return;if(e.code==='KeyF'&&arcadeMode){e.preventDefault();$('#screenMode').click();return}if(e.code==='Space'&&!e.target.closest('button,a,summary,[role="button"]')){e.preventDefault();$('#toggle').click();return}if(e.key==='Escape'){if(!$('#overlay').classList.contains('hidden'))$('#overlay').classList.add('hidden');else if(!$('#btModal').classList.contains('hidden'))$('#btModal').classList.add('hidden');else document.querySelector('.back').focus();return}const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(dir){e.preventDefault();move(dir)}});function move([dx,dy]){
  const scope=!$('#overlay').classList.contains('hidden')?$('#overlay'):!$('#btModal').classList.contains('hidden')?$('#btModal'):document;
  const els=[...scope.querySelectorAll('button:not(:disabled),a[href],input:not([type=file]):not(:disabled),summary,[role=button]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).pointerEvents!=='none'&&!el.closest('[hidden],[inert],[aria-hidden="true"]'));
  const active=document.activeElement;
@@ -154,6 +154,11 @@ document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,sele
    return
   }
   if(isPlayer){
+   if(active===$('#volume')){
+    if(dy<0){focus($('#seek'));return}
+    if(dy>0){focus(searchInput);return}
+    if(dx!==0){const volume=$('#volume');volume.value=Math.max(0,Math.min(1,Number(volume.value)+dx*.05));volume.dispatchEvent(new Event('input',{bubbles:true}));return}
+   }
    if(active===$('#seek')){
     if(dy<0){focus(nearest(songsEls.map(x=>x.card),active)||searchInput);return}
     if(dy>0){focus(playerEls.find(el=>el!==active&&el.id!=='seek'));return}
