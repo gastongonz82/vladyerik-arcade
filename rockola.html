@@ -143,6 +143,16 @@ document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,sele
   const isPlayer=player?.contains(active);
   const isTool=tools.includes(active);
   const isSearch=active===searchInput||active===$('#openSearchKeyboard');
+  const sidebar=els.filter(el=>el.closest('.nav')||el.closest('.sidebar')||el.classList.contains('back'));
+  const inSidebar=sidebar.includes(active);
+  const mainCandidates=els.filter(el=>!sidebar.includes(el)&&!el.closest('footer.player'));
+  if(inSidebar){
+   if(dx>0){focus(searchInput);return}
+   if(dy!==0){const index=sidebar.indexOf(active);focus(sidebar[index+(dy>0?1:-1)]);return}
+  }
+  if(dx<0&&!inSidebar&&(song||isSearch||isTool||active.closest('.hero')||active.closest('.library-heading'))){
+   if(focus(sidebar.find(el=>el.matches('.nav .active'))||sidebar[0]))return
+  }
   const keyButtons=[...keyboardKeys.querySelectorAll('button')];
   const keyIndex=!arcadeKeyboard.hidden?keyButtons.indexOf(active):-1;
   const nearest=(candidates,reference)=>{const r=reference.getBoundingClientRect(),cx=r.left+r.width/2;return candidates.slice().sort((a,b)=>Math.abs(a.getBoundingClientRect().left+a.getBoundingClientRect().width/2-cx)-Math.abs(b.getBoundingClientRect().left+b.getBoundingClientRect().width/2-cx))[0]};
