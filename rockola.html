@@ -181,6 +181,17 @@ document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,sele
   if(activeResult&&dx!==0){const r=active.getBoundingClientRect(),same=resultControls.filter(el=>el!==active&&Math.abs(el.getBoundingClientRect().top-r.top)<Math.max(20,r.height*.65)&&(dx>0?el.getBoundingClientRect().left>r.left+3:el.getBoundingClientRect().left<r.left-3));same.sort((a,b)=>Math.abs(a.getBoundingClientRect().left-r.left)-Math.abs(b.getBoundingClientRect().left-r.left));if(go(same[0]))return}
   if(actionControls.includes(active)&&dy>0&&filterCards.length){go(filterCards[0]);return}
  }
+ // Only at the final loaded song row: Down reaches the existing Show More button.
+ if(scope===document&&dy>0){
+  const wrap=active.closest('.song-wrap'),library=$('#library');
+  const more=library.querySelector('.show-more');
+  if(wrap&&library.contains(wrap)&&more&&els.includes(more)){
+   const wraps=[...library.querySelectorAll('.song-wrap')];
+   const current=wrap.getBoundingClientRect();
+   const hasLowerRow=wraps.some(other=>other!==wrap&&other.getBoundingClientRect().top>current.top+Math.max(12,current.height*.35));
+   if(!hasLowerRow){focus(more);return}
+  }
+ }
  const rect=el=>el.getBoundingClientRect();
  const center=r=>({x:r.left+r.width/2,y:r.top+r.height/2});
  const a=rect(active),ac=center(a);
