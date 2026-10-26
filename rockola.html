@@ -152,7 +152,14 @@ if(songWrap&&scope===document){
  }
  if(dy!==0&&index>=0){
   const selector=active.matches('.fav-toggle')?'.fav-toggle':'.song';
-  const nextWrap=wraps[index+(dy>0?1:-1)];
+  const currentRect=songWrap.getBoundingClientRect(),cx=currentRect.left+currentRect.width/2,cy=currentRect.top+currentRect.height/2;
+   const candidates=wraps.map(w=>({w,r:w.getBoundingClientRect()})).filter(({w,r})=>w!==songWrap&&(dy>0?r.top>cy+8:r.bottom<cy-8));
+   candidates.sort((a,b)=>{
+    const ay=a.r.top+a.r.height/2-cy,by=b.r.top+b.r.height/2-cy;
+    const ax=a.r.left+a.r.width/2-cx,bx=b.r.left+b.r.width/2-cx;
+    return Math.abs(ay)+Math.abs(ax)*1.6-(Math.abs(by)+Math.abs(bx)*1.6)
+   });
+   const nextWrap=candidates[0]?.w;
   const target=nextWrap?.querySelector(selector);
   if(target&&els.includes(target)){target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',inline:'nearest'});return}
  }
