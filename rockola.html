@@ -130,99 +130,44 @@ for(const key of keyboardLayout){const b=document.createElement('button');b.type
 $('#openSearchKeyboard').onclick=()=>toggleSearchKeyboard(true);$('#closeSearchKeyboard').onclick=()=>toggleSearchKeyboard(false);
 document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,[contenteditable="true"]')&&e.target!==searchInput&&e.target!==$('#seek')&&e.target!==$('#volume'))return;if(e.target===searchInput&&!e.key.startsWith('Arrow'))return;if(e.code==='KeyF'&&arcadeMode){e.preventDefault();$('#screenMode').click();return}if(e.code==='Space'&&!e.target.closest('button,a,summary,[role="button"]')){e.preventDefault();$('#toggle').click();return}if(e.key==='Escape'){if(!$('#overlay').classList.contains('hidden'))$('#overlay').classList.add('hidden');else if(!$('#btModal').classList.contains('hidden'))$('#btModal').classList.add('hidden');else document.querySelector('.back').focus();return}const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];if(dir){e.preventDefault();move(dir)}});function move([dx,dy]){
  const scope=!$('#overlay').classList.contains('hidden')?$('#overlay'):!$('#btModal').classList.contains('hidden')?$('#btModal'):document;
- const els=[...scope.querySelectorAll('button:not(:disabled),a[href],input:not([type=file]):not(:disabled),summary,[role=button]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).pointerEvents!=='none'&&!el.closest('[hidden],[inert],[aria-hidden="true"]'));
+ const els=[...scope.querySelectorAll('button:not(:disabled),a[href],input:not([type=file]):not(:disabled),summary,[role=button],.song[tabindex]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&getComputedStyle(el).pointerEvents!=='none'&&!el.closest('[hidden],[inert],[aria-hidden="true"]'));
+ const focus=el=>{if(!el)return false;el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});return true};
  const active=document.activeElement;
- const focus=el=>{if(!el||!els.includes(el))return false;el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest'});return true};
- if(!els.includes(active)){focus(els.find(el=>el.matches('#search'))||els[0]);return}
- if(scope===document){
-  const player=document.querySelector('footer.player');
-  const playerEls=els.filter(el=>player?.contains(el));
-  const tools=els.filter(el=>el.classList.contains('rockola-tool-button'));
-  const songsEls=[...$('#library').querySelectorAll('.song-wrap')].map(w=>({wrap:w,card:w.querySelector('.song'),fav:w.querySelector('.fav-toggle'),r:w.getBoundingClientRect()})).filter(x=>x.card&&els.includes(x.card));
-  const song=active.closest('.song-wrap');
-  const isPlayer=player?.contains(active);
-  const isTool=tools.includes(active);
-  const isSearch=active===searchInput||active===$('#openSearchKeyboard');
-  const sidebar=els.filter(el=>el.closest('.nav')||el.closest('.sidebar')||el.classList.contains('back'));
-  const inSidebar=sidebar.includes(active);
-  const mainCandidates=els.filter(el=>!sidebar.includes(el)&&!el.closest('footer.player'));
-  if(inSidebar){
-   if(dx>0){focus(searchInput);return}
-   if(dy!==0){const index=sidebar.indexOf(active);focus(sidebar[index+(dy>0?1:-1)]);return}
-  }
-  if(dx<0&&!inSidebar&&(song||isSearch||isTool||active.closest('.hero')||active.closest('.library-heading'))){
-   if(focus(sidebar.find(el=>el.matches('.nav .active'))||sidebar[0]))return
-  }
-  const keyButtons=[...keyboardKeys.querySelectorAll('button')];
-  const keyIndex=!arcadeKeyboard.hidden?keyButtons.indexOf(active):-1;
-  const nearest=(candidates,reference)=>{const r=reference.getBoundingClientRect(),cx=r.left+r.width/2;return candidates.slice().sort((a,b)=>Math.abs(a.getBoundingClientRect().left+a.getBoundingClientRect().width/2-cx)-Math.abs(b.getBoundingClientRect().left+b.getBoundingClientRect().width/2-cx))[0]};
-  if(keyIndex>=0){
-   const ni=keyIndex+(dy?dy*10:dx);
-   if(ni>=0&&ni<keyButtons.length){focus(keyButtons[ni]);return}
-   if(dy<0){focus(searchInput);return}
-   if(dy>0){focus(songsEls[0]?.card);return}
-   return
-  }
-  if(isPlayer){
-   if(active===$('#volume')){
-    if(dy<0){focus($('#seek'));return}
-    if(dy>0){focus(searchInput);return}
-    if(dx!==0){const volume=$('#volume');volume.value=Math.max(0,Math.min(1,Number(volume.value)+dx*.05));volume.dispatchEvent(new Event('input',{bubbles:true}));return}
-   }
-   if(active===$('#seek')){
-    if(dy<0){focus(nearest(songsEls.map(x=>x.card),active)||searchInput);return}
-    if(dy>0){focus(playerEls.find(el=>el!==active&&el.id!=='seek'));return}
-    if(dx!==0){const seek=$('#seek');seek.value=Math.max(0,Math.min(1000,Number(seek.value)+dx*25));seek.dispatchEvent(new Event('input',{bubbles:true}));return}
-   }
-   if(dy<0){focus(nearest(songsEls.map(x=>x.card),active)||searchInput);return}
-   if(dy>0){focus(searchInput);return}
-   const idx=playerEls.indexOf(active),next=playerEls[idx+(dx>0?1:-1)];
-   if(next){focus(next);return}
-   return
-  }
-  if(isTool){
-   if(dy>0){focus(searchInput);return}
-   if(dy<0){focus($('#add')||searchInput);return}
-   const idx=tools.indexOf(active),next=tools[idx+(dx>0?1:-1)];
-   if(next){focus(next);return}
-   return
-  }
-  if(isSearch){
-   if(dy<0){focus(nearest(tools,active)||$('#add'));return}
-   if(dy>0){focus(!arcadeKeyboard.hidden?keyButtons[0]:nearest(songsEls.map(x=>x.card),active));return}
-   if(dx!==0){focus(active===searchInput?$('#openSearchKeyboard'):searchInput);return}
-  }
-  if(song){
-   const index=songsEls.findIndex(x=>x.wrap===song);
-   if(index>=0){
-    const here=songsEls[index],isFav=active===here.fav;
-    if(dx!==0){
-     if(dx>0&&!isFav&&focus(here.fav))return;
-     if(dx<0&&isFav&&focus(here.card))return;
-     const sameRow=songsEls.filter(x=>Math.abs(x.r.top-here.r.top)<Math.min(x.r.height,here.r.height)*.45&&(dx>0?x.r.left>here.r.left+5:x.r.left<here.r.left-5));
-     sameRow.sort((a,b)=>Math.abs(a.r.left-here.r.left)-Math.abs(b.r.left-here.r.left));
-     if(focus(isFav?(sameRow[0]?.fav||sameRow[0]?.card):sameRow[0]?.card))return;
-     return
-    }
-    if(dy!==0){
-     const cx=here.r.left+here.r.width/2;
-     const rows=songsEls.filter(x=>dy>0?x.r.top>here.r.top+here.r.height*.5:x.r.top<here.r.top-here.r.height*.5);
-     rows.sort((a,b)=>{
-      const da=Math.abs(a.r.top-here.r.top),db=Math.abs(b.r.top-here.r.top);
-      if(Math.abs(da-db)>here.r.height*.5)return da-db;
-      return Math.abs(a.r.left+a.r.width/2-cx)-Math.abs(b.r.left+b.r.width/2-cx)
-     });
-     if(focus(isFav?(rows[0]?.fav||rows[0]?.card):rows[0]?.card))return;
-     if(dy<0){focus(searchInput);return}
-     if(dy>0){focus(nearest(playerEls,active));return}
-    }
-   }
-  }
-  if(dy>0&&active.closest('.library-heading')){focus(songsEls[0]?.card);return}
+ if(!els.includes(active)){focus(els.find(el=>el.matches('.nav .active'))||els[0]);return}
+ const rect=el=>el.getBoundingClientRect();
+ const center=r=>({x:r.left+r.width/2,y:r.top+r.height/2});
+ const a=rect(active),ac=center(a);
+ const sidebar=els.filter(el=>el.closest('aside,.sidebar'));
+ const isSide=sidebar.includes(active);
+ const content=els.filter(el=>!sidebar.includes(el));
+ // Preserve natural left/right adjustment on sliders, but up/down must leave them.
+ if(dx&&active.matches('input[type="range"]')){
+  const min=Number(active.min)||0,max=Number(active.max)||100,step=Number(active.step)||((max-min)/20);
+  active.value=String(Math.max(min,Math.min(max,Number(active.value)+dx*(step>0?step:(max-min)/20))));
+  active.dispatchEvent(new Event('input',{bubbles:true}));active.dispatchEvent(new Event('change',{bubbles:true}));return;
  }
- const r=active.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
- let best=null,score=Infinity;
- for(const el of els){if(el===active)continue;const t=el.getBoundingClientRect(),vx=t.left+t.width/2-x,vy=t.top+t.height/2-y,forward=vx*dx+vy*dy,side=Math.abs(vx*dy-vy*dx);if(forward<=4)continue;const value=forward+side*2.8;if(value<score){score=value;best=el}}
- focus(best)
-}function initAudioGraph(){if(ctx){if(ctx.state==='suspended')ctx.resume().catch(()=>{});return}try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;ctx=new C();analyser=ctx.createAnalyser();analyser.fftSize=128;frequencies=new Uint8Array(analyser.frequencyBinCount);const src=ctx.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ctx.destination);const big=$('#bigBars');for(let i=0;i<40;i++)big.append(document.createElement('i'));function draw(){if(analyser){analyser.getByteFrequencyData(frequencies);const bars=[...viz.children],wide=[...big.children];for(let i=0;i<bars.length;i++){const val=frequencies[Math.min(frequencies.length-1,Math.floor(i*frequencies.length/bars.length))];bars[i].style.height=(8+val/255*90)+'%';bars[i].style.animation='none'}for(let i=0;i<wide.length;i++){const val=frequencies[Math.min(frequencies.length-1,Math.floor(i*frequencies.length/wide.length))];wide[i].style.height=(5+val/255*95)+'%'}}requestAnimationFrame(draw)}requestAnimationFrame(draw)}catch(e){status('El visualizador de audio no está disponible en este navegador. La reproducción sigue funcionando.')}}function padLoop(){for(const p of navigator.getGamepads?.()||[]){if(!p)continue;const dx=p.axes[0]||0,dy=p.axes[1]||0,dir=p.buttons[14]?.pressed?'L':p.buttons[15]?.pressed?'R':p.buttons[12]?.pressed?'U':p.buttons[13]?.pressed?'D':Math.max(Math.abs(dx),Math.abs(dy))<.6?null:Math.abs(dx)>=Math.abs(dy)?(dx<0?'L':'R'):(dy<0?'U':'D');const k=p.index,t=performance.now(),prev=lastPad[k]||{};if(dir&&(!prev.dir||prev.dir!==dir||t-prev.t>240)){move(dir==='L'?[-1,0]:dir==='R'?[1,0]:dir==='U'?[0,-1]:[0,1]);prev.t=t}const press=!!p.buttons[0]?.pressed;if(press&&!prev.press){const el=document.activeElement;const activeScope=!$('#overlay').classList.contains('hidden')?$('#overlay'):!$('#btModal').classList.contains('hidden')?$('#btModal'):document;if(el?.matches('button:not(:disabled),a[href],summary,[role=button]')&&activeScope.contains(el)&&el.getClientRects().length&&!el.closest('[hidden],[inert],[aria-hidden="true"]'))el.click();else if(el?.matches('input:not(:disabled)')&&activeScope.contains(el))el.focus()}const back=!!p.buttons[1]?.pressed;if(back&&!prev.back){if(!$('#overlay').classList.contains('hidden')){$('#overlay').classList.add('hidden');$('#openPlayer').focus()}else if(!$('#btModal').classList.contains('hidden')){$('#btModal').classList.add('hidden');$('#bt').focus()}else if(view!=='all'){view='all';filter='';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='all'));render();document.querySelector('[data-view="all"]')?.focus()}else document.querySelector('.nav button')?.focus()}const start=!!p.buttons[9]?.pressed;if(start&&!prev.start){if(!audio.src&&songs.length)playAny(songs[0].id);else if(audio.paused)audio.play().catch(()=>{});else audio.pause()}prev.back=back;prev.start=start;prev.dir=dir;prev.press=press;lastPad[k]=prev}requestAnimationFrame(padLoop)}requestAnimationFrame(padLoop);openDB().then(async x=>{db=x;await load();restoreState();render();fetchOnline();status(songs.length?'Biblioteca lista: '+songs.length+' canciones':'Cargá archivos MP3 o una carpeta completa para empezar.');}).catch(()=>status('No se pudo abrir el almacenamiento local. Revisá los permisos del navegador.'))})();
+ // Sidebar always has an explicit exit into the current content, and can be re-entered.
+ if(isSide&&dx>0){const target=content.find(el=>el.matches('#search'))||content[0];if(focus(target))return}
+ if(!isSide&&dx<0&&scope===document){
+  const leftmost=content.filter(el=>{const r=rect(el);return Math.abs(r.top-a.top)<Math.max(r.height,a.height)*.6&&r.right<a.left-2});
+  if(!leftmost.length&&sidebar.length){if(focus(sidebar.find(el=>el.matches('.active'))||sidebar[0]))return}
+ }
+ const candidates=els.filter(el=>el!==active&&(!isSide||dx>0||sidebar.includes(el)));
+ let best=null,bestScore=Infinity;
+ for(const el of candidates){
+  const r=rect(el),c=center(r),vx=c.x-ac.x,vy=c.y-ac.y;
+  const forward=vx*dx+vy*dy,side=Math.abs(vx*dy-vy*dx);
+  if(forward<=3)continue;
+  const overlap=dx?Math.max(0,Math.min(a.bottom,r.bottom)-Math.max(a.top,r.top)):Math.max(0,Math.min(a.right,r.right)-Math.max(a.left,r.left));
+  // Prefer the same visual row/column, then nearest element in the requested direction.
+  const score=(overlap>0?0:1000)+forward+side*2.5;
+  if(score<bestScore){bestScore=score;best=el}
+ }
+ // When moving vertically in the sidebar, never jump out of the sidebar.
+ if(isSide&&dy&&best&&!sidebar.includes(best))best=null;
+ if(focus(best))return;
+ // At a grid edge, let left reach the sidebar rather than trapping the joystick.
+ if(dx<0&&!isSide&&scope===document)focus(sidebar.find(el=>el.matches('.active'))||sidebar[0]);
+}
+function initAudioGraph(){if(ctx){if(ctx.state==='suspended')ctx.resume().catch(()=>{});return}try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;ctx=new C();analyser=ctx.createAnalyser();analyser.fftSize=128;frequencies=new Uint8Array(analyser.frequencyBinCount);const src=ctx.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ctx.destination);const big=$('#bigBars');for(let i=0;i<40;i++)big.append(document.createElement('i'));function draw(){if(analyser){analyser.getByteFrequencyData(frequencies);const bars=[...viz.children],wide=[...big.children];for(let i=0;i<bars.length;i++){const val=frequencies[Math.min(frequencies.length-1,Math.floor(i*frequencies.length/bars.length))];bars[i].style.height=(8+val/255*90)+'%';bars[i].style.animation='none'}for(let i=0;i<wide.length;i++){const val=frequencies[Math.min(frequencies.length-1,Math.floor(i*frequencies.length/wide.length))];wide[i].style.height=(5+val/255*95)+'%'}}requestAnimationFrame(draw)}requestAnimationFrame(draw)}catch(e){status('El visualizador de audio no está disponible en este navegador. La reproducción sigue funcionando.')}}function padLoop(){for(const p of navigator.getGamepads?.()||[]){if(!p)continue;const dx=p.axes[0]||0,dy=p.axes[1]||0,dir=p.buttons[14]?.pressed?'L':p.buttons[15]?.pressed?'R':p.buttons[12]?.pressed?'U':p.buttons[13]?.pressed?'D':Math.max(Math.abs(dx),Math.abs(dy))<.6?null:Math.abs(dx)>=Math.abs(dy)?(dx<0?'L':'R'):(dy<0?'U':'D');const k=p.index,t=performance.now(),prev=lastPad[k]||{};if(dir&&(!prev.dir||prev.dir!==dir||t-prev.t>240)){move(dir==='L'?[-1,0]:dir==='R'?[1,0]:dir==='U'?[0,-1]:[0,1]);prev.t=t}const press=!!p.buttons[0]?.pressed;if(press&&!prev.press){const el=document.activeElement;const activeScope=!$('#overlay').classList.contains('hidden')?$('#overlay'):!$('#btModal').classList.contains('hidden')?$('#btModal'):document;if(el?.matches('button:not(:disabled),a[href],summary,[role=button]')&&activeScope.contains(el)&&el.getClientRects().length&&!el.closest('[hidden],[inert],[aria-hidden="true"]'))el.click();else if(el?.matches('input:not(:disabled)')&&activeScope.contains(el))el.focus()}const back=!!p.buttons[1]?.pressed;if(back&&!prev.back){if(!$('#overlay').classList.contains('hidden')){$('#overlay').classList.add('hidden');$('#openPlayer').focus()}else if(!$('#btModal').classList.contains('hidden')){$('#btModal').classList.add('hidden');$('#bt').focus()}else if(view!=='all'){view='all';filter='';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view==='all'));render();document.querySelector('[data-view="all"]')?.focus()}else document.querySelector('.nav button')?.focus()}const start=!!p.buttons[9]?.pressed;if(start&&!prev.start){if(!audio.src&&songs.length)playAny(songs[0].id);else if(audio.paused)audio.play().catch(()=>{});else audio.pause()}prev.back=back;prev.start=start;prev.dir=dir;prev.press=press;lastPad[k]=prev}requestAnimationFrame(padLoop)}requestAnimationFrame(padLoop);openDB().then(async x=>{db=x;await load();restoreState();render();fetchOnline();status(songs.length?'Biblioteca lista: '+songs.length+' canciones':'Cargá archivos MP3 o una carpeta completa para empezar.');}).catch(()=>status('No se pudo abrir el almacenamiento local. Revisá los permisos del navegador.'))})();
 </script></body></html>
