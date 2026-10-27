@@ -215,7 +215,8 @@ function imageCandidates(item){
  'Sonic the Hedgehog 4':['Sonic the Hedgehog 4','Sonic the Hedgehog','Sonic The Hedgehog'],
  '1200 in 1':['1200-in-1','1200 in 1'],
  'Mortal Kombat 3':['Mortal Kombat 3'],
- 'crusnusa':["Cruis'n USA"]
+ 'crusnusa':["Cruis'n USA"],
+ 'The Legends of zelda - Majoras mask':["Legend of Zelda, The - Majora's Mask","Legend of Zelda, The - Majora's Mask (USA)","The Legend of Zelda - Majora's Mask"]
  };
  const seeds=[...new Set([...(aliases[title]||[]),title,item.file.name.replace(/\.[^.]+$/,'')])];
  const systems=[item.info?.core,'snes','segaMD','nes','gba','gbc','gb','n64','segaMS','segaGG'].filter((v,i,a)=>v&&a.indexOf(v)===i&&thumbnailSystems[v]);
