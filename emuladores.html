@@ -284,7 +284,18 @@ function localCoverFor(item){
 function applyCover(item){
  if(!item||item.searching||item.coverSource?.type==='custom')return;
  const local=localCoverFor(item);
- if(local){item.cover=local;item.coverSource={url:local,type:'local'};coverCache.set(coverKey(item),item.coverSource);saveArt(item);render();return;}
+ if(local){
+  item.searching=true;
+  const image=new Image();
+  image.onload=()=>{if(!entries.includes(item))return;item.searching=false;item.cover=local;item.coverSource={url:local,type:'local'};coverCache.set(coverKey(item),item.coverSource);saveArt(item);render();};
+  image.onerror=()=>{if(!entries.includes(item))return;item.searching=false;coverCache.delete(coverKey(item));searchCoverOnline(item);};
+  image.src=local;
+  return;
+ }
+ searchCoverOnline(item);
+}
+function searchCoverOnline(item){
+ if(!item||item.searching)return;
  const key=coverKey(item),cached=coverCache.get(key);
  if(cached){item.cover=cached.url;item.coverSource=cached;render();return;}
  const related=reuseRelatedCover(item);const candidates=[...relatedArtworkCandidates(item),...imageCandidates(item)];
