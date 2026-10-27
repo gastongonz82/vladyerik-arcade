@@ -188,7 +188,7 @@ function dbAction(store,mode,action){return openLibraryDB().then(db=>new Promise
 const romId=file=>file.name+'|'+file.size+'|'+file.lastModified;
 async function saveRom(item){try{await dbAction('roms','readwrite',store=>store.put({id:romId(item.file),file:item.file,core:item.info?.core||null,reason:item.info?.reason||'',saved:Date.now()}));}catch(e){console.warn('No se pudo guardar la ROM:',e);$('status').textContent='Juego cargado para esta sesión; el navegador no pudo guardarlo permanentemente (espacio o permisos).';}}
 async function saveArt(item){if(!item?.cover||item.cover.startsWith('data:image/svg+xml'))return;try{await dbAction('art','readwrite',store=>store.put({id:romId(item.file),cover:item.cover,source:item.coverSource||null}));}catch(e){console.warn('No se pudo guardar la portada',e);}}
-async function restoreLibrary(){try{const rows=await dbAction('roms','readonly',store=>store.getAll());if(!rows.length)return;const arts=await dbAction('art','readonly',store=>store.getAll());const artMap=new Map(arts.map(x=>[x.id,x]));for(const row of rows){if(entries.some(x=>romId(x.file)===row.id))continue;const item={file:row.file,info:row.core?{core:row.core,reason:row.reason||'Biblioteca guardada'}:await detect(row.file)};const art=artMap.get(row.id);if(art){item.cover=art.cover;item.coverSource=art.source;}entries.push(item);}if(selected<0&&entries.length)selected=0;render();$('filename').textContent=entries.length+' juegos recuperados de este dispositivo.';for(const item of entries)if(!item.cover)applyCover(item);}catch(e){console.warn('Biblioteca local no disponible',e);}}
+async function restoreLibrary(){try{const rows=await dbAction('roms','readonly',store=>store.getAll());if(!rows.length)return;const arts=await dbAction('art','readonly',store=>store.getAll());const artMap=new Map(arts.map(x=>[x.id,x]));for(const row of rows){if(entries.some(x=>romId(x.file)===row.id))continue;const item={file:row.file,info:row.core?{core:row.core,reason:row.reason||'Biblioteca guardada'}:await detect(row.file)};const art=artMap.get(row.id);if(art){item.cover=art.cover;item.coverSource=art.source;}entries.push(item);}if(selected<0&&entries.length)selected=0;render();$('filename').textContent=entries.length+' juegos recuperados de este dispositivo.';for(const item of entries){if(item.info?.core==='snes'&&cleanName(item.file.name).toLowerCase()==='aladdin'){item.cover=null;item.coverSource=null;}if(!item.cover)applyCover(item);}}catch(e){console.warn('Biblioteca local no disponible',e);}}
 
 const extmap={nes:'nes',fds:'nes',sfc:'snes',smc:'snes',fig:'snes',md:'segaMD',gen:'segaMD',smd:'segaMD',gb:'gb',gbc:'gbc',gba:'gba',sms:'segaMS',gg:'segaGG',z64:'n64',n64:'n64',v64:'n64'};
 const names={nes:'Nintendo NES',snes:'Super Nintendo',segaMD:'Sega Mega Drive',gb:'Game Boy',gbc:'Game Boy Color',gba:'Game Boy Advance',segaMS:'Sega Master System',segaGG:'Game Gear',n64:'Nintendo 64',arcade:'Arcade FBNeo'};
@@ -278,7 +278,7 @@ function localCoverFor(item){
  const title=cleanName(item.file.name).toLowerCase();
  if(title.includes("majora's mask"))return LOCAL_COVER_PATHS["majora's mask"];
  if(title.includes('contra iii')||title.includes('contra 3'))return LOCAL_COVER_PATHS['contra iii'];
- if(title==='aladdin')return LOCAL_COVER_PATHS.aladdin;
+ if(title==='aladdin'&&item.info?.core==='segaMD')return LOCAL_COVER_PATHS.aladdin;
  return null;
 }
 function applyCover(item){
