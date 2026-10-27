@@ -279,7 +279,7 @@ function localCoverFor(item){
  if(title.includes("majora's mask"))return LOCAL_COVER_PATHS["majora's mask"];
  if(title.includes('contra iii')||title.includes('contra 3'))return LOCAL_COVER_PATHS['contra iii'];
  if(title==='aladdin'&&item.info?.core==='snes')return 'https://thumbnails.libretro.com/Nintendo%20-%20Super%20Nintendo%20Entertainment%20System/Named_Boxarts/Aladdin%20(USA).png';
- if(title==='aladdin'&&item.info?.core==='segaMD')return 'https://thumbnails.libretro.com/Sega%20-%20Mega%20Drive%20-%20Genesis/Named_Boxarts/Aladdin%20(USA).png';
+ if(title==='aladdin'&&item.info?.core==='segaMD')return LOCAL_COVER_PATHS.aladdin;
  return null;
 }
 function applyCover(item){
