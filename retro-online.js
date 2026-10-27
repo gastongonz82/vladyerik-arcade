@@ -157,7 +157,7 @@ const remoteCoversReady=fetch(base+'retro-hosted-covers.json',{cache:'no-cache'}
  remoteHostedCovers=data&&typeof data==='object'?data:{};
  if(games.length&&Object.keys(remoteHostedCovers).length){showGames();featureGame(games.find(g=>g.path===featuredPath)||games[0]);}
 }).catch(()=>{});
-fetch('./retro-covers.json').then(r=>r.ok?r.json():{}).then(data=>{hostedCovers=data||{};if(games.length){showGames();featureGame(games.find(g=>g.path===featuredPath)||games[0]);}}).catch(()=>{});
+fetch('./retro-covers.json',{cache:'no-store'}).then(r=>r.ok?r.json():{}).then(data=>{hostedCovers=data||{};if(games.length){showGames();featureGame(games.find(g=>g.path===featuredPath)||games[0]);}}).catch(()=>{});
 const COVER_STORAGE_KEY='vladi_online_covers_v1';
 let savedCovers={};
 try{savedCovers=JSON.parse(localStorage.getItem(COVER_STORAGE_KEY)||'{}');if(!savedCovers||typeof savedCovers!=='object'||Array.isArray(savedCovers))savedCovers={}}catch(_){savedCovers={}}
@@ -306,7 +306,7 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
  const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const localCover=ignoreHosted?null:hostedCovers[game.path];const remoteCover=ignoreHosted?null:remoteHostedCovers[game.path];
- if(localCover){const localImg=document.createElement('img');localImg.alt='Portada de '+cleanName(game.name);localImg.loading=priority?'eager':'lazy';localImg.decoding='async';localImg.onload=()=>fallbackImage.remove();localImg.onerror=()=>{localImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(localImg);localImg.src='./'+localCover;return;}
+ if(localCover){const localImg=document.createElement('img');localImg.alt='Portada de '+cleanName(game.name);localImg.loading=priority?'eager':'lazy';localImg.decoding='async';localImg.onload=()=>fallbackImage.remove();localImg.onerror=()=>{localImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(localImg);localImg.src='./'+localCover+(localCover.includes('?')?'&':'?')+'coverVersion=20261027b';return;}
  if(remoteCover){const hostedImg=document.createElement('img');hostedImg.alt='Portada de '+cleanName(game.name);hostedImg.loading=priority?'eager':'lazy';hostedImg.decoding='async';hostedImg.onload=()=>fallbackImage.remove();hostedImg.onerror=()=>{hostedImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(hostedImg);hostedImg.src=base+remoteCover;return;}
  const urls=coverCandidates(game);if(!urls.length)return;
  const coverKey=game.system+'|'+cleanName(game.name);
