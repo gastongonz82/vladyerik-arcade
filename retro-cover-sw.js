@@ -1,8 +1,8 @@
 /* VLADYERIK Retro: cache persistente de portadas. No intercepta ROMs ni emuladores. */
-const CACHE='vladi-retro-cover-images-v1';
+const CACHE='vladi-retro-cover-images-v2';
 const LIMIT=240;
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
-self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{await Promise.all((await caches.keys()).filter(k=>k.startsWith('vladi-retro-cover-images-')&&k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim();})()));
 self.addEventListener('message',event=>{
  if(event.data?.type!=='vladi-cover-failed'||typeof event.data.url!=='string')return;
  event.waitUntil(caches.open(CACHE).then(cache=>cache.delete(event.data.url)).catch(()=>{}));
@@ -17,9 +17,10 @@ self.addEventListener('fetch',event=>{
  event.respondWith((async()=>{
   const cache=await caches.open(CACHE);
   const saved=await cache.match(req);
-  if(saved)return saved;
+  // Las portadas propias se reemplazan en GitHub con el mismo nombre: comprobar siempre la versión publicada.
+  if(!local&&saved)return saved;
   try{
-   const response=await fetch(req);
+   const response=await fetch(local?new Request(req,{cache:'no-store'}):req);
    if(response.ok||response.type==='opaque'){
     try{
      await cache.put(req,response.clone());
