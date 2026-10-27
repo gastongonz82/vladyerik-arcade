@@ -20,6 +20,7 @@ ALIASES = {
  "72-in-1": ["72-in-1", "72 in 1"],
  "Adventure Island Classic": ["Adventure Island", "Hudson's Adventure Island"],
  "Diddy Kong Racing": ["Diddy Kong Racing"],
+ "Legend of Zelda, The - Majora's Mask": ["Legend of Zelda, The - Majora's Mask", "The Legend of Zelda - Majora's Mask", "Legend of Zelda, The - Majora's Mask (USA)"],
  "Donkey Kong Country 2": ["Donkey Kong Country 2 - Diddy's Kong Quest"],
  "Donkey Kong Country 3": ["Donkey Kong Country 3 - Dixie Kong's Double Trouble!"],
  "Marvel Super Heroes - War of the Gems": ["Marvel Super Heroes - War of the Gems"],
