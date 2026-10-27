@@ -172,6 +172,9 @@ function rememberCover(key,value){
 }
 
 function coverCandidates(game){
+ const fixed={'roms/Aladdin%20%28USA%29%20%28Beta%29.zip':['Sega - Mega Drive - Genesis','Aladdin (USA)'],'roms/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29.zip':['Nintendo - Super Nintendo Entertainment System','Contra III - The Alien Wars (USA)']};
+ if(fixed[game.path]){const [sys,title]=fixed[game.path];return ['Named_Boxarts','Named_Titles','Named_Snaps'].map(type=>'https://thumbnails.libretro.com/'+encodeURIComponent(sys)+'/'+type+'/'+encodeURIComponent(title)+'.png');}
+
  // Arcade box art is indexed separately from console covers in Libretro.
  if(game.system==='arcade'){
   const title=cleanName(game.name).replace(/\s*\(\d{4}\).*$/,'').trim();
@@ -305,8 +308,8 @@ function coverCandidates(game){
 function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
- const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const pinnedCovers={'roms/Aladdin%20%28USA%29%20%28Beta%29.zip':'assets/retro-covers/0004.webp','roms/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29.zip':'assets/retro-covers/0006.webp'};
- const localCover=ignoreHosted?null:(pinnedCovers[game.path]||hostedCovers[game.path]);const remoteCover=ignoreHosted?null:remoteHostedCovers[game.path];
+ const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const pinnedCovers={};
+ const localCover=ignoreHosted?null:(pinnedCovers[game.path]||hostedCovers[game.path]);const remoteCover=ignoreHosted||/^(roms\/Aladdin%20%28USA%29%20%28Beta%29|roms\/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29)\.zip$/.test(game.path)?null:remoteHostedCovers[game.path];
  if(localCover){const localImg=document.createElement('img');localImg.alt='Portada de '+cleanName(game.name);localImg.loading=priority?'eager':'lazy';localImg.decoding='async';localImg.onload=()=>fallbackImage.remove();localImg.onerror=()=>{localImg.remove();if(!pinnedCovers[game.path])setArtwork(target,game,{priority,ignoreHosted:true})};target.append(localImg);localImg.src='./'+localCover+(localCover.includes('?')?'&':'?')+'coverVersion=20261027b';return;}
  if(remoteCover){const hostedImg=document.createElement('img');hostedImg.alt='Portada de '+cleanName(game.name);hostedImg.loading=priority?'eager':'lazy';hostedImg.decoding='async';hostedImg.onload=()=>fallbackImage.remove();hostedImg.onerror=()=>{hostedImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(hostedImg);hostedImg.src=base+remoteCover;return;}
  const urls=coverCandidates(game);if(!urls.length)return;
