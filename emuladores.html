@@ -343,7 +343,7 @@ $('playerExit').addEventListener('click',()=>{close();render()});
 function toggleImmersive(on){area.classList.toggle('immersive',on);$('playerRestore').hidden=!on;requestAnimationFrame(applyAspect);}
 $('playerFullscreen').addEventListener('click',()=>{toggleImmersive(true);if(!document.fullscreenElement&&area.requestFullscreen)area.requestFullscreen().catch(()=>{});});
 $('playerRestore').addEventListener('click',()=>toggleImmersive(false));
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&area.classList.contains('immersive'))toggleImmersive(false);});let navZone='games',navFilter=0,navFeature=0,navHeader=0,navCollection=0,navExtra=0;
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&area.classList.contains('immersive'))toggleImmersive(false);});let navZone='header',navFilter=0,navFeature=0,navHeader=0,navCollection=0,navExtra=0;
 const headerButtons=()=>[...document.querySelectorAll('header .topbar .rockola-retro-link,header .topbar .add-games,header .topbar a.btn')];
 const collectionButtons=()=>[$('gridView'),$('consoleView'),$('clear')];
 const extraButtons=()=>[$('librarySearch'),$('librarySort'),$('changeCover'),$('retryCover')].filter(el=>el&&!el.disabled&&el.getClientRects().length);
@@ -434,5 +434,7 @@ function retroPadLoop(now){
 }
 requestAnimationFrame(retroPadLoop);
 window.addEventListener('pagehide',close);render();restoreLibrary();
+// Al entrar, comenzar arriba en el encabezado; no en la colección local vacía.
+if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}window.addEventListener('load',()=>window.scrollTo(0,0),{once:true});window.addEventListener('pageshow',()=>window.scrollTo(0,0));}
 })();
 </script><!-- Retro Online y colección local usan sus controladores propios; evitar doble navegación. --></body></html>
