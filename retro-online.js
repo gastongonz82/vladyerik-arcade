@@ -627,24 +627,29 @@ if(retroSearch){
  #retroVirtualKeyboard[hidden]{display:none!important}
  #retroVirtualKeyboard{margin:12px 0;padding:16px;border:1px solid #e4b447;border-radius:16px;background:linear-gradient(135deg,#182d52,#0b142a);box-shadow:0 12px 30px #0008}
  #retroVirtualKeyboard .rvk-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;color:#ffdb72;flex-wrap:wrap}
- #retroVirtualKeyboard .rvk-keys{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+ #retroVirtualKeyboard .rvk-keys{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.32fr);gap:16px}#retroVirtualKeyboard .rvk-alpha,#retroVirtualKeyboard .rvk-numeric{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;align-content:start;min-width:0}#retroVirtualKeyboard .rvk-numeric{grid-template-columns:repeat(3,minmax(0,1fr));padding-left:12px;border-left:1px solid #ffffff33}#retroVirtualKeyboard .rvk-label{grid-column:1/-1;color:#aac4e7;font-size:11px;letter-spacing:.1em;font-weight:800}
  #retroVirtualKeyboard button{cursor:pointer;border:1px solid #5877a6;border-radius:9px;min-height:42px;background:#213b66;color:white;font-weight:800}
  #retroVirtualKeyboard button:focus-visible,#retroVirtualKeyboard button.rvk-active{outline:3px solid #ffcc46;outline-offset:2px}
  #retroVirtualKeyboard button[data-key="ESPACIO"]{grid-column:span 3}
  #retroVirtualKeyboard button[data-key="BORRAR"],#retroVirtualKeyboard button[data-key="LIMPIAR"]{grid-column:span 2}
  #retroOnline .retro-keyboard-open{min-width:46px;min-height:44px}
- @media(max-width:650px){#retroVirtualKeyboard{padding:8px}#retroVirtualKeyboard .rvk-keys{gap:3px}#retroVirtualKeyboard button{font-size:11px;min-height:36px;padding:2px}}
+ @media(max-width:650px){#retroVirtualKeyboard{padding:8px}#retroVirtualKeyboard .rvk-keys{grid-template-columns:1fr;gap:8px}#retroVirtualKeyboard .rvk-alpha,#retroVirtualKeyboard .rvk-numeric{gap:3px}#retroVirtualKeyboard .rvk-numeric{padding:8px 0 0;border-left:0;border-top:1px solid #ffffff33}#retroVirtualKeyboard button{font-size:11px;min-height:36px;padding:2px}}
  `;document.head.append(css);
  const keys=board.querySelector('.rvk-keys');
- const chars=[...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789','ESPACIO','BORRAR','LIMPIAR','LISTO'];
- for(const key of chars){const btn=document.createElement('button');btn.type='button';btn.dataset.key=key;btn.textContent=key==='BORRAR'?'⌫ BORRAR':key;keys.append(btn);btn.addEventListener('click',()=>{if(key==='LISTO'){closeBoard();return}if(key==='LIMPIAR')retroSearch.value='';else if(key==='BORRAR')retroSearch.value=retroSearch.value.slice(0,-1);else retroSearch.value+=key==='ESPACIO'?' ':key.toLowerCase();retroSearch.dispatchEvent(new Event('input',{bubbles:true}));focusKey(btn)})}
- const allKeys=[...keys.querySelectorAll('button')];let active=0,lastMove=0,held=false;
- function focusKey(btn){active=allKeys.indexOf(btn);allKeys.forEach(x=>x.classList.toggle('rvk-active',x===btn));btn.focus({preventScroll:true});btn.scrollIntoView({block:'nearest'})}
+ const alpha=document.createElement('div'),numeric=document.createElement('div');alpha.className='rvk-alpha';numeric.className='rvk-numeric';
+ for(const [panel,label] of [[alpha,'LETRAS'],[numeric,'NÚMEROS']]){const heading=document.createElement('div');heading.className='rvk-label';heading.textContent=label;panel.append(heading);keys.append(panel)}
+ const chars=[...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ','ESPACIO','BORRAR','LIMPIAR','LISTO',...'0123456789'];
+ const allKeys=[];let active=0,lastMove=0,held=false;
+ function focusKey(btn){if(!btn)return;active=allKeys.indexOf(btn);allKeys.forEach(x=>x.classList.toggle('rvk-active',x===btn));btn.focus({preventScroll:true});btn.scrollIntoView({block:'nearest'})}
  function openBoard(){board.hidden=false;window.__vladiOnlinePadActive=true;focusKey(allKeys[0])}
  function closeBoard(){board.hidden=true;allKeys.forEach(x=>x.classList.remove('rvk-active'));openKey.focus({preventScroll:true});window.__vladiOnlinePadActive=true}
- openKey.addEventListener('click',openBoard);board.querySelector('.rvk-close').addEventListener('click',closeBoard);
- document.addEventListener('keydown',e=>{if(board.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeBoard();return}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();e.stopImmediatePropagation();const columns=10;let n=active+(e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:e.key==='ArrowUp'?-columns:columns);focusKey(allKeys[Math.max(0,Math.min(allKeys.length-1,n))])},true);
- function padKeyboard(now){if(!board.hidden){const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);const down=i=>pads.some(p=>p.buttons?.[i]?.pressed);const axis=i=>pads.find(p=>Math.abs(p.axes?.[i]||0)>.65)?.axes[i]||0;const dx=down(15)||axis(0)>.65?1:down(14)||axis(0)<-.65?-1:0;const dy=down(13)||axis(1)>.65?1:down(12)||axis(1)<-.65?-1:0;if((dx||dy)&&now-lastMove>210){focusKey(allKeys[Math.max(0,Math.min(allKeys.length-1,active+(dx||dy*10)))]);lastMove=now}const confirm=down(0);if(confirm&&!held)allKeys[active].click();held=confirm;}requestAnimationFrame(padKeyboard)}
+ for(const key of chars){const btn=document.createElement('button');btn.type='button';btn.dataset.key=key;btn.textContent=key==='BORRAR'?'⌫ BORRAR':key;( /^[0-9]$/.test(key)?numeric:alpha ).append(btn);allKeys.push(btn);btn.addEventListener('click',e=>{e.stopPropagation();if(key==='LISTO'){closeBoard();return}if(key==='LIMPIAR')retroSearch.value='';else if(key==='BORRAR')retroSearch.value=retroSearch.value.slice(0,-1);else retroSearch.value+=key==='ESPACIO'?' ':key.toLowerCase();retroSearch.dispatchEvent(new Event('input',{bubbles:true}));focusKey(btn)})}
+ openKey.addEventListener('click',e=>{e.stopPropagation();openBoard()});
+ const closeButton=board.querySelector('.rvk-close');
+ closeButton.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();closeBoard()});
+ // Evitar que la navegación general intercepte Enter sobre CERRAR.
+ board.addEventListener('keydown',e=>{if(board.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeBoard();return}if((e.key==='Enter'||e.key===' ')&&e.target===closeButton){e.preventDefault();e.stopImmediatePropagation();closeBoard();return}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();e.stopImmediatePropagation();const columns=10;let n=active+(e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:e.key==='ArrowUp'?-columns:columns);focusKey(allKeys[Math.max(0,Math.min(allKeys.length-1,n))])},true);
+ function padKeyboard(now){if(!board.hidden){const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);const down=i=>pads.some(p=>p.buttons?.[i]?.pressed);const axis=i=>pads.find(p=>Math.abs(p.axes?.[i]||0)>.65)?.axes[i]||0;const dx=down(15)||axis(0)>.65?1:down(14)||axis(0)<-.65?-1:0;const dy=down(13)||axis(1)>.65?1:down(12)||axis(1)<-.65?-1:0;if((dx||dy)&&now-lastMove>210){focusKey(allKeys[Math.max(0,Math.min(allKeys.length-1,active+(dx||dy*10)))]);lastMove=now}const confirm=down(0);if(confirm&&!held){if(document.activeElement===closeButton)closeBoard();else allKeys[active].click()}held=confirm;}requestAnimationFrame(padKeyboard)}
  requestAnimationFrame(padKeyboard);
  window.__vladiRetroKeyboardOpen=()=>!board.hidden;
 }
