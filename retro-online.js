@@ -640,16 +640,50 @@ if(retroSearch){
  for(const [panel,label] of [[alpha,'LETRAS'],[numeric,'NÚMEROS']]){const heading=document.createElement('div');heading.className='rvk-label';heading.textContent=label;panel.append(heading);keys.append(panel)}
  const chars=[...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ','ESPACIO','BORRAR','LIMPIAR','LISTO',...'0123456789'];
  const allKeys=[];let active=0,lastMove=0,held=false;
- function focusKey(btn){if(!btn)return;active=allKeys.indexOf(btn);allKeys.forEach(x=>x.classList.toggle('rvk-active',x===btn));btn.focus({preventScroll:true});btn.scrollIntoView({block:'nearest'})}
+ function focusKey(btn){if(!btn)return;active=allKeys.indexOf(btn);if(typeof selectTarget==='function')selectTarget(btn)}
  function openBoard(){board.hidden=false;window.__vladiOnlinePadActive=true;focusKey(allKeys[0])}
  function closeBoard(){board.hidden=true;allKeys.forEach(x=>x.classList.remove('rvk-active'));openKey.focus({preventScroll:true});window.__vladiOnlinePadActive=true}
  for(const key of chars){const btn=document.createElement('button');btn.type='button';btn.dataset.key=key;btn.textContent=key==='BORRAR'?'⌫ BORRAR':key;( /^[0-9]$/.test(key)?numeric:alpha ).append(btn);allKeys.push(btn);btn.addEventListener('click',e=>{e.stopPropagation();if(key==='LISTO'){closeBoard();return}if(key==='LIMPIAR')retroSearch.value='';else if(key==='BORRAR')retroSearch.value=retroSearch.value.slice(0,-1);else retroSearch.value+=key==='ESPACIO'?' ':key.toLowerCase();retroSearch.dispatchEvent(new Event('input',{bubbles:true}));focusKey(btn)})}
  openKey.addEventListener('click',e=>{e.stopPropagation();openBoard()});
  const closeButton=board.querySelector('.rvk-close');
  closeButton.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();closeBoard()});
- // Evitar que la navegación general intercepte Enter sobre CERRAR.
- board.addEventListener('keydown',e=>{if(board.hidden)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeBoard();return}if((e.key==='Enter'||e.key===' ')&&e.target===closeButton){e.preventDefault();e.stopImmediatePropagation();closeBoard();return}if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();e.stopImmediatePropagation();const columns=10;let n=active+(e.key==='ArrowLeft'?-1:e.key==='ArrowRight'?1:e.key==='ArrowUp'?-columns:columns);focusKey(allKeys[Math.max(0,Math.min(allKeys.length-1,n))])},true);
- function padKeyboard(now){if(!board.hidden){const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);const down=i=>pads.some(p=>p.buttons?.[i]?.pressed);const axis=i=>pads.find(p=>Math.abs(p.axes?.[i]||0)>.65)?.axes[i]||0;const dx=down(15)||axis(0)>.65?1:down(14)||axis(0)<-.65?-1:0;const dy=down(13)||axis(1)>.65?1:down(12)||axis(1)<-.65?-1:0;if((dx||dy)&&now-lastMove>210){focusKey(allKeys[Math.max(0,Math.min(allKeys.length-1,active+(dx||dy*10)))]);lastMove=now}const confirm=down(0);if(confirm&&!held){if(document.activeElement===closeButton)closeBoard();else allKeys[active].click()}held=confirm;}requestAnimationFrame(padKeyboard)}
+ // Navegación espacial real: permite cruzar de letras a números y alcanzar CERRAR.
+ const navTargets=[...allKeys,closeButton];let selected=allKeys[0];
+ function selectTarget(el){if(!el)return;selected=el;allKeys.forEach(x=>x.classList.toggle('rvk-active',x===el));closeButton.classList.toggle('rvk-active',el===closeButton);el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest'})}
+ function moveSpatial(direction){
+  const r=selected.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let best=null,score=Infinity;
+  for(const el of navTargets){if(el===selected)continue;const b=el.getBoundingClientRect(),x=b.left+b.width/2-cx,y=b.top+b.height/2-cy;
+   const forward=direction==='right'?x:direction==='left'?-x:direction==='down'?y:-y;
+   if(forward<=5)continue;
+   const lateral=(direction==='left'||direction==='right')?Math.abs(y):Math.abs(x);
+   const candidate=forward+2.2*lateral;
+   if(candidate<score){score=candidate;best=el}
+  }
+  selectTarget(best||selected);
+ }
+ // Captura antes del navegador de joystick global; no altera navegación fuera del teclado.
+ document.addEventListener('keydown',e=>{
+  if(board.hidden)return;
+  if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeBoard();return}
+  const directions={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
+  if(directions[e.key]){e.preventDefault();e.stopImmediatePropagation();moveSpatial(directions[e.key]);return}
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopImmediatePropagation();selected.click()}
+ },true);
+ function padKeyboard(now){
+  if(!board.hidden){
+   const pads=[...(navigator.getGamepads?.()||[])].filter(Boolean);
+   const down=i=>pads.some(p=>p.buttons?.[i]?.pressed);
+   const axis=i=>pads.find(p=>Math.abs(p.axes?.[i]||0)>.65)?.axes[i]||0;
+   const dx=down(15)||axis(0)>.65?1:down(14)||axis(0)<-.65?-1:0;
+   const dy=down(13)||axis(1)>.65?1:down(12)||axis(1)<-.65?-1:0;
+   if((dx||dy)&&now-lastMove>210){moveSpatial(dx?(dx>0?'right':'left'):(dy>0?'down':'up'));lastMove=now}
+   const confirm=down(0);
+   if(confirm&&!held)selected.click();
+   held=confirm;
+  }else held=false;
+  requestAnimationFrame(padKeyboard);
+ }
  requestAnimationFrame(padKeyboard);
  window.__vladiRetroKeyboardOpen=()=>!board.hidden;
 }
