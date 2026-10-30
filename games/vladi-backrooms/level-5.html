@@ -211,20 +211,20 @@ function burst(duration=.5,volume=.12,low=450,high=2400){
 function metalHit(volume=.15){
  if(!ctx||ctx.state!=='running'||!audioOn)return;
  const t=ctx.currentTime;
- for(const [f,decay,v] of [[540,.45,.65],[815,.32,.45],[1330,.21,.3]]){
+ for(const [f,decay,v] of [[185,.29,.6],[287,.21,.27],[421,.13,.12]]){
  const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;
  g.gain.setValueAtTime(volume*v,t);g.gain.exponentialRampToValueAtTime(.0001,t+decay);
  o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+decay+.01);o.onended=()=>{o.disconnect();g.disconnect()};
  }
- burst(.12,volume*.4,900,4000);
+ burst(.075,volume*.18,180,1400);
 }
 function steamHiss(){burst(1.15,.15,850,5200)}
 function footsteps(){burst(.09,.065,90,950);beep(145,.065,.025)}
-function testIndustrialSounds(){metalHit(.19);steamHiss();beep(270,.2,.07)}
+function testIndustrialSounds(){steamHiss()}
 function creatureSound(distance){
  if(!ctx||ctx.state!=='running'||!audioOn)return;
  const vol=Math.max(.045,.18*(1-distance/15));
- metalHit(vol*.8);burst(.55,vol,180,1200);
+ burst(.55,vol,180,1200);
 }
 function escapeSound(){beep(380,.22,.08);beep(610,.4,.06);industrialNoise(.6,.05)}
 function clearInputs(){keys.clear();touchX=touchY=0;running=false;nub.style.transform='translate(0,0)'}
@@ -240,7 +240,7 @@ function canMove(x,z){const r=.31;return !wall(...cell(x-r,z-r))&&!wall(...cell(
 function route(from,to){const [sx,sz]=cell(from.x,from.z),[gx,gz]=cell(to.x,to.z);if(wall(sx,sz)||wall(gx,gz))return [];
  const q=[[sx,sz]],seen=new Set([sx+','+sz]),prev=new Map();for(let i=0;i<q.length&&i<W*H;i++){const [x,z]=q[i],k=x+','+z;if(x===gx&&z===gz){const out=[];let t=k;while(prev.has(t)){const [a,b]=t.split(',').map(Number);out.unshift(pos(a,b));t=prev.get(t)}return out}
  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,nz=z+dz,nk=nx+','+nz;if(!wall(nx,nz)&&!seen.has(nk)){seen.add(nk);prev.set(nk,k);q.push([nx,nz])}}}return []}
-function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;metalHit(.17);steamHiss();alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow;escapeStarted=performance.now();escapeSound()}return}}
+function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;metalHit(.075);steamHiss();alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow;escapeStarted=performance.now();escapeSound()}return}}
 $('interact').onclick=activate;
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)activate();if(k==='escape'&&active)$('pause').click()});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',clearInputs);
@@ -259,7 +259,7 @@ pad.addEventListener('pointerup',releasePad);pad.addEventListener('pointercancel
 $('run').addEventListener('pointerdown',()=>running=true);for(const ev of ['pointerup','pointercancel','pointerleave'])$('run').addEventListener(ev,()=>running=false);
 let frame=0;
 function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/1000);last=now;
- if(active&&!paused){frame++;if(frame%3===0)for(const cloud of steamClouds){const t=(now*.00022+cloud.phase)%1;cloud.puff.position.y=cloud.origin.y+t*.85;cloud.puff.scale.setScalar(.5+t*1.35);cloud.puff.material.opacity=.11*(1-t)}if(frame%5===0)for(const f of flickerLights){const flicker=Math.sin(now*.004+f.phase)*.16+(Math.sin(now*.021+f.phase)> .97?-.55:0);f.light.intensity=f.base*Math.max(.25,1+flicker)}if(now-lastMachine>6000+Math.sin(now*.001)*1800){lastMachine=now;metalHit(.12)}let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
+ if(active&&!paused){frame++;if(frame%3===0)for(const cloud of steamClouds){const t=(now*.00022+cloud.phase)%1;cloud.puff.position.y=cloud.origin.y+t*.85;cloud.puff.scale.setScalar(.5+t*1.35);cloud.puff.material.opacity=.11*(1-t)}if(frame%5===0)for(const f of flickerLights){const flicker=Math.sin(now*.004+f.phase)*.16+(Math.sin(now*.021+f.phase)> .97?-.55:0);f.light.intensity=f.base*Math.max(.25,1+flicker)}if(now-lastMachine>22000+Math.sin(now*.00043)*4500){lastMachine=now;metalHit(.055)}let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
  let side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+touchX;
  let sprint=running||keys.has('shift');const pads=navigator.getGamepads?.()||[];
  for(const pad of pads)if(pad){const dead=v=>Math.abs(v)>.17?v:0;side+=dead(pad.axes[0]||0);forward-=dead(pad.axes[1]||0);yaw-=dead(pad.axes[2]||0)*dt*2.2;pitch=Math.max(-1.2,Math.min(1.2,pitch-dead(pad.axes[3]||0)*dt*1.6));sprint=sprint||!!pad.buttons[7]?.pressed;if(pad.buttons[0]?.pressed&&frame%18===0)activate();break}
