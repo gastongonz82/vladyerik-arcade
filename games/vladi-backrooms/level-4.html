@@ -156,6 +156,7 @@ vorickLoader.load('./vorick/vorick.glb',gltf=>{
  pivot.position.set(-center.x,-bounds.min.y,-center.z);
  offset.scale.setScalar(2.9/size.y);offset.rotation.y=Math.PI;monster.add(offset);
  vorickModel=offset;vorickReady=true;vorickStatus='VORICK';
+ if(gltf.animations.length){vorickMixer=new THREE.AnimationMixer(model);const clip=gltf.animations.find(a=>/walk|run/i.test(a.name))||gltf.animations.find(a=>/idle/i.test(a.name))||gltf.animations[0];vorickMixer.clipAction(clip).play();}
  concierge.visible=false;body.visible=false;
 },undefined,e=>{console.warn('Vorick GLB not available; showing hotel antagonist',e)});
 const concierge=new THREE.Group();monster.add(concierge);concierge.visible=true;
