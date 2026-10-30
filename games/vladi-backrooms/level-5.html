@@ -70,12 +70,28 @@ for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
  if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);if((x*13+z*7)%11===0){const l=new THREE.PointLight('#ffd6a2',mobile?4:5,12,2);l.position.set(p.x,4.4,p.z);scene.add(l)}}
  if((x*7+z*11)%8===0){const base=cube(.14,2.8,.14,p.x+1.45,2.3,p.z+1.45,rust);base.rotation.y=.2}
 }
-// Connected wall-mounted industrial pipes, no isolated ceiling segments.
-const pipeGeo=new THREE.CylinderGeometry(.15,.15,S,10);
-for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++)if(!wall(x,z)&&!wall(x+1,z)&&z%3===1){
- const p=pos(x,z),pipe=new THREE.Mesh(pipeGeo,(x+z)%2?rust:steel);
- pipe.rotation.z=Math.PI/2;pipe.position.set(p.x+S/2,4.15,p.z+1.3);scene.add(pipe);
- if(x%4===1){const support=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,3,8),rust);support.position.set(p.x,2.65,p.z+1.3);scene.add(support)}
+// Wall-mounted pipe assemblies. Every pipe sits against a solid wall face.
+const pipeGeo=new THREE.CylinderGeometry(.12,.12,2.4,10);
+const pipeClamp=mat('#b09a75',.68,.45);
+for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++){
+ if(wall(x,z)||(x*5+z*3)%4!==0)continue;
+ const p=pos(x,z);
+ const faces=[[1,0,Math.PI/2],[0,1,0],[-1,0,-Math.PI/2],[0,-1,Math.PI]];
+ const face=faces.find(([dx,dz])=>wall(x+dx,z+dz));
+ if(!face)continue;
+ const [dx,dz,rotation]=face;
+ const mountX=p.x+dx*(S/2-.2),mountZ=p.z+dz*(S/2-.2);
+ // Vertical pipe, terminating at the floor and connected to a visible valve housing.
+ const pipe=new THREE.Mesh(pipeGeo,(x+z)%2?rust:steel);
+ pipe.position.set(mountX,1.4,mountZ);scene.add(pipe);
+ for(const y of [.38,1.35,2.35]){
+  const clamp=new THREE.Mesh(new THREE.BoxGeometry(.34,.12,.34),pipeClamp);
+  clamp.position.set(mountX,y,mountZ);scene.add(clamp);
+ }
+ const housing=new THREE.Mesh(new THREE.BoxGeometry(.55,.65,.55),dark);
+ housing.position.set(mountX,.3,mountZ);scene.add(housing);
+ const cap=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),copper);
+ cap.position.set(mountX,2.64,mountZ);scene.add(cap);
 }
 const boilerMetal=mat('#656965',.7,.55),boilerDark=mat('#272c2b',.3,.75),boilerFire=new THREE.MeshBasicMaterial({color:'#f38b42'});
 for(const [x,z] of [[5,4],[10,6],[14,10],[6,13],[12,15]]){
