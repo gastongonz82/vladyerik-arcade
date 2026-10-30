@@ -116,6 +116,16 @@ for(const [x,z] of boilerCells){
  pipe(top,atWall,.14,brass);pipe(atWall,atCeiling,.14,rust);
  for(const pt of [top,atWall]){const joint=new THREE.Mesh(new THREE.SphereGeometry(.17,8,6),brass);joint.position.copy(pt);scene.add(joint)}
 }
+// Wall-recessed boiler control panels. These occupy existing wall faces only.
+const controlCase=mat('#293334',.65,.5),controlGlow=new THREE.MeshBasicMaterial({color:'#d88b42'});
+for(const [x,z] of [[4,3],[10,4],[14,8],[4,12],[10,14],[7,11],[14,13]]){
+ if(!wall(x,z))continue;
+ const faces=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dz])=>!wall(x+dx,z+dz));
+ if(!faces.length)continue;
+ const [dx,dz]=faces[0],p=pos(x,z),cx=p.x+dx*1.82,cz=p.z+dz*1.82;
+ cube(dx?.17:1.4,1.9,dz?.17:1.4,cx,1.55,cz,controlCase);
+ cube(dx?.06:1.0,.12,dz?.06:1.0,cx+dx*.12,2.1,cz+dz*.12,controlGlow);
+}
 // Floor-mounted utility grates with clear passage and no extra collision volumes.
 const grate=mat('#202b2b',.5,.6);
 for(let z=2;z<H-2;z+=5)for(let x=2;x<W-2;x+=5)if(!wall(x,z)){
