@@ -25,4 +25,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add games/vladi-backrooms/vorick/vorick.glb
-          git diff --cached --quiet || (git commit -m "Export Vorick as GLB for Level 4" && git push)
+          git diff --cached --quiet || (git commit -m "Export Vorick as GLB for Level 4" && (git fetch origin main && git rebase origin/main && git push origin HEAD:main))
