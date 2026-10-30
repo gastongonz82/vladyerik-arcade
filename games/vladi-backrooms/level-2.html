@@ -52,9 +52,14 @@ const poolEdge=new THREE.MeshStandardMaterial({color:'#edf5e9',roughness:.36}),p
 const pools=[];
 function addPool(cx,cy,w,d){const p=pos(cx,cy),pw=w*S-.4,pd=d*S-.4;const basin=box(pw,.09,pd,p.x,.003,p.z,poolDeep);basin.castShadow=false;const water=new THREE.Mesh(new THREE.PlaneGeometry(pw-.2,pd-.2),waterMat);water.rotation.x=-Math.PI/2;water.position.set(p.x,.082,p.z);water.renderOrder=2;scene.add(water);pools.push(water);for(const side of [-1,1]){box(.19,.23,pd,p.x+side*pw/2,.12,p.z,poolEdge);box(pw,.23,.19,p.x,.12,p.z+side*pd/2,poolEdge)}for(let i=-1;i<=1;i++)box(.075,.012,pd*.72,p.x+i*pw*.25,.105,p.z,poolLine)}
 addPool(4,3,2,2);addPool(10,3,2,2);addPool(4,9,2,2);addPool(10,9,2,2);
+// Poolrooms expansion: populate the previously empty eastern and southern wings.
+// Shared pool materials/shader; no additional dynamic lights or per-frame logic.
+addPool(17,4,3,3);addPool(17,10,3,3);
+addPool(4,15,3,3);addPool(10,15,3,3);
+addPool(17,16,3,2);
 // Rounded arches and pillars define a grand flooded hall.
 const columnMat=new THREE.MeshStandardMaterial({color:'#d7e9df',roughness:.48}),accent=new THREE.MeshStandardMaterial({color:'#81b7b2',roughness:.47});
-for(const [cx,cy] of [[2,3],[7,3],[12,3],[2,7],[7,7],[12,7],[2,10],[7,10],[12,10]]){const p=pos(cx,cy);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.43,.48,ceil,12),columnMat);shaft.position.set(p.x,ceil/2,p.z);scene.add(shaft);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.68,.55,.18,12),columnMat);cap.position.set(p.x,ceil-.15,p.z);scene.add(cap);const foot=new THREE.Mesh(new THREE.CylinderGeometry(.65,.56,.19,12),accent);foot.position.set(p.x,.09,p.z);scene.add(foot)}
+for(const [cx,cy] of [[2,3],[7,3],[12,3],[2,7],[7,7],[12,7],[2,10],[7,10],[12,10],[15,2],[19,7],[15,12],[2,17],[12,17],[19,13]]){const p=pos(cx,cy);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.43,.48,ceil,12),columnMat);shaft.position.set(p.x,ceil/2,p.z);scene.add(shaft);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.68,.55,.18,12),columnMat);cap.position.set(p.x,ceil-.15,p.z);scene.add(cap);const foot=new THREE.Mesh(new THREE.CylinderGeometry(.65,.56,.19,12),accent);foot.position.set(p.x,.09,p.z);scene.add(foot)}
 // Shallow reflective flooded walkways, sparse enough for mobile.
 const wetMat=new THREE.MeshBasicMaterial({color:'#72c4c1',transparent:true,opacity:.13,depthWrite:false});
 for(const [cx,cy] of [[1,5],[8,5],[13,6],[7,10],[1,10]]){const p=pos(cx,cy);const wet=new THREE.Mesh(new THREE.PlaneGeometry(3.2,2.6),wetMat);wet.rotation.x=-Math.PI/2;wet.position.set(p.x,.018,p.z);scene.add(wet)}
