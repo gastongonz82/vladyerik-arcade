@@ -89,7 +89,7 @@ for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
 }
 // Boiler units are installed on wall cells and recessed into masonry, not on walkable tiles.
 const boilerMetal=mat('#6c7772',.68,.48),boilerDark=mat('#232b2b',.45,.65),brass=mat('#a78451',.7,.38),fire=new THREE.MeshBasicMaterial({color:'#fca75c'});
-const boilerCells=[[5,4],[10,6],[14,10],[6,13],[12,15]];
+const boilerCells=[[4,4],[10,5],[14,9],[4,13],[10,15]];
 const cylinder=(r,h,m)=>new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,14),m);
 function pipe(a,b,r=.11,m=rust){const v=new THREE.Vector3().subVectors(b,a),c=new THREE.Mesh(new THREE.CylinderGeometry(r,r,v.length(),10),m);c.position.copy(a).add(b).multiplyScalar(.5);c.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),v.normalize());scene.add(c)}
 for(const [x,z] of boilerCells){
