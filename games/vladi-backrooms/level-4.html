@@ -145,15 +145,25 @@ body.visible=true;
 let vorickModel=null,vorickMixer=null,vorickReady=false,vorickStatus='CARGANDO MODELO';
 const vorickLoader=new FBXLoader();vorickLoader.setResourcePath('./vorick/');
 vorickLoader.load('./vorick/Vorick%20the%20Clown.fbx',model=>{
- const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
- if(!Number.isFinite(size.y)||size.y<=0||size.y>100000){vorickStatus='MODELO INVÁLIDO · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;return;}
+ // Measure rendered mesh geometry only; FBX skeleton helpers may have enormous extents.
+ model.updateMatrixWorld(true);
+ const bounds=new THREE.Box3();let measuredMeshes=0;
+ model.traverse(o=>{if(!o.isMesh||!o.geometry)return;
+  o.geometry.computeBoundingBox();const b=o.geometry.boundingBox;
+  if(!b||b.isEmpty())return;
+  const wb=b.clone().applyMatrix4(o.matrixWorld);
+  if(!Number.isFinite(wb.min.y)||!Number.isFinite(wb.max.y))return;
+  bounds.union(wb);measuredMeshes++;
+ });
+ const size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+ if(!measuredMeshes||!Number.isFinite(size.y)||size.y<=0||size.y>100000){vorickStatus='MODELO INVÁLIDO · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;return;}
  // Normalize via a separate pivot: FBX animation tracks can overwrite model.position.
  const offset=new THREE.Group();offset.position.set(-center.x,-bounds.min.y,-center.z);offset.add(model);
- const fitted=new THREE.Group();fitted.add(offset);fitted.scale.setScalar(4.4/size.y);
+ const fitted=new THREE.Group();fitted.add(offset);fitted.scale.setScalar(3.6/size.y);
  fitted.rotation.y=Math.PI;monster.add(fitted);
  let meshCount=0;model.traverse(o=>{if(o.isMesh){meshCount++;o.castShadow=false;o.frustumCulled=false;o.visible=true;o.material&&(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.side=THREE.DoubleSide;m.needsUpdate=true})}});if(!meshCount){monster.remove(fitted);vorickStatus='SIN MALLAS · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;return}
  if(model.animations&&model.animations.length){vorickMixer=new THREE.AnimationMixer(model);const clip=model.animations.find(a=>/walk|run|idle/i.test(a.name))||model.animations[0];vorickMixer.clipAction(clip).play()}
- vorickModel=fitted;vorickReady=true;vorickStatus='VORICK 3D ACTIVO';vorickDiagnostic.textContent='VORICK 3D CARGADO';concierge.visible=false;body.visible=true;
+ vorickModel=fitted;vorickReady=true;vorickStatus='VORICK 3D ACTIVO';vorickDiagnostic.textContent='VORICK 3D CARGADO';concierge.visible=false;body.visible=false;
 },undefined,e=>{vorickStatus='ERROR DE CARGA · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;console.error('Vorick FBX load failed',e)});
 const concierge=new THREE.Group();monster.add(concierge);concierge.visible=false;
 const suit=new THREE.MeshStandardMaterial({color:'#17161c',roughness:.91}),suitLapel=new THREE.MeshStandardMaterial({color:'#343037',roughness:.83}),shirt=new THREE.MeshStandardMaterial({color:'#d5c9b1',roughness:.9}),skinBlank=new THREE.MeshStandardMaterial({color:'#b7a99b',roughness:.91}),goldBadge=new THREE.MeshStandardMaterial({color:'#bda063',metalness:.7,roughness:.29}),shoeMat=new THREE.MeshStandardMaterial({color:'#0a090c',roughness:.6});
