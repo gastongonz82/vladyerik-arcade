@@ -15,9 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Blender
-        run: sudo apt-get update -qq && sudo apt-get install -y blender
+        run: sudo apt-get update -qq && sudo apt-get install -y blender python3-numpy
       - name: Convert FBX to GLB
-        run: blender --background --python scripts/convert_vorick.py
+        run: |
+          blender --background --python scripts/convert_vorick.py
+          test -s games/vladi-backrooms/vorick/vorick.glb
       - name: Commit exported model
         run: |
           git config user.name "github-actions[bot]"
