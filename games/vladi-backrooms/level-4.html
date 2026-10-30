@@ -140,7 +140,7 @@ for(const side of [-1,1]){
  legs.push({hip,knee,side});
 }
 const mp=pos(12,9);// Hotel-specific antagonist: The Concierge, a faceless uniformed attendant.
-body.visible=true;
+body.visible=false;
 // Load the licensed Vorick FBX when its assets are deployed; preserve a playable fallback otherwise.
 let vorickModel=null,vorickMixer=null,vorickReady=false,vorickStatus='CARGANDO MODELO';
 const vorickLoader=new FBXLoader();vorickLoader.setResourcePath('./vorick/');
@@ -165,7 +165,7 @@ vorickLoader.load('./vorick/Vorick%20the%20Clown.fbx',model=>{
  if(model.animations&&model.animations.length){vorickMixer=new THREE.AnimationMixer(model);const clip=model.animations.find(a=>/walk|run|idle/i.test(a.name))||model.animations[0];vorickMixer.clipAction(clip).play()}
  vorickModel=fitted;vorickReady=true;vorickStatus='VORICK 3D ACTIVO';vorickDiagnostic.textContent='VORICK 3D CARGADO';concierge.visible=false;body.visible=false;
 },undefined,e=>{vorickStatus='ERROR DE CARGA · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;console.error('Vorick FBX load failed',e)});
-const concierge=new THREE.Group();monster.add(concierge);concierge.visible=false;
+const concierge=new THREE.Group();monster.add(concierge);concierge.visible=true;
 const suit=new THREE.MeshStandardMaterial({color:'#17161c',roughness:.91}),suitLapel=new THREE.MeshStandardMaterial({color:'#343037',roughness:.83}),shirt=new THREE.MeshStandardMaterial({color:'#d5c9b1',roughness:.9}),skinBlank=new THREE.MeshStandardMaterial({color:'#b7a99b',roughness:.91}),goldBadge=new THREE.MeshStandardMaterial({color:'#bda063',metalness:.7,roughness:.29}),shoeMat=new THREE.MeshStandardMaterial({color:'#0a090c',roughness:.6});
 function hotelPart(parent,geometry,material,x,y,z){const m=new THREE.Mesh(geometry,material);m.position.set(x,y,z);parent.add(m);return m}
 hotelPart(concierge,new THREE.CylinderGeometry(.31,.39,1.18,10),suit,0,1.45,0);
