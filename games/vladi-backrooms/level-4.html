@@ -163,7 +163,7 @@ vorickLoader.load('./vorick/Vorick%20the%20Clown.fbx',model=>{
  fitted.rotation.y=Math.PI;monster.add(fitted);
  let meshCount=0;model.traverse(o=>{if(o.isMesh){meshCount++;o.castShadow=false;o.frustumCulled=false;o.visible=true;o.material&&(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.side=THREE.DoubleSide;m.needsUpdate=true})}});if(!meshCount){monster.remove(fitted);vorickStatus='SIN MALLAS · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;return}
  // Keep the imported FBX in its bind pose until root-motion offsets are verified; animations can displace the entire mesh out of view.
- vorickModel=fitted;vorickReady=true;vorickStatus='VORICK CARGADO';vorickDiagnostic.textContent='VORICK 3D CARGADO';concierge.visible=false;body.visible=false;
+ vorickModel=fitted;vorickReady=true;vorickStatus='VORICK CARGADO';vorickDiagnostic.textContent='FBX cargado, apariencia pendiente';concierge.visible=true;body.visible=false;
 },undefined,e=>{vorickStatus='ERROR DE CARGA · PAYASO ALTERNATIVO';vorickDiagnostic.textContent=vorickStatus;console.error('Vorick FBX load failed',e)});
 const concierge=new THREE.Group();monster.add(concierge);concierge.visible=true;
 const suit=new THREE.MeshStandardMaterial({color:'#17161c',roughness:.91}),suitLapel=new THREE.MeshStandardMaterial({color:'#343037',roughness:.83}),shirt=new THREE.MeshStandardMaterial({color:'#d5c9b1',roughness:.9}),skinBlank=new THREE.MeshStandardMaterial({color:'#b7a99b',roughness:.91}),goldBadge=new THREE.MeshStandardMaterial({color:'#bda063',metalness:.7,roughness:.29}),shoeMat=new THREE.MeshStandardMaterial({color:'#0a090c',roughness:.6});
