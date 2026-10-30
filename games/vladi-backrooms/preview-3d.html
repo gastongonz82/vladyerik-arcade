@@ -61,7 +61,7 @@ for(const side of [-1,1]){
  for(let i=0;i<4;i++)sphere(knee,skin,(i-1.5)*.135,-.53,.55,.08,.065,.16);
  legs.push({hip,knee,side});
 }
-const mp=pos(12,9);monster.position.set(mp.x,0,mp.z);monster.scale.setScalar(1.08);scene.add(monster);
+const mp=pos(12,9);monster.position.set(mp.x,0,mp.z);monster.scale.setScalar(.78);scene.add(monster);
 const stalkerGlow=new THREE.PointLight('#1d58b8',1.1,3.5);stalkerGlow.position.set(0,2.7,.4);monster.add(stalkerGlow);
 let stride=0;let slowFrames=0,qualityAdjusted=false;
 let active=false,paused=true,lives=3,found=0,invuln=0,last=performance.now(),yaw=0,pitch=0;const pressed=new Set();
