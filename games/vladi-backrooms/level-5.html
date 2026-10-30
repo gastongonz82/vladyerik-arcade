@@ -34,9 +34,9 @@ const scene=new THREE.Scene();scene.background=new THREE.Color('#202b2d');scene.
 const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.08,130);camera.rotation.order='YXZ';
 const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.15:1.6));renderer.setSize(innerWidth,innerHeight);
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.65;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.22;
 document.body.prepend(renderer.domElement);
-scene.add(new THREE.HemisphereLight('#c5d6d0','#6b4b38',2.8));scene.add(new THREE.AmbientLight('#b9c9c3',1.2));
+scene.add(new THREE.HemisphereLight('#a7bbb6','#33241c',1.45));scene.add(new THREE.AmbientLight('#879c97',.48));
 const mat=(color,metalness=0,roughness=.85)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
 const concrete=mat('#697273'),floorMat=mat('#465255',.15),rust=mat('#73452f',.5),steel=mat('#53686c',.65,.35),copper=mat('#96704a',.65,.38),dark=mat('#202a2d'),glow= new THREE.MeshBasicMaterial({color:'#f4b46e'});
 const S=4,grid=[
@@ -74,12 +74,12 @@ concrete.map=surface('#596260','wall');concrete.color.set('#ffffff');concrete.ne
 floorMat.map=surface('#3c4849','floor');floorMat.color.set('#ffffff');floorMat.needsUpdate=true;
 dark.map=surface('#343e3f','ceiling');dark.color.set('#ffffff');dark.needsUpdate=true;
 const edge=mat('#9d693a',.4,.63),beam=mat('#313b3e',.6,.48),panel=mat('#485351',.42,.66),glass=new THREE.MeshBasicMaterial({color:'#ffc579'});
-const floor=cube(W*S,.22,H*S,0,-.16,0,floorMat);
+const flickerLights=[];const floor=cube(W*S,.22,H*S,0,-.16,0,floorMat);
 for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
  if(wall(x,z)){cube(S,4.8,S,p.x,2.4,p.z,concrete);continue}
  cube(S,.16,S,p.x,4.84,p.z,dark);
  if((x+z)%3===0){cube(1.45,.06,.4,p.x,4.71,p.z,glass);
-  if((x*13+z*7)%11===0){const light=new THREE.PointLight('#ffd4a3',mobile?3.6:4.7,13,2);light.position.set(p.x,4.45,p.z);scene.add(light)}}
+  if((x*13+z*7)%11===0){const light=new THREE.PointLight('#ffd4a3',mobile?3.2:4.1,12,2);light.position.set(p.x,4.45,p.z);scene.add(light);flickerLights.push({light,base:light.intensity,phase:x*2.1+z*3.7})}}
  // Trim and beams attach to actual neighboring walls and ceiling.
  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]])if(wall(x+dx,z+dz)){
   const px=p.x+dx*1.96,pz=p.z+dz*1.96;
@@ -123,12 +123,24 @@ for(let z=2;z<H-2;z+=5)for(let x=2;x<W-2;x+=5)if(!wall(x,z)){
  for(let i=-2;i<=2;i++)cube(.07,.04,.78,p.x+i*.3,.055,p.z,beam)
 }
 const valves=[];
-for(const [x,z] of [[3,3],[15,5],[5,15]]){const p=pos(x,z),group=new THREE.Group();
- const stem=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.2,10),steel);stem.position.y=1.05;group.add(stem);
- const ring=new THREE.Mesh(new THREE.TorusGeometry(.52,.095,8,20),copper);ring.position.y=1.7;ring.rotation.x=Math.PI/2;group.add(ring);
- const hub=new THREE.Mesh(new THREE.SphereGeometry(.17,10,8),rust);hub.position.y=1.7;group.add(hub);
- const marker=new THREE.Mesh(new THREE.BoxGeometry(.5,.12,.15),glow);marker.position.y=2.45;group.add(marker);
- group.position.copy(p);scene.add(group);valves.push({group,x,z,done:false,ring})}
+for(const [x,z] of [[3,3],[15,5],[5,15]]){
+ const p=pos(x,z),group=new THREE.Group();
+ const faces=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dz])=>wall(x+dx,z+dz));
+ const [dx,dz]=faces[0]||[1,0];
+ // A valve station mounted directly to the adjacent masonry, with a pipe from floor to ceiling.
+ const wallX=dx*(S/2-.25),wallZ=dz*(S/2-.25);
+ const stem=new THREE.Mesh(new THREE.CylinderGeometry(.17,.17,3.85,10),steel);
+ stem.position.set(wallX,2.13,wallZ);group.add(stem);
+ const foot=new THREE.Mesh(new THREE.BoxGeometry(.72,.4,.72),rust);foot.position.set(wallX,.2,wallZ);group.add(foot);
+ const top=new THREE.Mesh(new THREE.BoxGeometry(.7,.28,.7),rust);top.position.set(wallX,4.1,wallZ);group.add(top);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.49,.11,8,22),copper);
+ ring.position.set(wallX-dx*.4,1.65,wallZ-dz*.4);
+ ring.rotation.y=dx!==0?Math.PI/2:0;group.add(ring);
+ const hub=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8),rust);hub.position.copy(ring.position);group.add(hub);
+ const marker=new THREE.Mesh(new THREE.BoxGeometry(.55,.18,.18),glow);
+ marker.position.set(wallX-dx*.3,2.4,wallZ-dz*.3);group.add(marker);
+ group.position.copy(p);scene.add(group);valves.push({group,x,z,done:false,ring})
+}
 const exitCell=[17,17],exitPos=pos(...exitCell),exitDoor=cube(2.6,3.6,.22,exitPos.x,1.8,exitPos.z,steel);
 const exitLamp=new THREE.PointLight('#ff6640',5,8);exitLamp.position.set(exitPos.x,3.7,exitPos.z);scene.add(exitLamp);
 // The Listener: industrial humanoid with limbs, ears and a caged face.
@@ -149,13 +161,16 @@ const keys=new Set();let active=false,paused=true,finished=false,health=3,count=
 let ctx=null,audioOn=true;
 function audio(){if(!audioOn)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume()}catch(e){}}
 function beep(freq=170,dur=.15,volume=.04){if(!ctx||ctx.state!=='running'||!audioOn)return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;o.type='triangle';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.6),t+dur);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur+.02)}
+let ambience=null,ambienceGain=null,lastMachine=0;
+function startAmbience(){if(!ctx||ctx.state!=='running'||!audioOn)return;if(!ambience){ambience=ctx.createOscillator();ambience.type='sawtooth';ambience.frequency.value=48;const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=110;ambienceGain=ctx.createGain();ambienceGain.gain.value=.012;ambience.connect(filter);filter.connect(ambienceGain);ambienceGain.connect(ctx.destination);ambience.start()}ambienceGain.gain.setTargetAtTime(.012,ctx.currentTime,.2)}
+function stopAmbience(){if(ambienceGain&&ctx)ambienceGain.gain.setTargetAtTime(0,ctx.currentTime,.15)}
 function clearInputs(){keys.clear();touchX=touchY=0;running=false;nub.style.transform='translate(0,0)'}
-function reset(){const p=pos(2,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;yaw=Math.PI;pitch=0;camera.rotation.set(pitch,yaw,0);for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
-function start(){audio();reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
-function show(title,desc){paused=true;active=false;clearInputs();$('menuTitle').textContent=title;$('menuDesc').textContent=desc;$('start').textContent='VOLVER A JUGAR';$('menu').style.display='grid'}
+function reset(){const p=pos(1,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;yaw=Math.PI/2;pitch=0;camera.rotation.set(pitch,yaw,0);for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
+function start(){audio();startAmbience();reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
+function show(title,desc){stopAmbience();paused=true;active=false;clearInputs();$('menuTitle').textContent=title;$('menuDesc').textContent=desc;$('start').textContent='VOLVER A JUGAR';$('menu').style.display='grid'}
 $('start').onclick=start;
 $('pause').onclick=()=>{if(!active)return;paused=!paused;$('tip').textContent=paused?'PAUSA · Tocá Ⅱ para continuar':'Encontrá las tres válvulas.';clearInputs()};
-$('sound').onclick=()=>{audioOn=!audioOn;$('sound').textContent=audioOn?'🔊':'🔇';if(audioOn)audio()};
+$('sound').onclick=()=>{audioOn=!audioOn;$('sound').textContent=audioOn?'🔊':'🔇';if(audioOn){audio();startAmbience()}else stopAmbience()};
 $('full').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{});else document.exitFullscreen?.().catch(()=>{})};
 function cell(x,z){return [Math.floor((x-ox)/S),Math.floor((z-oz)/S)]}
 function canMove(x,z){const r=.31;return !wall(...cell(x-r,z-r))&&!wall(...cell(x+r,z-r))&&!wall(...cell(x-r,z+r))&&!wall(...cell(x+r,z+r))}
@@ -181,7 +196,7 @@ pad.addEventListener('pointerup',releasePad);pad.addEventListener('pointercancel
 $('run').addEventListener('pointerdown',()=>running=true);for(const ev of ['pointerup','pointercancel','pointerleave'])$('run').addEventListener(ev,()=>running=false);
 let frame=0;
 function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/1000);last=now;
- if(active&&!paused){frame++;let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
+ if(active&&!paused){frame++;if(frame%5===0)for(const f of flickerLights){const flicker=Math.sin(now*.004+f.phase)*.16+(Math.sin(now*.021+f.phase)> .97?-.55:0);f.light.intensity=f.base*Math.max(.25,1+flicker)}if(now-lastMachine>6000+Math.sin(now*.001)*1800){lastMachine=now;beep(75,.8,.018)}let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
  let side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+touchX;
  let sprint=running||keys.has('shift');const pads=navigator.getGamepads?.()||[];
  for(const pad of pads)if(pad){const dead=v=>Math.abs(v)>.17?v:0;side+=dead(pad.axes[0]||0);forward-=dead(pad.axes[1]||0);yaw-=dead(pad.axes[2]||0)*dt*2.2;pitch=Math.max(-1.2,Math.min(1.2,pitch-dead(pad.axes[3]||0)*dt*1.6));sprint=sprint||!!pad.buttons[7]?.pressed;if(pad.buttons[0]?.pressed&&frame%18===0)activate();break}
