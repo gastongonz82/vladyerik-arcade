@@ -54,25 +54,6 @@ addPool(4,3,2,2);addPool(10,3,2,2);addPool(4,9,2,2);addPool(10,9,2,2);
 // Rounded arches and pillars define a grand flooded hall.
 const columnMat=new THREE.MeshStandardMaterial({color:'#d7e9df',roughness:.48}),accent=new THREE.MeshStandardMaterial({color:'#81b7b2',roughness:.47});
 for(const [cx,cy] of [[2,3],[7,3],[12,3],[2,7],[7,7],[12,7],[2,10],[7,10],[12,10]]){const p=pos(cx,cy);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.43,.48,ceil,12),columnMat);shaft.position.set(p.x,ceil/2,p.z);scene.add(shaft);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.68,.55,.18,12),columnMat);cap.position.set(p.x,ceil-.15,p.z);scene.add(cap);const foot=new THREE.Mesh(new THREE.CylinderGeometry(.65,.56,.19,12),accent);foot.position.set(p.x,.09,p.z);scene.add(foot)}
-// Curved stainless pool ladders anchored at the actual basin edge.
-const ladderStep=new THREE.MeshStandardMaterial({color:'#b5d4d2',metalness:.8,roughness:.25});
-function poolLadder(cx,cy,side){const p=pos(cx,cy),edge=p.z+side*(S-.2),inward=-side;const ladder=new THREE.Group();
- for(const x of [-.43,.43]){
-  const curve=new THREE.CatmullRomCurve3([
-   new THREE.Vector3(x,-.58,edge+inward*.44),
-   new THREE.Vector3(x,.06,edge+inward*.44),
-   new THREE.Vector3(x,.62,edge+inward*.39),
-   new THREE.Vector3(x,1.08,edge+inward*.17),
-   new THREE.Vector3(x,1.14,edge-side*.12),
-   new THREE.Vector3(x,.83,edge+side*.32)
-  ]);
-  const rail=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.046,9,false),steel);rail.castShadow=false;ladder.add(rail);
-  const mount=new THREE.Mesh(new THREE.CylinderGeometry(.10,.10,.035,12),steel);mount.rotation.x=Math.PI/2;mount.position.set(x,.83,edge+side*.32);ladder.add(mount)
- }
- for(let i=0;i<4;i++){const step=new THREE.Mesh(new THREE.BoxGeometry(.92,.055,.24),ladderStep);step.position.set(0,-.43+i*.29,edge+inward*.44);ladder.add(step)}
- scene.add(ladder)
-}
-poolLadder(4,3,-1);poolLadder(10,9,1);
 // Shallow reflective flooded walkways, sparse enough for mobile.
 const wetMat=new THREE.MeshBasicMaterial({color:'#72c4c1',transparent:true,opacity:.13,depthWrite:false});
 for(const [cx,cy] of [[1,5],[8,5],[13,6],[7,10],[1,10]]){const p=pos(cx,cy);const wet=new THREE.Mesh(new THREE.PlaneGeometry(3.2,2.6),wetMat);wet.rotation.x=-Math.PI/2;wet.position.set(p.x,.018,p.z);scene.add(wet)}
