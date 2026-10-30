@@ -144,7 +144,7 @@ body.visible=false;
 // Load the licensed Vorick FBX when its assets are deployed; preserve a playable fallback otherwise.
 let vorickModel=null,vorickMixer=null,vorickReady=false,vorickStatus='CARGANDO MODELO';
 const vorickLoader=new GLTFLoader();
-vorickLoader.load('./vorick/vorick.glb',gltf=>{
+vorickLoader.load('./vorick/vorick.glb?v=2316388-20261030',gltf=>{
  const model=gltf.scene;model.updateMatrixWorld(true);
  const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());
  let meshes=0;model.traverse(o=>{if(o.isMesh){meshes++;o.frustumCulled=false;o.castShadow=false}});
@@ -156,7 +156,7 @@ vorickLoader.load('./vorick/vorick.glb',gltf=>{
  pivot.position.set(-center.x,-bounds.min.y,-center.z);
  offset.scale.setScalar(2.9/size.y);offset.rotation.y=Math.PI;monster.add(offset);
  vorickModel=offset;vorickReady=true;vorickStatus='VORICK';
- if(gltf.animations.length){vorickMixer=new THREE.AnimationMixer(model);const clip=gltf.animations.find(a=>/walk|run/i.test(a.name))||gltf.animations.find(a=>/idle/i.test(a.name))||gltf.animations[0];vorickMixer.clipAction(clip).play();}
+ if(gltf.animations.length){vorickMixer=new THREE.AnimationMixer(model);const clip=gltf.animations.find(a=>/walk|run/i.test(a.name)&&a.tracks.length>0)||gltf.animations.find(a=>/idle/i.test(a.name)&&a.tracks.length>0)||gltf.animations.find(a=>a.tracks.length>0);if(clip){vorickMixer.clipAction(clip).play();console.info('Vorick animation',clip.name,clip.tracks.length,clip.duration)}else console.warn('Vorick GLB has no animation tracks')}else console.warn('Vorick GLB has no animations');
  concierge.visible=false;body.visible=false;
 },undefined,e=>{console.warn('Vorick GLB not available; showing hotel antagonist',e)});
 const concierge=new THREE.Group();monster.add(concierge);concierge.visible=true;
