@@ -145,26 +145,39 @@ const spawn=pos(1,1);camera.position.set(spawn.x,1.65,spawn.z);
 const keyMat=new THREE.MeshStandardMaterial({color:'#c5a36c',metalness:.64,roughness:.3,emissive:'#59401f',emissiveIntensity:.22});
 // Lightweight interactive hotel closets: visual doors and a real stealth state.
 const hidingSpots=[];
-const closetWood=new THREE.MeshStandardMaterial({color:'#473029',roughness:.88,side:THREE.DoubleSide});
-const closetHandle=new THREE.MeshStandardMaterial({color:'#bba16b',metalness:.55,roughness:.45});
+const closetWood=new THREE.MeshStandardMaterial({color:'#765039',roughness:.75,side:THREE.DoubleSide});
+const closetPanel=new THREE.MeshStandardMaterial({color:'#987052',roughness:.73});
+const closetHandle=new THREE.MeshStandardMaterial({color:'#e4bf72',metalness:.65,roughness:.27});
 for(const [cx,cy] of [[18,4],[5,18],[21,19],[10,18],[18,11]]){
  const p=pos(cx,cy),g=new THREE.Group();
- const back=new THREE.Mesh(new THREE.BoxGeometry(1.75,2.5,.14),closetWood);back.position.set(0,1.25,.48);g.add(back);
- for(const x of [-.88,.88]){const side=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,1.05),closetWood);side.position.set(x,1.25,0);g.add(side)}
- const top=new THREE.Mesh(new THREE.BoxGeometry(1.85,.14,1.1),closetWood);top.position.y=2.5;g.add(top);
- const pivot=new THREE.Group();pivot.position.set(-.84,0,-.52);g.add(pivot);
- const panel=new THREE.Mesh(new THREE.BoxGeometry(1.65,2.4,.1),closetWood);panel.position.set(.825,1.22,0);pivot.add(panel);
- const handle=new THREE.Mesh(new THREE.BoxGeometry(.09,.2,.09),closetHandle);handle.position.set(1.43,1.24,-.08);pivot.add(handle);
- g.position.set(p.x,0,p.z);scene.add(g);hidingSpots.push({g,pivot,open:false});
+ const back=new THREE.Mesh(new THREE.BoxGeometry(2.15,2.8,.16),closetWood);back.position.set(0,1.4,.53);g.add(back);
+ for(const x of [-1.05,1.05]){const side=new THREE.Mesh(new THREE.BoxGeometry(.14,2.8,1.18),closetWood);side.position.set(x,1.4,0);g.add(side)}
+ for(const y of [.07,2.77]){const cap=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,1.25),closetWood);cap.position.y=y;g.add(cap)}
+ const doors=[];
+ for(const direction of [-1,1]){
+  const pivot=new THREE.Group();pivot.position.set(direction*1.02,0,-.58);g.add(pivot);
+  const panel=new THREE.Mesh(new THREE.BoxGeometry(1.02,2.58,.11),closetPanel);
+  panel.position.set(-direction*.51,1.4,0);pivot.add(panel);
+  const inset=new THREE.Mesh(new THREE.BoxGeometry(.72,1.92,.045),closetWood);
+  inset.position.set(-direction*.51,1.4,-.075);pivot.add(inset);
+  const handle=new THREE.Mesh(new THREE.BoxGeometry(.075,.28,.11),closetHandle);
+  handle.position.set(-direction*.18,1.4,-.14);pivot.add(handle);
+  doors.push({pivot,direction});
+ }
+ // Small warm sign makes closets readable in the dim hotel without adding lights.
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(1.58,.24,.06),new THREE.MeshBasicMaterial({color:'#f4dba2'}));
+ sign.position.set(0,2.94,-.58);g.add(sign);
+ g.position.set(p.x,0,p.z);scene.add(g);hidingSpots.push({g,doors,open:false});
 }
+function setClosetOpen(spot,open){spot.open=open;for(const {pivot,direction} of spot.doors)pivot.rotation.y=open?direction*1.2:0}
 let hiddenIn=null,hideCooldown=0;
 function toggleHide(){
  if(!active||paused||performance.now()<hideCooldown)return;
- if(hiddenIn){hiddenIn.open=true;hiddenIn.pivot.rotation.y=-1.4;hiddenIn=null;hideCooldown=performance.now()+500;return}
+ if(hiddenIn){setClosetOpen(hiddenIn,true);hiddenIn=null;hideCooldown=performance.now()+500;return}
  let nearest=null,dist=2.3;
  for(const spot of hidingSpots){const d=Math.hypot(camera.position.x-spot.g.position.x,camera.position.z-spot.g.position.z);if(d<dist){dist=d;nearest=spot}}
  if(!nearest)return;
- hiddenIn=nearest;nearest.open=false;nearest.pivot.rotation.y=0;hideCooldown=performance.now()+500;
+ hiddenIn=nearest;setClosetOpen(nearest,false);hideCooldown=performance.now()+500;
  vorickLastSeen=0;vorickTarget=null;vorickMode='patrol';vorickNextThink=0;
 }
 const hideButton=document.createElement('button');hideButton.type='button';hideButton.id='hideButton';hideButton.textContent='ESCONDERSE';
@@ -296,7 +309,7 @@ function moveVorick(dt,now){
  return Math.hypot(camera.position.x-monster.position.x,camera.position.z-monster.position.z);
 }
 function show(title,description){active=false;paused=true;document.exitPointerLock?.();shade.style.display='grid';card.innerHTML='<h1>'+title+'</h1><p>'+description+'</p><button id="again">REINICIAR</button>';$('#again').onclick=reset}
-function reset(){hiddenIn=null;hideCooldown=0;for(const spot of hidingSpots){spot.open=false;spot.pivot.rotation.y=0}hideButton.style.display='none';startAudio();startUnderscore();clearStick();running=false;lookTouch=null;const p=pos(1,1),m=pos(12,9);shadowFigure.visible=false;nextShadow=performance.now()+15000;nextCreak=performance.now()+9000;camera.position.set(p.x,1.65,p.z);monster.position.set(m.x,0,m.z);yaw=-Math.PI/2;pitch=0;lives=3;found=0;invuln=0;vorickMode='patrol';vorickTarget=null;vorickWaypoint=null;vorickLastSeen=0;vorickNextThink=0;vorickPatrolIndex=0;lastVorickLaugh=performance.now();lastVorickBreath=performance.now();for(const item of items){item.found=false;item.g.visible=true;item.glow.visible=true;item.glow.intensity=3}active=true;paused=false;updateUnderscore();shade.style.display='none';last=performance.now();(!mobileDevice&&renderer.domElement.requestPointerLock?.())}
+function reset(){hiddenIn=null;hideCooldown=0;for(const spot of hidingSpots){setClosetOpen(spot,false)}hideButton.style.display='none';startAudio();startUnderscore();clearStick();running=false;lookTouch=null;const p=pos(1,1),m=pos(12,9);shadowFigure.visible=false;nextShadow=performance.now()+15000;nextCreak=performance.now()+9000;camera.position.set(p.x,1.65,p.z);monster.position.set(m.x,0,m.z);yaw=-Math.PI/2;pitch=0;lives=3;found=0;invuln=0;vorickMode='patrol';vorickTarget=null;vorickWaypoint=null;vorickLastSeen=0;vorickNextThink=0;vorickPatrolIndex=0;lastVorickLaugh=performance.now();lastVorickBreath=performance.now();for(const item of items){item.found=false;item.g.visible=true;item.glow.visible=true;item.glow.intensity=3}active=true;paused=false;updateUnderscore();shade.style.display='none';last=performance.now();(!mobileDevice&&renderer.domElement.requestPointerLock?.())}
 $('#play').onclick=reset;function pause(){if(!active)return;running=false;clearStick();paused=!paused;updateUnderscore();shade.style.display=paused?'grid':'none';if(paused){document.exitPointerLock?.();card.innerHTML='<h1>PAUSA</h1><button id="continue">CONTINUAR</button>';$('#continue').onclick=pause}else{last=performance.now();renderer.domElement.requestPointerLock?.()}}
 addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))e.preventDefault();if(e.key.toLowerCase()==='e'){if(!e.repeat)toggleHide();return}if(e.key.toLowerCase()==='f'){if(!e.repeat)toggleFlashlight();return}if(e.key.toLowerCase()==='p'||e.key==='Escape'){if(!e.repeat)pause();return}pressed.add(e.key.toLowerCase()==='shift'?'Shift':e.key.toLowerCase().startsWith('arrow')?e.key:e.key.toLowerCase())});addEventListener('keyup',e=>pressed.delete(e.key.toLowerCase()==='shift'?'Shift':e.key.toLowerCase().startsWith('arrow')?e.key:e.key.toLowerCase()));document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement&&!paused){yaw-=e.movementX*.0025;pitch=Math.max(-1.25,Math.min(1.25,pitch-e.movementY*.0025))}});renderer.domElement.addEventListener('click',()=>{if(active&&!paused&&!mobileDevice)renderer.domElement.requestPointerLock?.()});let touchX=null,touchY=null,lookTouch=null,joyX=0,joyY=0,running=false;
 renderer.domElement.style.touchAction='none';
@@ -323,7 +336,7 @@ runBtn.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')return;e.pr
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])runBtn.addEventListener(ev,e=>{if(e.pointerType!=='touch')running=false});
 $('#pauseMobile').onclick=pause;
 function tick(now){requestAnimationFrame(tick);if(mobileDevice&&!qualityAdjusted&&active&&!paused){const frameMs=now-last;if(frameMs>38)slowFrames++;else slowFrames=Math.max(0,slowFrames-1);if(slowFrames>25){renderer.setPixelRatio(.6);renderer.setSize(innerWidth,innerHeight);qualityAdjusted=true;hint.textContent='Modo rendimiento activado';}}for(const f of fixtures){const phase=now*.001+f.seed,nearVorick=active&&!paused&&Math.hypot(f.light.position.x-monster.position.x,f.light.position.z-monster.position.z)<7;const flicker=nearVorick&&Math.sin(now*.038+f.seed*3)>.25;if((f.col*7+f.row*11)%8===0||nearVorick)f.light.intensity=flicker?.35:(Math.sin(phase*1.3)>.84&&Math.sin(phase*31)>0?.7:(mobileDevice?3.2:6.5));}const dt=Math.min(.08,(now-last)/1000);last=now;ambientScare(now);
-if(active&&!paused){let close=false;for(const spot of hidingSpots){if(Math.hypot(camera.position.x-spot.g.position.x,camera.position.z-spot.g.position.z)<2.3){close=true;break}}hideButton.style.display=(close||hiddenIn)?'block':'none';hideButton.textContent=hiddenIn?'SALIR':'ESCONDERSE'}else hideButton.style.display='none';
+if(active&&!paused){let close=false;for(const spot of hidingSpots){if(Math.hypot(camera.position.x-spot.g.position.x,camera.position.z-spot.g.position.z)<2.3){close=true;break}}hideButton.style.display=(close||hiddenIn)?'block':'none';hideButton.textContent=hiddenIn?'SALIR DEL ARMARIO':'ESCONDERSE'}else hideButton.style.display='none';
 if(active&&!paused){const dx=camera.position.x-horrorRoom.x,dz=camera.position.z-horrorRoom.z;const roomDist=Math.hypot(dx,dz);coldLight.intensity=roomDist<9?.5+Math.sin(now*.006)*.25:1.2;
 if(now>nextShadow&&roomDist>9){const candidates=[[5,7],[9,3],[11,7],[3,9]].filter(([x,z])=>!wall(x,z)&&Math.hypot(camera.position.x-pos(x,z).x,camera.position.z-pos(x,z).z)>7);if(candidates.length){const [x,z]=candidates[Math.floor(Math.random()*candidates.length)];shadowFigure.position.copy(pos(x,z));shadowFigure.visible=true;shadowUntil=now+1100;nextShadow=now+19000+Math.random()*18000;}}
 if(shadowFigure.visible){shadowFigure.lookAt(camera.position.x,0,camera.position.z);if(now>shadowUntil||camera.position.distanceTo(shadowFigure.position)<5)shadowFigure.visible=false;}
