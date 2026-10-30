@@ -67,7 +67,7 @@ const floor=cube(W*S,.2,H*S,0,-.15,0,floorMat);
 for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
  if(wall(x,z)){cube(S,4.8,S,p.x,2.4,p.z,concrete);continue}
  cube(S,.12,S,p.x,4.83,p.z,dark);
- if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);const l=new THREE.PointLight('#e9a56b',mobile?4:6,11,2);l.position.set(p.x,4.4,p.z);scene.add(l)}
+ if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);if((x*13+z*7)%17===0){const l=new THREE.PointLight('#e9a56b',mobile?3:4,9,2);l.position.set(p.x,4.4,p.z);scene.add(l)}}
  if((x*7+z*11)%8===0){const base=cube(.14,2.8,.14,p.x+1.45,2.3,p.z+1.45,rust);base.rotation.y=.2}
 }
 const pipeGeo=new THREE.CylinderGeometry(.13,.13,S,8);
