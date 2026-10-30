@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>VLADI BACKROOMS · NIVEL 5 — SALA DE CALDERAS</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b0c;color:#eee8d8;font-family:system-ui,Arial;touch-action:none}
+canvas{display:block}#hud{position:fixed;z-index:5;top:14px;left:16px;right:16px;display:flex;justify-content:space-between;gap:12px;pointer-events:none;font-size:13px;font-weight:800;text-shadow:0 2px 8px #000}
+#tip{position:fixed;z-index:6;top:55px;left:50%;transform:translateX(-50%);max-width:88vw;text-align:center;background:#101b1ddb;border:1px solid #8d7754;border-radius:10px;padding:9px 13px;font-size:13px}
+#reticle{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);color:#fff8;pointer-events:none}
+#menu{position:fixed;inset:0;z-index:30;background:linear-gradient(145deg,#050a0df0,#1e1712ed);display:grid;place-items:center;padding:20px}
+#panel{width:min(500px,94vw);border:1px solid #b8915b;background:linear-gradient(135deg,#192325,#0b1011);padding:30px;border-radius:18px;text-align:center;box-shadow:0 20px 90px #000}
+h1{font-size:clamp(29px,6vw,48px);letter-spacing:3px;margin:8px 0}h2{color:#dfb980;font-size:15px;letter-spacing:3px}p{line-height:1.6;color:#c6c8c3}
+button{border:1px solid #b78d52;background:#bd9256;color:#100e0a;border-radius:10px;padding:12px 19px;font-weight:900;cursor:pointer}
+#actions{position:fixed;z-index:12;top:89px;right:14px;display:flex;flex-direction:column;gap:8px}#actions button{padding:8px;width:43px;height:41px;background:#10191bc9;color:#fff}
+#interact{position:fixed;z-index:12;bottom:150px;right:18px;display:none;background:#d6a45c;color:#1a1008}
+#touch{position:fixed;z-index:11;bottom:max(18px,env(safe-area-inset-bottom));left:15px;right:15px;display:none;justify-content:space-between;align-items:end;pointer-events:none}
+#pad{width:116px;height:116px;border:2px solid #d4c5a355;border-radius:50%;background:#18252699;position:relative;pointer-events:auto;touch-action:none}
+#nub{width:55px;height:55px;border-radius:50%;background:#c7b594a8;position:absolute;top:28px;left:28px;pointer-events:none}
+#run{height:70px;width:70px;border-radius:19px;pointer-events:auto;background:#e2b56d}
+#look{position:fixed;right:14px;bottom:104px;color:#fff7;font-size:10px;pointer-events:none;display:none}
+@media(pointer:coarse){#touch{display:flex}#look{display:block}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
+</head><body>
+<div id="hud"><span>VLADI · BACKROOMS NIVEL 5</span><span id="status">VÁLVULAS 0/3 · ♥ 3</span></div>
+<div id="tip">Encontrá las tres válvulas y activá la salida de emergencia.</div><div id="reticle">+</div>
+<div id="actions"><button id="sound" aria-label="Sonido">🔊</button><button id="pause" aria-label="Pausar">Ⅱ</button><button id="full" aria-label="Pantalla completa">⛶</button></div>
+<button id="interact">ACTIVAR VÁLVULA</button>
+<div id="touch"><div id="pad"><div id="nub"></div></div><button id="run">CORRER</button></div><div id="look">DESLIZÁ PARA MIRAR</div>
+<div id="menu"><div id="panel"><h2>VLADI · BACKROOMS</h2><h1 id="menuTitle">NIVEL 5</h1><h2>SALA DE CALDERAS</h2><p id="menuDesc">Tres válvulas. Una salida. Algo escucha tus pasos entre las tuberías.<br>Movete con WASD, mirá con el mouse, Shift para correr y E para activar válvulas. También admite pantalla táctil y joystick.</p><button id="start">ENTRAR A LAS CALDERAS</button><p style="font-size:12px">Usá auriculares para una experiencia más inmersiva.</p></div></div>
+<script type="module">
+import * as THREE from 'three';
+const $=id=>document.getElementById(id),mobile=matchMedia('(pointer:coarse)').matches;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#070b0c');scene.fog=new THREE.FogExp2('#10191b',.035);
+const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.08,130);camera.rotation.order='YXZ';
+const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.15:1.6));renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+document.body.prepend(renderer.domElement);
+scene.add(new THREE.HemisphereLight('#5b8291','#1a0c08',1.4));
+const mat=(color,metalness=0,roughness=.85)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
+const concrete=mat('#3b4444'),floorMat=mat('#273336',.15),rust=mat('#73452f',.5),steel=mat('#53686c',.65,.35),copper=mat('#96704a',.65,.38),dark=mat('#202a2d'),glow= new THREE.MeshBasicMaterial({color:'#f4b46e'});
+const S=4,grid=[
+'1111111111111111111',
+'1000000000000000001',
+'1011100111001110001',
+'1000100000000010001',
+'1000100100100010001',
+'1000000100100000001',
+'1110000000000110001',
+'1000001100000000001',
+'1000000001100000001',
+'1000110000000110001',
+'1000000000000000001',
+'1000000111000000001',
+'1000100000000010001',
+'1000100110000010001',
+'1000000000000000001',
+'1011100001100110001',
+'1000000000000000001',
+'1000000000000000001',
+'1111111111111111111'];
+const W=grid[0].length,H=grid.length,ox=-W*S/2,oz=-H*S/2;
+const pos=(x,z)=>new THREE.Vector3(ox+(x+.5)*S,0,oz+(z+.5)*S);
+const wall=(x,z)=>!grid[z]||grid[z][x]!=='0';
+function cube(w,h,d,x,y,z,m){const a=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);a.position.set(x,y,z);scene.add(a);return a}
+const floor=cube(W*S,.2,H*S,0,-.15,0,floorMat);
+for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
+ if(wall(x,z)){cube(S,4.8,S,p.x,2.4,p.z,concrete);continue}
+ cube(S,.12,S,p.x,4.83,p.z,dark);
+ if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);const l=new THREE.PointLight('#e9a56b',mobile?4:6,11,2);l.position.set(p.x,4.4,p.z);scene.add(l)}
+ if((x*7+z*11)%8===0){const base=cube(.14,2.8,.14,p.x+1.45,2.3,p.z+1.45,rust);base.rotation.y=.2}
+}
+const pipeGeo=new THREE.CylinderGeometry(.13,.13,S,8);
+for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++)if(!wall(x,z)&&x%3===0){
+ const p=pos(x,z),pipe=new THREE.Mesh(pipeGeo,(x+z)%2?rust:steel);
+ pipe.rotation.z=Math.PI/2;pipe.position.set(p.x,4.28,p.z+1.4);scene.add(pipe);
+}
+const valves=[];
+for(const [x,z] of [[3,3],[15,5],[5,15]]){const p=pos(x,z),group=new THREE.Group();
+ const stem=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.2,10),steel);stem.position.y=1.05;group.add(stem);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.52,.095,8,20),copper);ring.position.y=1.7;ring.rotation.x=Math.PI/2;group.add(ring);
+ const hub=new THREE.Mesh(new THREE.SphereGeometry(.17,10,8),rust);hub.position.y=1.7;group.add(hub);
+ const marker=new THREE.Mesh(new THREE.BoxGeometry(.5,.12,.15),glow);marker.position.y=2.45;group.add(marker);
+ group.position.copy(p);scene.add(group);valves.push({group,x,z,done:false,ring})}
+const exitCell=[17,17],exitPos=pos(...exitCell),exitDoor=cube(2.6,3.6,.22,exitPos.x,1.8,exitPos.z,steel);
+const exitLamp=new THREE.PointLight('#ff6640',5,8);exitLamp.position.set(exitPos.x,3.7,exitPos.z);scene.add(exitLamp);
+const monster=new THREE.Group(),enemyBody=new THREE.Mesh(new THREE.CylinderGeometry(.45,.72,2.6,8),dark);
+enemyBody.position.y=1.5;monster.add(enemyBody);
+const enemyHead=new THREE.Mesh(new THREE.SphereGeometry(.5,12,10),rust);enemyHead.position.y=3;monster.add(enemyHead);
+for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.095,8,8),new THREE.MeshBasicMaterial({color:'#ff572c'}));eye.position.set(side*.19,3.08,-.43);monster.add(eye)}
+const monsterGlow=new THREE.PointLight('#c53a22',2,5);monsterGlow.position.y=2.9;monster.add(monsterGlow);scene.add(monster);
+const keys=new Set();let active=false,paused=true,finished=false,health=3,count=0,yaw=0,pitch=0,last=performance.now(),invuln=0,enemyRoute=[],repath=0,alertUntil=0,stepClock=0;
+let ctx=null,audioOn=true;
+function audio(){if(!audioOn)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume()}catch(e){}}
+function beep(freq=170,dur=.15,volume=.04){if(!ctx||ctx.state!=='running'||!audioOn)return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;o.type='triangle';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.6),t+dur);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur+.02)}
+function clearInputs(){keys.clear();touchX=touchY=0;running=false;nub.style.transform='translate(0,0)'}
+function reset(){const p=pos(1,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;yaw=0;pitch=0;for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
+function start(){audio();reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
+function show(title,desc){paused=true;active=false;clearInputs();$('menuTitle').textContent=title;$('menuDesc').textContent=desc;$('start').textContent='VOLVER A JUGAR';$('menu').style.display='grid'}
+$('start').onclick=start;
+$('pause').onclick=()=>{if(!active)return;paused=!paused;$('tip').textContent=paused?'PAUSA · Tocá Ⅱ para continuar':'Encontrá las tres válvulas.';clearInputs()};
+$('sound').onclick=()=>{audioOn=!audioOn;$('sound').textContent=audioOn?'🔊':'🔇';if(audioOn)audio()};
+$('full').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{});else document.exitFullscreen?.().catch(()=>{})};
+function cell(x,z){return [Math.floor((x-ox)/S),Math.floor((z-oz)/S)]}
+function canMove(x,z){const r=.31;return !wall(...cell(x-r,z-r))&&!wall(...cell(x+r,z-r))&&!wall(...cell(x-r,z+r))&&!wall(...cell(x+r,z+r))}
+function route(from,to){const [sx,sz]=cell(from.x,from.z),[gx,gz]=cell(to.x,to.z);if(wall(sx,sz)||wall(gx,gz))return [];
+ const q=[[sx,sz]],seen=new Set([sx+','+sz]),prev=new Map();for(let i=0;i<q.length&&i<W*H;i++){const [x,z]=q[i],k=x+','+z;if(x===gx&&z===gz){const out=[];let t=k;while(prev.has(t)){const [a,b]=t.split(',').map(Number);out.unshift(pos(a,b));t=prev.get(t)}return out}
+ for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,nz=z+dz,nk=nx+','+nz;if(!wall(nx,nz)&&!seen.has(nk)){seen.add(nk);prev.set(nk,k);q.push([nx,nz])}}}return []}
+function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;beep(510,.35,.1);alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow}return}}
+$('interact').onclick=activate;
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)activate();if(k==='escape'&&active)$('pause').click()});
+addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',clearInputs);
+renderer.domElement.addEventListener('click',()=>{if(active&&!paused&&!mobile)renderer.domElement.requestPointerLock?.()});
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement&&active&&!paused){yaw-=e.movementX*.0023;pitch=Math.max(-1.2,Math.min(1.2,pitch-e.movementY*.0023))}});
+let lookId=null,lookX=0,lookY=0,touchX=0,touchY=0,running=false;
+renderer.domElement.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'&&e.clientX>innerWidth*.35){lookId=e.pointerId;lookX=e.clientX;lookY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)}});
+renderer.domElement.addEventListener('pointermove',e=>{if(e.pointerId===lookId&&active&&!paused){yaw-=(e.clientX-lookX)*.005;pitch=Math.max(-1.2,Math.min(1.2,pitch-(e.clientY-lookY)*.005));lookX=e.clientX;lookY=e.clientY}});
+renderer.domElement.addEventListener('pointerup',e=>{if(e.pointerId===lookId)lookId=null});
+const pad=$('pad'),nub=$('nub');let padId=null;
+function padMove(e){const r=pad.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),m=Math.max(1,Math.hypot(dx,dy)),scale=Math.min(40,m)/m;touchX=dx*scale/40;touchY=-dy*scale/40;nub.style.transform='translate('+dx*scale+'px,'+dy*scale+'px)'}
+pad.addEventListener('pointerdown',e=>{padId=e.pointerId;pad.setPointerCapture(e.pointerId);padMove(e)});
+pad.addEventListener('pointermove',e=>{if(e.pointerId===padId)padMove(e)});
+function releasePad(e){if(e.pointerId!==padId)return;padId=null;touchX=touchY=0;nub.style.transform='translate(0,0)'}
+pad.addEventListener('pointerup',releasePad);pad.addEventListener('pointercancel',releasePad);
+$('run').addEventListener('pointerdown',()=>running=true);for(const ev of ['pointerup','pointercancel','pointerleave'])$('run').addEventListener(ev,()=>running=false);
+let frame=0;
+function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(active&&!paused){frame++;let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
+ let side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+touchX;
+ let sprint=running||keys.has('shift');const pads=navigator.getGamepads?.()||[];
+ for(const pad of pads)if(pad){const dead=v=>Math.abs(v)>.17?v:0;side+=dead(pad.axes[0]||0);forward-=dead(pad.axes[1]||0);yaw-=dead(pad.axes[2]||0)*dt*2.2;pitch=Math.max(-1.2,Math.min(1.2,pitch-dead(pad.axes[3]||0)*dt*1.6));sprint=sprint||!!pad.buttons[7]?.pressed;if(pad.buttons[0]?.pressed&&frame%18===0)activate();break}
+ const length=Math.max(1,Math.hypot(forward,side)),speed=(sprint?6.3:3.8)*dt;
+ const dx=(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed/length,dz=(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed/length;
+ const steps=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.14));for(let i=0;i<steps;i++){if(canMove(camera.position.x+dx/steps,camera.position.z))camera.position.x+=dx/steps;if(canMove(camera.position.x,camera.position.z+dz/steps))camera.position.z+=dz/steps}
+ camera.rotation.set(pitch,yaw,0);const moving=Math.hypot(dx,dz)>.002;
+ if(moving&&now-stepClock>(sprint?280:490)){stepClock=now;beep(65,.06,.012);if(sprint)alertUntil=Math.max(alertUntil,now+2300)}
+ // The boiler entity follows sound and patrols between industrial sectors.
+ const dist=Math.hypot(camera.position.x-monster.position.x,camera.position.z-monster.position.z);
+ const hunting=now<alertUntil||dist<7;
+ if(now>repath){repath=now+900;const target=hunting?camera.position:pos(...([[14,14],[3,14],[14,3],[8,8]][Math.floor(now/8000)%4]));enemyRoute=route(monster.position,target)}
+ if(enemyRoute.length){const target=enemyRoute[0],vx=target.x-monster.position.x,vz=target.z-monster.position.z,d=Math.hypot(vx,vz);if(d<.22)enemyRoute.shift();else{const step=Math.min(d,dt*(hunting?2.85:1.55));monster.position.x+=vx/d*step;monster.position.z+=vz/d*step;monster.rotation.y=Math.atan2(-vx,-vz)}}
+ monster.position.y=Math.sin(now*.003)*.07;invuln-=dt;
+ if(dist<1.1&&invuln<=0){health--;invuln=3;beep(110,.65,.15);monster.position.copy(pos(15,14));enemyRoute=[];$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;if(health<=0)show('GAME OVER','La criatura de las calderas te encontró. Volvé a intentarlo.')}
+ if(count===3&&Math.hypot(camera.position.x-exitPos.x,camera.position.z-exitPos.z)<1.65){beep(720,.6,.12);show('¡ESCAPASTE!','Activaste las tres válvulas y atravesaste la salida de emergencia del Nivel 5.')}
+ let close=false;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35)close=true;
+ $('interact').style.display=close?'block':'none';if(hunting&&dist<7)$('tip').textContent='⚠ LA CRIATURA ESCUCHÓ TUS PASOS';
+ }renderer.render(scene,camera)}
+requestAnimationFrame(tick);
+addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)});
+</script></body></html>
