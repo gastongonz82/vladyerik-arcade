@@ -175,6 +175,10 @@ for(const side of [-1,1]){
  const leg=new THREE.Mesh(new THREE.CylinderGeometry(.2,.13,1.35,8),creatureSkin);leg.position.set(side*.26,.65,0);monster.add(leg);
 }
 for(const x of [-.3,-.1,.1,.3]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.045,.78,.06),copper);bar.position.set(x,3.4,-.55);monster.add(bar)}
+// Industrial restraints, exposed spine and silhouette details.
+const spine=new THREE.Mesh(new THREE.BoxGeometry(.2,1.55,.18),creatureBone);spine.position.set(0,1.85,.42);monster.add(spine);
+for(let i=0;i<4;i++){const rib=new THREE.Mesh(new THREE.BoxGeometry(.88-i*.09,.085,.1),creatureBone);rib.position.set(0,2.47-i*.29,-.34);monster.add(rib)}
+const jaw=new THREE.Mesh(new THREE.BoxGeometry(.58,.22,.31),creatureBone);jaw.position.set(0,3.02,-.41);monster.add(jaw);
 const monsterGlow=new THREE.PointLight('#c53a22',2,5);monsterGlow.position.set(0,3.2,-.5);monster.add(monsterGlow);scene.add(monster);
 const keys=new Set();let active=false,paused=true,finished=false,health=3,count=0,yaw=0,pitch=0,last=performance.now(),invuln=0,enemyRoute=[],repath=0,alertUntil=0,stepClock=0;
 let ctx=null,audioOn=true;
@@ -183,8 +187,24 @@ function beep(freq=170,dur=.15,volume=.04){if(!ctx||ctx.state!=='running'||!audi
 let ambience=null,ambienceGain=null,lastMachine=0;
 function startAmbience(){if(!ctx||ctx.state!=='running'||!audioOn)return;if(!ambience){ambience=ctx.createOscillator();ambience.type='sawtooth';ambience.frequency.value=48;const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=110;ambienceGain=ctx.createGain();ambienceGain.gain.value=.012;ambience.connect(filter);filter.connect(ambienceGain);ambienceGain.connect(ctx.destination);ambience.start()}ambienceGain.gain.setTargetAtTime(.012,ctx.currentTime,.2)}
 function stopAmbience(){if(ambienceGain&&ctx)ambienceGain.gain.setTargetAtTime(0,ctx.currentTime,.15)}
+let lastCreatureAudio=0,lastSteamAudio=0,escapeStarted=0;
+function industrialNoise(duration=.45,volume=.025){
+ if(!ctx||ctx.state!=='running'||!audioOn)return;
+ const n=Math.floor(ctx.sampleRate*duration),buffer=ctx.createBuffer(1,n,ctx.sampleRate),samples=buffer.getChannelData(0);
+ for(let i=0;i<n;i++)samples[i]=(Math.random()*2-1)*(1-i/n);
+ const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+ src.buffer=buffer;filter.type='lowpass';filter.frequency.value=500;gain.gain.value=volume;
+ src.connect(filter);filter.connect(gain);gain.connect(ctx.destination);src.start();
+ src.onended=()=>{src.disconnect();filter.disconnect();gain.disconnect()};
+}
+function creatureSound(distance){
+ if(!ctx||ctx.state!=='running'||!audioOn)return;
+ const vol=Math.max(.012,.085*(1-distance/15));
+ beep(95,.3,vol);industrialNoise(.22,vol*.55);
+}
+function escapeSound(){beep(380,.22,.08);beep(610,.4,.06);industrialNoise(.6,.05)}
 function clearInputs(){keys.clear();touchX=touchY=0;running=false;nub.style.transform='translate(0,0)'}
-function reset(){const p=pos(1,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;yaw=Math.PI/2;pitch=0;camera.rotation.set(pitch,yaw,0);for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
+function reset(){const p=pos(1,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;escapeStarted=0;lastCreatureAudio=0;lastSteamAudio=0;yaw=Math.PI/2;pitch=0;camera.rotation.set(pitch,yaw,0);for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
 function start(){audio();startAmbience();reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
 function show(title,desc){stopAmbience();paused=true;active=false;clearInputs();$('menuTitle').textContent=title;$('menuDesc').textContent=desc;$('start').textContent='VOLVER A JUGAR';$('menu').style.display='grid'}
 $('start').onclick=start;
@@ -196,7 +216,7 @@ function canMove(x,z){const r=.31;return !wall(...cell(x-r,z-r))&&!wall(...cell(
 function route(from,to){const [sx,sz]=cell(from.x,from.z),[gx,gz]=cell(to.x,to.z);if(wall(sx,sz)||wall(gx,gz))return [];
  const q=[[sx,sz]],seen=new Set([sx+','+sz]),prev=new Map();for(let i=0;i<q.length&&i<W*H;i++){const [x,z]=q[i],k=x+','+z;if(x===gx&&z===gz){const out=[];let t=k;while(prev.has(t)){const [a,b]=t.split(',').map(Number);out.unshift(pos(a,b));t=prev.get(t)}return out}
  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,nz=z+dz,nk=nx+','+nz;if(!wall(nx,nz)&&!seen.has(nk)){seen.add(nk);prev.set(nk,k);q.push([nx,nz])}}}return []}
-function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;beep(510,.35,.1);alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow}return}}
+function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;beep(510,.35,.1);alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow;escapeStarted=performance.now();escapeSound()}return}}
 $('interact').onclick=activate;
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)activate();if(k==='escape'&&active)$('pause').click()});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',clearInputs);
@@ -226,12 +246,12 @@ function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/
  if(moving&&now-stepClock>(sprint?280:490)){stepClock=now;beep(65,.06,.012);if(sprint)alertUntil=Math.max(alertUntil,now+2300)}
  // The boiler entity follows sound and patrols between industrial sectors.
  const dist=Math.hypot(camera.position.x-monster.position.x,camera.position.z-monster.position.z);
- const hunting=now<alertUntil||dist<7;
+ const hunting=now<alertUntil||dist<7;if(dist<11&&now-lastCreatureAudio>5200){lastCreatureAudio=now;creatureSound(dist)}if(now-lastSteamAudio>9500){lastSteamAudio=now;industrialNoise(.7,.025)}
  if(now>repath){repath=now+900;const target=hunting?camera.position:pos(...([[14,14],[3,14],[14,3],[8,8]][Math.floor(now/8000)%4]));enemyRoute=route(monster.position,target)}
  if(enemyRoute.length){const target=enemyRoute[0],vx=target.x-monster.position.x,vz=target.z-monster.position.z,d=Math.hypot(vx,vz);if(d<.22)enemyRoute.shift();else{const step=Math.min(d,dt*(hunting?2.85:1.55));monster.position.x+=vx/d*step;monster.position.z+=vz/d*step;monster.rotation.y=Math.atan2(-vx,-vz)}}
  monster.position.y=Math.sin(now*.003)*.06;enemyBody.rotation.z=Math.sin(now*.005)*.075;enemyHead.rotation.y=Math.sin(now*.002)*.14;invuln-=dt;
  if(dist<1.1&&invuln<=0){health--;invuln=3;beep(110,.65,.15);monster.position.copy(pos(15,14));enemyRoute=[];$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;if(health<=0)show('GAME OVER','La criatura de las calderas te encontró. Volvé a intentarlo.')}
- if(count===3&&Math.hypot(camera.position.x-exitPos.x,camera.position.z-exitPos.z)<1.65){beep(720,.6,.12);show('¡ESCAPASTE!','Activaste las tres válvulas y atravesaste la salida de emergencia del Nivel 5.')}
+ if(count===3&&Math.hypot(camera.position.x-exitPos.x,camera.position.z-exitPos.z)<1.65){escapeSound();show('¡ESCAPASTE!','Las calderas quedaron presurizadas. Abriste la salida de emergencia y sobreviviste al Oyente.')}
  let close=false;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35)close=true;
  $('interact').style.display=close?'block':'none';if(hunting&&dist<7)$('tip').textContent='⚠ LA CRIATURA ESCUCHÓ TUS PASOS';
  }renderer.render(scene,camera)}
