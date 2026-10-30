@@ -170,7 +170,10 @@ for(const sign of [-1,1]){const armPivot=new THREE.Group();armPivot.position.set
 const legPivot=new THREE.Group();legPivot.position.set(sign*.18,.96,0);concierge.add(legPivot);hotelPart(legPivot,new THREE.CylinderGeometry(.14,.12,.84,9),suit,0,-.42,0);hotelPart(legPivot,new THREE.BoxGeometry(.29,.16,.43),shoeMat,0,-.9,.11);conciergeLegs.push({pivot:legPivot,sign})}
 monster.position.set(mp.x,0,mp.z);monster.scale.setScalar(.78);scene.add(monster);
 // A floor marker makes the physical enemy position visible even if its mesh fails.
-// Enemy position is represented by its character, not a debug floor ring.
+// Subtle amber ground aura to help players locate Vorick in dark corridors.
+const enemyAura=new THREE.Group();monster.add(enemyAura);
+const auraRing=new THREE.Mesh(new THREE.RingGeometry(.43,.56,40),new THREE.MeshBasicMaterial({color:0xffb866,transparent:true,opacity:.68,side:THREE.DoubleSide,depthWrite:false}));auraRing.rotation.x=-Math.PI/2;auraRing.position.y=.065;enemyAura.add(auraRing);
+const auraDisc=new THREE.Mesh(new THREE.CircleGeometry(.55,40),new THREE.MeshBasicMaterial({color:0xf45c35,transparent:true,opacity:.09,side:THREE.DoubleSide,depthWrite:false}));auraDisc.rotation.x=-Math.PI/2;auraDisc.position.y=.058;enemyAura.add(auraDisc);
 const stalkerGlow=new THREE.PointLight('#ffbc83',2.3,7);stalkerGlow.position.set(0,2.7,.4);monster.add(stalkerGlow);
 // Flashlight starts off; it can be activated with F or the touch-friendly button.
 let stride=0;let slowFrames=0,qualityAdjusted=false;
