@@ -179,6 +179,32 @@ for(const x of [-.3,-.1,.1,.3]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.
 const spine=new THREE.Mesh(new THREE.BoxGeometry(.2,1.55,.18),creatureBone);spine.position.set(0,1.85,.42);monster.add(spine);
 for(let i=0;i<4;i++){const rib=new THREE.Mesh(new THREE.BoxGeometry(.88-i*.09,.085,.1),creatureBone);rib.position.set(0,2.47-i*.29,-.34);monster.add(rib)}
 const jaw=new THREE.Mesh(new THREE.BoxGeometry(.58,.22,.31),creatureBone);jaw.position.set(0,3.02,-.41);monster.add(jaw);
+// Extra silhouette details are children of the existing monster only.
+// No changes to navigation, hitboxes, audio, or world geometry.
+const sinew=mat('#444e47',.18,.92),tooth=mat('#a3a899',.1,.78);
+const shoulderLamps=[];
+for(const side of [-1,1]){
+ const shoulder=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),creatureSkin);
+ shoulder.scale.set(1.35,.72,1.05);shoulder.position.set(side*.6,2.54,0);monster.add(shoulder);
+ const forearm=new THREE.Mesh(new THREE.CylinderGeometry(.13,.075,.95,7),sinew);
+ forearm.position.set(side*.81,1.03,-.29);forearm.rotation.z=side*.15;monster.add(forearm);
+ for(let finger=0;finger<3;finger++){
+  const talon=new THREE.Mesh(new THREE.ConeGeometry(.058,.38,6),tooth);
+  talon.rotation.x=Math.PI;talon.position.set(side*(.69+finger*.1),.42,-.42);monster.add(talon);
+ }
+ const shin=new THREE.Mesh(new THREE.CylinderGeometry(.11,.18,.78,7),creatureBone);
+ shin.position.set(side*.26,.39,-.07);monster.add(shin);
+ const horn=new THREE.Mesh(new THREE.ConeGeometry(.12,.56,7),creatureBone);
+ horn.position.set(side*.29,3.91,-.05);horn.rotation.z=-side*.25;monster.add(horn);
+}
+for(let i=0;i<5;i++){
+ const vertebra=new THREE.Mesh(new THREE.SphereGeometry(.12,7,6),tooth);
+ vertebra.position.set(0,1.43+i*.31,.56);monster.add(vertebra);
+}
+for(const side of [-1,1]){
+ const cheek=new THREE.Mesh(new THREE.BoxGeometry(.19,.42,.19),tooth);
+ cheek.position.set(side*.32,3.12,-.44);cheek.rotation.z=side*.3;monster.add(cheek);
+}
 const monsterGlow=new THREE.PointLight('#c53a22',2,5);monsterGlow.position.set(0,3.2,-.5);monster.add(monsterGlow);scene.add(monster);
 const keys=new Set();let active=false,paused=true,finished=false,health=3,count=0,yaw=0,pitch=0,last=performance.now(),invuln=0,enemyRoute=[],repath=0,alertUntil=0,stepClock=0;
 let ctx=null,audioOn=true;
