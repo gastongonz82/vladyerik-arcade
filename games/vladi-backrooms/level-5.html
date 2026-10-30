@@ -185,7 +185,7 @@ let ctx=null,audioOn=true;
 async function audio(){if(!audioOn)return false;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state!=='running')await ctx.resume();return ctx.state==='running'}catch(e){console.warn('Audio no disponible',e);return false}}
 function beep(freq=170,dur=.15,volume=.04){if(!ctx||ctx.state!=='running'||!audioOn)return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;o.type='triangle';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.6),t+dur);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur+.02)}
 let ambience=null,ambienceGain=null,lastMachine=0;
-function startAmbience(){if(!ctx||ctx.state!=='running'||!audioOn)return;if(!ambience){ambience=ctx.createOscillator();ambience.type='sawtooth';ambience.frequency.value=48;const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=240;ambienceGain=ctx.createGain();ambienceGain.gain.value=.055;ambience.connect(filter);filter.connect(ambienceGain);ambienceGain.connect(ctx.destination);ambience.start()}ambienceGain.gain.setTargetAtTime(.055,ctx.currentTime,.2)}
+function startAmbience(){if(!ctx||ctx.state!=='running'||!audioOn)return;if(!ambience){ambience=ctx.createOscillator();ambience.type='sawtooth';ambience.frequency.value=48;const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=240;ambienceGain=ctx.createGain();ambienceGain.gain.value=.012;ambience.connect(filter);filter.connect(ambienceGain);ambienceGain.connect(ctx.destination);ambience.start()}ambienceGain.gain.setTargetAtTime(.012,ctx.currentTime,.2)}
 function stopAmbience(){if(ambienceGain&&ctx)ambienceGain.gain.setTargetAtTime(0,ctx.currentTime,.15)}
 let lastCreatureAudio=0,lastSteamAudio=0,escapeStarted=0;
 function industrialNoise(duration=.45,volume=.025){
@@ -197,26 +197,50 @@ function industrialNoise(duration=.45,volume=.025){
  src.connect(filter);filter.connect(gain);gain.connect(ctx.destination);src.start();
  src.onended=()=>{src.disconnect();filter.disconnect();gain.disconnect()};
 }
+// Short, distinct procedural industrial effects, with frequency shaping and envelopes.
+function burst(duration=.5,volume=.12,low=450,high=2400){
+ if(!ctx||ctx.state!=='running'||!audioOn)return;
+ const n=Math.floor(ctx.sampleRate*duration),b=ctx.createBuffer(1,n,ctx.sampleRate),a=b.getChannelData(0);
+ for(let i=0;i<n;i++)a[i]=Math.random()*2-1;
+ const src=ctx.createBufferSource(),hp=ctx.createBiquadFilter(),lp=ctx.createBiquadFilter(),g=ctx.createGain(),t=ctx.currentTime;
+ src.buffer=b;hp.type='highpass';hp.frequency.value=low;lp.type='lowpass';lp.frequency.value=high;
+ g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(volume,t+.035);g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+ src.connect(hp);hp.connect(lp);lp.connect(g);g.connect(ctx.destination);src.start(t);src.stop(t+duration);
+ src.onended=()=>{src.disconnect();hp.disconnect();lp.disconnect();g.disconnect()};
+}
+function metalHit(volume=.15){
+ if(!ctx||ctx.state!=='running'||!audioOn)return;
+ const t=ctx.currentTime;
+ for(const [f,decay,v] of [[540,.45,.65],[815,.32,.45],[1330,.21,.3]]){
+ const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f;
+ g.gain.setValueAtTime(volume*v,t);g.gain.exponentialRampToValueAtTime(.0001,t+decay);
+ o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+decay+.01);o.onended=()=>{o.disconnect();g.disconnect()};
+ }
+ burst(.12,volume*.4,900,4000);
+}
+function steamHiss(){burst(1.15,.15,850,5200)}
+function footsteps(){burst(.09,.065,90,950);beep(145,.065,.025)}
+function testIndustrialSounds(){metalHit(.19);steamHiss();beep(270,.2,.07)}
 function creatureSound(distance){
  if(!ctx||ctx.state!=='running'||!audioOn)return;
  const vol=Math.max(.045,.18*(1-distance/15));
- beep(95,.3,vol);industrialNoise(.22,vol*.55);
+ metalHit(vol*.8);burst(.55,vol,180,1200);
 }
 function escapeSound(){beep(380,.22,.08);beep(610,.4,.06);industrialNoise(.6,.05)}
 function clearInputs(){keys.clear();touchX=touchY=0;running=false;nub.style.transform='translate(0,0)'}
 function reset(){const p=pos(1,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;escapeStarted=0;lastCreatureAudio=0;lastSteamAudio=0;yaw=Math.PI/2;pitch=0;camera.rotation.set(pitch,yaw,0);for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
-function start(){audio().then(ok=>{if(ok){startAmbience();beep(420,.18,.19);setTimeout(()=>beep(310,.26,.13),220)}});reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
+function start(){audio().then(ok=>{if(ok){startAmbience();testIndustrialSounds()}});reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
 function show(title,desc){stopAmbience();paused=true;active=false;clearInputs();$('menuTitle').textContent=title;$('menuDesc').textContent=desc;$('start').textContent='VOLVER A JUGAR';$('menu').style.display='grid'}
 $('start').onclick=start;
 $('pause').onclick=()=>{if(!active)return;paused=!paused;$('tip').textContent=paused?'PAUSA · Tocá Ⅱ para continuar':'Encontrá las tres válvulas.';clearInputs()};
-$('sound').onclick=async()=>{if(!audioOn){audioOn=true;$('sound').textContent='🔊';if(await audio()){startAmbience();beep(520,.3,.18)}}else{if(!ctx||ctx.state!=='running'){if(await audio()){startAmbience();beep(520,.3,.18)}}else{beep(520,.25,.2);industrialNoise(.28,.09)}}};
+$('sound').onclick=async()=>{if(!audioOn){audioOn=true;$('sound').textContent='🔊';if(await audio()){startAmbience();testIndustrialSounds()}}else{if(!ctx||ctx.state!=='running'){if(await audio()){startAmbience();beep(520,.3,.18)}}else{testIndustrialSounds()}}};
 $('full').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>{});else document.exitFullscreen?.().catch(()=>{})};
 function cell(x,z){return [Math.floor((x-ox)/S),Math.floor((z-oz)/S)]}
 function canMove(x,z){const r=.31;return !wall(...cell(x-r,z-r))&&!wall(...cell(x+r,z-r))&&!wall(...cell(x-r,z+r))&&!wall(...cell(x+r,z+r))}
 function route(from,to){const [sx,sz]=cell(from.x,from.z),[gx,gz]=cell(to.x,to.z);if(wall(sx,sz)||wall(gx,gz))return [];
  const q=[[sx,sz]],seen=new Set([sx+','+sz]),prev=new Map();for(let i=0;i<q.length&&i<W*H;i++){const [x,z]=q[i],k=x+','+z;if(x===gx&&z===gz){const out=[];let t=k;while(prev.has(t)){const [a,b]=t.split(',').map(Number);out.unshift(pos(a,b));t=prev.get(t)}return out}
  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,nz=z+dz,nk=nx+','+nz;if(!wall(nx,nz)&&!seen.has(nk)){seen.add(nk);prev.set(nk,k);q.push([nx,nz])}}}return []}
-function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;beep(510,.35,.1);alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow;escapeStarted=performance.now();escapeSound()}return}}
+function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;metalHit(.17);steamHiss();alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow;escapeStarted=performance.now();escapeSound()}return}}
 $('interact').onclick=activate;
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)activate();if(k==='escape'&&active)$('pause').click()});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',clearInputs);
@@ -235,7 +259,7 @@ pad.addEventListener('pointerup',releasePad);pad.addEventListener('pointercancel
 $('run').addEventListener('pointerdown',()=>running=true);for(const ev of ['pointerup','pointercancel','pointerleave'])$('run').addEventListener(ev,()=>running=false);
 let frame=0;
 function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/1000);last=now;
- if(active&&!paused){frame++;if(frame%3===0)for(const cloud of steamClouds){const t=(now*.00022+cloud.phase)%1;cloud.puff.position.y=cloud.origin.y+t*.85;cloud.puff.scale.setScalar(.5+t*1.35);cloud.puff.material.opacity=.11*(1-t)}if(frame%5===0)for(const f of flickerLights){const flicker=Math.sin(now*.004+f.phase)*.16+(Math.sin(now*.021+f.phase)> .97?-.55:0);f.light.intensity=f.base*Math.max(.25,1+flicker)}if(now-lastMachine>6000+Math.sin(now*.001)*1800){lastMachine=now;beep(115,.8,.055)}let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
+ if(active&&!paused){frame++;if(frame%3===0)for(const cloud of steamClouds){const t=(now*.00022+cloud.phase)%1;cloud.puff.position.y=cloud.origin.y+t*.85;cloud.puff.scale.setScalar(.5+t*1.35);cloud.puff.material.opacity=.11*(1-t)}if(frame%5===0)for(const f of flickerLights){const flicker=Math.sin(now*.004+f.phase)*.16+(Math.sin(now*.021+f.phase)> .97?-.55:0);f.light.intensity=f.base*Math.max(.25,1+flicker)}if(now-lastMachine>6000+Math.sin(now*.001)*1800){lastMachine=now;metalHit(.12)}let forward=(keys.has('w')||keys.has('arrowup')?1:0)-(keys.has('s')||keys.has('arrowdown')?1:0)+touchY;
  let side=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0)+touchX;
  let sprint=running||keys.has('shift');const pads=navigator.getGamepads?.()||[];
  for(const pad of pads)if(pad){const dead=v=>Math.abs(v)>.17?v:0;side+=dead(pad.axes[0]||0);forward-=dead(pad.axes[1]||0);yaw-=dead(pad.axes[2]||0)*dt*2.2;pitch=Math.max(-1.2,Math.min(1.2,pitch-dead(pad.axes[3]||0)*dt*1.6));sprint=sprint||!!pad.buttons[7]?.pressed;if(pad.buttons[0]?.pressed&&frame%18===0)activate();break}
@@ -243,10 +267,10 @@ function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/
  const dx=(-Math.sin(yaw)*forward+Math.cos(yaw)*side)*speed/length,dz=(-Math.cos(yaw)*forward-Math.sin(yaw)*side)*speed/length;
  const steps=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.14));for(let i=0;i<steps;i++){if(canMove(camera.position.x+dx/steps,camera.position.z))camera.position.x+=dx/steps;if(canMove(camera.position.x,camera.position.z+dz/steps))camera.position.z+=dz/steps}
  camera.rotation.set(pitch,yaw,0);const moving=Math.hypot(dx,dz)>.002;
- if(moving&&now-stepClock>(sprint?280:490)){stepClock=now;beep(100,.09,.055);if(sprint)alertUntil=Math.max(alertUntil,now+2300)}
+ if(moving&&now-stepClock>(sprint?280:490)){stepClock=now;footsteps();if(sprint)alertUntil=Math.max(alertUntil,now+2300)}
  // The boiler entity follows sound and patrols between industrial sectors.
  const dist=Math.hypot(camera.position.x-monster.position.x,camera.position.z-monster.position.z);
- const hunting=now<alertUntil||dist<7;if(dist<11&&now-lastCreatureAudio>5200){lastCreatureAudio=now;creatureSound(dist)}if(now-lastSteamAudio>9500){lastSteamAudio=now;industrialNoise(.7,.065)}
+ const hunting=now<alertUntil||dist<7;if(dist<11&&now-lastCreatureAudio>5200){lastCreatureAudio=now;creatureSound(dist)}if(now-lastSteamAudio>9500){lastSteamAudio=now;steamHiss()}
  if(now>repath){repath=now+900;const target=hunting?camera.position:pos(...([[14,14],[3,14],[14,3],[8,8]][Math.floor(now/8000)%4]));enemyRoute=route(monster.position,target)}
  if(enemyRoute.length){const target=enemyRoute[0],vx=target.x-monster.position.x,vz=target.z-monster.position.z,d=Math.hypot(vx,vz);if(d<.22)enemyRoute.shift();else{const step=Math.min(d,dt*(hunting?2.85:1.55));monster.position.x+=vx/d*step;monster.position.z+=vz/d*step;monster.rotation.y=Math.atan2(-vx,-vz)}}
  monster.position.y=Math.sin(now*.003)*.06;enemyBody.rotation.z=Math.sin(now*.005)*.075;enemyHead.rotation.y=Math.sin(now*.002)*.14;invuln-=dt;
