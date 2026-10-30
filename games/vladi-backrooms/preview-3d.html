@@ -23,43 +23,46 @@ const fixtures=[];for(let row=1;row<M-1;row++)for(let col=1;col<N-1;col++)if(!wa
 const spawn=pos(1,1);camera.position.set(spawn.x,1.65,spawn.z);
 const keyMat=new THREE.MeshStandardMaterial({color:'#f8cb3b',metalness:.75,roughness:.2,emissive:'#be8c14',emissiveIntensity:.6});const items=[[3,3],[11,1],[7,11]].map(([cx,cy])=>{const p=pos(cx,cy),g=new THREE.Group();const ring=new THREE.Mesh(new THREE.TorusGeometry(.18,.055,9,18),keyMat);ring.position.y=.25;g.add(ring);const shaft=new THREE.Mesh(new THREE.BoxGeometry(.09,.34,.09),keyMat);shaft.position.y=-.02;g.add(shaft);const tooth=new THREE.Mesh(new THREE.BoxGeometry(.2,.08,.09),keyMat);tooth.position.set(.08,-.16,0);g.add(tooth);g.position.set(p.x,1.3,p.z);scene.add(g);const glow=new THREE.PointLight('#ffc641',3,3);glow.position.copy(g.position);scene.add(glow);return {g,glow,found:false}});
 const ep=pos(13,11),door=new THREE.Group();const doorMat=new THREE.MeshStandardMaterial({color:'#19472d',emissive:'#0d552c',emissiveIntensity:.6,metalness:.4,roughness:.4});const slab=new THREE.Mesh(new THREE.BoxGeometry(2.1,2.8,.2),doorMat);slab.position.y=1.4;door.add(slab);const frameMat=new THREE.MeshStandardMaterial({color:'#252a20',metalness:.6});for(const x of [-1.12,1.12]){const m=new THREE.Mesh(new THREE.BoxGeometry(.15,3,.3),frameMat);m.position.set(x,1.5,0);door.add(m)}const sign=new THREE.Mesh(new THREE.BoxGeometry(1.6,.4,.08),new THREE.MeshBasicMaterial({color:'#a4ffc0'}));sign.position.set(0,3.05,.2);door.add(sign);door.position.set(ep.x,0,ep.z);scene.add(door);const exitLight=new THREE.PointLight('#30ff8b',5,5);exitLight.position.set(ep.x,2,ep.z);scene.add(exitLight);
-// The Stalker: articulated, skeletal creature with a custom organic silhouette.
-const monster=new THREE.Group();
-const hide=new THREE.MeshStandardMaterial({color:'#29291f',roughness:1,metalness:0}),bone=new THREE.MeshStandardMaterial({color:'#b7a88b',roughness:.92}),dark=new THREE.MeshStandardMaterial({color:'#15100d',roughness:1}),eyeMat=new THREE.MeshStandardMaterial({color:'#f0d7a1',emissive:'#f1c37b',emissiveIntensity:1.4});
-function sphere(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(new THREE.SphereGeometry(1,16,12),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m}
-function segment(parent,mat,r1,r2,len,x,y,z){const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,len,10),mat);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
-const body=new THREE.Group();monster.add(body);
-sphere(body,hide,0,1.35,0,.27,.65,.21);
-sphere(body,hide,0,1.9,0,.43,.2,.23);
-sphere(body,bone,0,1.15,.19,.15,.4,.055);
-for(let i=0;i<5;i++){const yy=1.42+i*.13;for(const side of [-1,1]){const rib=segment(body,bone,.023,.018,.36,side*.18,yy,.18);rib.rotation.z=side*(.65+i*.07)}}
-const neck=segment(body,hide,.12,.09,.48,0,2.13,0);
-const skull=sphere(body,bone,0,2.52,.045,.25,.34,.23);
-sphere(body,dark,0,2.48,.245,.195,.21,.065);
-for(const side of [-1,1]){sphere(body,eyeMat,side*.115,2.56,.295,.066,.045,.02);const brow=segment(body,bone,.035,.03,.19,side*.13,2.66,.28);brow.rotation.z=side*.25}
-const jaw=sphere(body,bone,0,2.25,.17,.19,.085,.17);
-const maw=sphere(body,dark,0,2.31,.3,.14,.07,.035);
-for(let i=0;i<7;i++){const tooth=segment(body,bone,.014,.003,.065,(i-3)*.04,2.33,.34);tooth.rotation.z=(i-3)*.07}
-for(const side of [-1,1]){const horn=segment(body,bone,.01,.075,.36,side*.16,2.88,-.02);horn.rotation.z=-side*.3}
+// EL PAYASO AZUL: creature inspired by the supplied reference, modeled in Three.js.
+const monster=new THREE.Group(),body=new THREE.Group();monster.add(body);
+const cloth=new THREE.MeshStandardMaterial({color:'#073d96',roughness:.97,side:THREE.DoubleSide}),clothBright=new THREE.MeshStandardMaterial({color:'#0759bd',roughness:.95,side:THREE.DoubleSide}),clothDark=new THREE.MeshStandardMaterial({color:'#08162d',roughness:1,side:THREE.DoubleSide}),skin=new THREE.MeshStandardMaterial({color:'#151b21',roughness:.94}),mask=new THREE.MeshStandardMaterial({color:'#e6e4d8',roughness:.87}),blue=new THREE.MeshStandardMaterial({color:'#0452a4',roughness:.82}),red=new THREE.MeshStandardMaterial({color:'#a91519',roughness:.55}),black=new THREE.MeshStandardMaterial({color:'#070b12',roughness:1});
+function sphere(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m}
+function tube(parent,mat,points,r=.03){const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),Math.max(12,points.length*5),r,6,false),mat);parent.add(m);return m}
+function clothPanel(parent,mat,top,bottom,widthTop,widthBottom,z=0,phase=0){const verts=[],idx=[],n=9;for(let i=0;i<=n;i++){const t=i/n,y=top+(bottom-top)*t,w=widthTop+(widthBottom-widthTop)*t;for(let j=0;j<=n;j++){const u=j/n*2-1;verts.push(u*w/2+Math.sin(t*10+u*6+phase)*.035*t,y,z+Math.sin(u*10+phase+t*7)*.06*t)}}for(let i=0;i<n;i++)for(let j=0;j<n;j++){const q=i*(n+1)+j;idx.push(q,q+n+1,q+1,q+1,q+n+1,q+n+2)}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setIndex(idx);g.computeVertexNormals();const mesh=new THREE.Mesh(g,mat);mesh.castShadow=true;parent.add(mesh);return mesh}
+sphere(body,clothDark,0,1.38,-.08,.75,1.12,.51);sphere(body,cloth,0,1.5,.03,.73,.92,.55);sphere(body,clothDark,0,.67,-.07,.63,.8,.47);
+for(let i=0;i<17;i++){const x=(i-8)*.087;clothPanel(body,i%3?cloth:clothBright,1.76,.25,.1,.08,.49, i*.7).position.x=x}
+for(let i=0;i<9;i++){const x=(i-4)*.17;clothPanel(body,i%2?clothDark:cloth,1.06,.05,.24,.32,-.2,i*.8).position.x=x}
+const collar=new THREE.Group();collar.position.y=2.47;body.add(collar);
+sphere(collar,clothDark,0,0,0,.88,.31,.56);
+for(let i=0;i<28;i++){const t=i/28*Math.PI*2,x=Math.sin(t)*.83,z=Math.cos(t)*.51;const r=sphere(collar,i%3===0?clothBright:clothDark,x,-.06,z,.14,.26,.14);r.rotation.z=-Math.sin(t)*.5}
+for(let i=0;i<28;i++){const t=i/28*Math.PI*2;sphere(collar,clothBright,Math.sin(t)*.88,-.21,Math.cos(t)*.55,.11,.065,.11)}
+const head=new THREE.Group();head.position.set(0,2.88,.25);body.add(head);
+sphere(head,mask,0,0,.1,.37,.46,.23);sphere(head,mask,0,-.22,.22,.31,.19,.18);
+for(const side of [-1,1]){sphere(head,blue,side*.17,.055,.293,.115,.16,.035);sphere(head,black,side*.17,.045,.324,.063,.084,.026);tube(head,blue,[[side*.1,.22,.30],[side*.18,.3,.3],[side*.28,.26,.22]],.026)}
+sphere(head,red,0,-.055,.37,.105,.12,.115);
+tube(head,blue,[[-.24,-.28,.31],[-.12,-.23,.36],[0,-.21,.37],[.12,-.23,.36],[.24,-.28,.31]],.055);
+for(let i=0;i<12;i++){const x=(i-5.5)*.056;tube(head,clothDark,[[x,.44,-.03],[x*1.25,.51,-.04]],.01)}
 const arms=[],legs=[];
 for(const side of [-1,1]){
- const shoulder=new THREE.Group();shoulder.position.set(side*.38,1.89,0);body.add(shoulder);
- sphere(shoulder,hide,0,0,0,.15,.15,.15);
- const upper=segment(shoulder,hide,.12,.07,.72,side*.14,-.34,0);upper.rotation.z=side*.38;
- const elbow=new THREE.Group();elbow.position.set(side*.28,-.68,0);shoulder.add(elbow);sphere(elbow,bone,0,0,0,.09,.09,.09);
- const forearm=segment(elbow,hide,.09,.045,.8,side*.05,-.39,.06);forearm.rotation.z=side*.12;
- sphere(elbow,bone,side*.1,-.79,.07,.11,.12,.08);
- for(let i=-1;i<=1;i++){const finger=segment(elbow,bone,.025,.006,.29,side*.1+i*.06,-1,.11);finger.rotation.z=i*.2}
- arms.push({shoulder,elbow,side});
- const hip=new THREE.Group();hip.position.set(side*.16,.99,0);body.add(hip);
- const thigh=segment(hip,hide,.16,.105,.62,0,-.3,0);thigh.rotation.z=-side*.08;
- const knee=new THREE.Group();knee.position.set(0,-.61,0);hip.add(knee);sphere(knee,bone,0,0,.02,.11,.11,.11);
- segment(knee,hide,.095,.065,.53,0,-.26,.01);
- sphere(knee,hide,0,-.55,.18,.13,.085,.29);
+ const shoulder=new THREE.Group();shoulder.position.set(side*.72,2.13,0);body.add(shoulder);
+ sphere(shoulder,cloth,side*.05,-.14,0,.43,.56,.45);
+ const upper=sphere(shoulder,cloth,side*.18,-.63,.01,.39,.72,.39);upper.rotation.z=-side*.18;
+ const sleeve=new THREE.Group();sleeve.position.set(side*.31,-1.02,.01);shoulder.add(sleeve);
+ sphere(sleeve,cloth,0,-.25,0,.42,.52,.38);
+ for(let i=0;i<11;i++){const t=i/11*Math.PI*2;clothPanel(sleeve,i%3===0?clothBright:cloth,-.17,-.98,.17,.27,Math.cos(t)*.28,i).position.x=Math.sin(t)*.24}
+ const hand=sphere(sleeve,skin,side*.04,-.82,.12,.26,.23,.24);
+ for(let i=0;i<4;i++){const x=(i-1.5)*.115;tube(sleeve,skin,[[x,-.89,.2],[x*1.3,-1.14,.28],[x*1.5,-1.24,.31]],.043)}
+ arms.push({shoulder,sleeve,side});
+ const hip=new THREE.Group();hip.position.set(side*.36,.86,-.03);body.add(hip);
+ sphere(hip,clothDark,0,-.34,0,.32,.57,.32);
+ const knee=new THREE.Group();knee.position.y=-.63;hip.add(knee);
+ sphere(knee,clothDark,0,-.19,.02,.3,.4,.3);
+ sphere(knee,skin,0,-.52,.22,.32,.13,.45);
+ for(let i=0;i<4;i++)sphere(knee,skin,(i-1.5)*.135,-.53,.55,.08,.065,.16);
  legs.push({hip,knee,side});
 }
-const mp=pos(12,9);monster.position.set(mp.x,0,mp.z);scene.add(monster);
-const stalkerGlow=new THREE.PointLight('#bd3e17',1.6,3.5);stalkerGlow.position.set(0,2.5,.4);monster.add(stalkerGlow);
+const mp=pos(12,9);monster.position.set(mp.x,0,mp.z);monster.scale.setScalar(1.08);scene.add(monster);
+const stalkerGlow=new THREE.PointLight('#1d58b8',1.1,3.5);stalkerGlow.position.set(0,2.7,.4);monster.add(stalkerGlow);
 let stride=0;let slowFrames=0,qualityAdjusted=false;
 let active=false,paused=true,lives=3,found=0,invuln=0,last=performance.now(),yaw=0,pitch=0;const pressed=new Set();
 function canMove(x,z){const col=Math.floor((x-originX)/S),row=Math.floor((z-originZ)/S);const r=.28;return !wall(col,row)&&!wall(Math.floor((x+r-originX)/S),row)&&!wall(Math.floor((x-r-originX)/S),row)&&!wall(col,Math.floor((z+r-originZ)/S))&&!wall(col,Math.floor((z-r-originZ)/S))}
@@ -90,5 +93,5 @@ runBtn.addEventListener('touchend',stopRun);runBtn.addEventListener('touchcancel
 runBtn.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')return;e.preventDefault();runBtn.setPointerCapture(e.pointerId);running=true});
 for(const ev of ['pointerup','pointercancel','lostpointercapture'])runBtn.addEventListener(ev,e=>{if(e.pointerType!=='touch')running=false});
 $('#pauseMobile').onclick=pause;
-function tick(now){requestAnimationFrame(tick);if(mobileDevice&&!qualityAdjusted&&active&&!paused){const frameMs=now-last;if(frameMs>38)slowFrames++;else slowFrames=Math.max(0,slowFrames-1);if(slowFrames>25){renderer.setPixelRatio(.6);renderer.setSize(innerWidth,innerHeight);qualityAdjusted=true;hint.textContent='Modo rendimiento activado';}}for(const f of fixtures){if((f.col*7+f.row*11)%8===0){const phase=now*.001+f.seed;f.light.intensity=(Math.sin(phase*1.3)> .84&&Math.sin(phase*31)>0)?.7:(mobileDevice?3.2:6.5)}}const dt=Math.min(.08,(now-last)/1000);last=now;if(active&&!paused){const pad=navigator.getGamepads?.()[0],dead=v=>Math.abs(v)>.18?v:0;let f=joyY+(pressed.has('w')||pressed.has('ArrowUp')?1:0)-(pressed.has('s')||pressed.has('ArrowDown')?1:0),side=joyX+(pressed.has('d')?1:0)-(pressed.has('a')?1:0),turn=(pressed.has('ArrowRight')?1:0)-(pressed.has('ArrowLeft')?1:0),run=pressed.has('Shift')||running;if(pad){f-=dead(pad.axes[1]||0);side+=dead(pad.axes[0]||0);turn+=dead(pad.axes[2]||0)*1.8;run=run||!!pad.buttons[7]?.pressed}yaw-=turn*dt*2.1;const speed=dt*(run?6.8:4.3)/Math.max(1,Math.hypot(f,side));const dx=(-Math.sin(yaw)*f+Math.cos(yaw)*side)*speed,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*side)*speed;for(let i=0;i<Math.max(1,Math.ceil(Math.hypot(dx,dz)/.12));i++){const n=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.12));if(canMove(camera.position.x+dx/n,camera.position.z))camera.position.x+=dx/n;if(canMove(camera.position.x,camera.position.z+dz/n))camera.position.z+=dz/n}camera.rotation.set(pitch,yaw,0);if(Math.hypot(dx,dz)>.003&&now-lastStep>(run?245:380)){lastStep=now;audioEvent('step')}for(const it of items){it.g.rotation.y+=dt*1.5;it.g.position.y=1.3+Math.sin(now*.002+it.g.position.x)*.12;if(!it.found&&camera.position.distanceTo(it.g.position)<1.15){it.found=true;it.g.visible=false;it.glow.visible=false;found++;audioEvent('key')}}const ex=camera.position.x-monster.position.x,ez=camera.position.z-monster.position.z,dist=Math.hypot(ex,ez);if(dist<15&&dist>.3){const sx=ex/dist*dt*2.5,sz=ez/dist*dt*2.5;if(canMove(monster.position.x+sx,monster.position.z))monster.position.x+=sx;if(canMove(monster.position.x,monster.position.z+sz))monster.position.z+=sz}monster.rotation.y=Math.atan2(ex,ez);stride+=dt*(dist<15?7:1);const gait=Math.sin(stride);body.position.y=Math.abs(gait)*.045;body.rotation.z=Math.sin(stride*.5)*.028;for(const arm of arms){arm.shoulder.rotation.x=arm.side*gait*.46-.17;arm.elbow.rotation.x=-.3-Math.max(0,arm.side*gait)*.5;arm.shoulder.rotation.z=-arm.side*.12}for(const leg of legs){leg.hip.rotation.x=-leg.side*gait*.5;leg.knee.rotation.x=Math.max(0,leg.side*gait)*.55}jaw.position.y=2.25+Math.sin(now*.009)*.02;invuln-=dt;if(dist<5&&now-lastDanger>3000){lastDanger=now;audioEvent('danger')}if(dist<1.15&&invuln<=0){audioEvent('hit');lives--;invuln=2.7;monster.position.copy(pos(12,9));if(lives<=0)show('GAME OVER','La entidad atrapó a Vladi.')}if(found===3&&Math.hypot(camera.position.x-ep.x,camera.position.z-ep.z)<1.5){audioEvent('win');show('¡ESCAPASTE!','Vladi encontró la salida del Nivel 0.');}hint.textContent=dist<5?'⚠ ¡ALGO SE ACERCA!':found===3?'Las llaves están completas. Buscá la puerta verde.':'Encontrá las tres llaves y escapá.';stats.textContent='🔑 '+found+'/3 · ♥ '+lives}renderer.render(scene,camera)}requestAnimationFrame(tick);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function tick(now){requestAnimationFrame(tick);if(mobileDevice&&!qualityAdjusted&&active&&!paused){const frameMs=now-last;if(frameMs>38)slowFrames++;else slowFrames=Math.max(0,slowFrames-1);if(slowFrames>25){renderer.setPixelRatio(.6);renderer.setSize(innerWidth,innerHeight);qualityAdjusted=true;hint.textContent='Modo rendimiento activado';}}for(const f of fixtures){if((f.col*7+f.row*11)%8===0){const phase=now*.001+f.seed;f.light.intensity=(Math.sin(phase*1.3)> .84&&Math.sin(phase*31)>0)?.7:(mobileDevice?3.2:6.5)}}const dt=Math.min(.08,(now-last)/1000);last=now;if(active&&!paused){const pad=navigator.getGamepads?.()[0],dead=v=>Math.abs(v)>.18?v:0;let f=joyY+(pressed.has('w')||pressed.has('ArrowUp')?1:0)-(pressed.has('s')||pressed.has('ArrowDown')?1:0),side=joyX+(pressed.has('d')?1:0)-(pressed.has('a')?1:0),turn=(pressed.has('ArrowRight')?1:0)-(pressed.has('ArrowLeft')?1:0),run=pressed.has('Shift')||running;if(pad){f-=dead(pad.axes[1]||0);side+=dead(pad.axes[0]||0);turn+=dead(pad.axes[2]||0)*1.8;run=run||!!pad.buttons[7]?.pressed}yaw-=turn*dt*2.1;const speed=dt*(run?6.8:4.3)/Math.max(1,Math.hypot(f,side));const dx=(-Math.sin(yaw)*f+Math.cos(yaw)*side)*speed,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*side)*speed;for(let i=0;i<Math.max(1,Math.ceil(Math.hypot(dx,dz)/.12));i++){const n=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.12));if(canMove(camera.position.x+dx/n,camera.position.z))camera.position.x+=dx/n;if(canMove(camera.position.x,camera.position.z+dz/n))camera.position.z+=dz/n}camera.rotation.set(pitch,yaw,0);if(Math.hypot(dx,dz)>.003&&now-lastStep>(run?245:380)){lastStep=now;audioEvent('step')}for(const it of items){it.g.rotation.y+=dt*1.5;it.g.position.y=1.3+Math.sin(now*.002+it.g.position.x)*.12;if(!it.found&&camera.position.distanceTo(it.g.position)<1.15){it.found=true;it.g.visible=false;it.glow.visible=false;found++;audioEvent('key')}}const ex=camera.position.x-monster.position.x,ez=camera.position.z-monster.position.z,dist=Math.hypot(ex,ez);if(dist<15&&dist>.3){const sx=ex/dist*dt*2.5,sz=ez/dist*dt*2.5;if(canMove(monster.position.x+sx,monster.position.z))monster.position.x+=sx;if(canMove(monster.position.x,monster.position.z+sz))monster.position.z+=sz}monster.rotation.y=Math.atan2(ex,ez);stride+=dt*(dist<15?7:1);const gait=Math.sin(stride);body.position.y=Math.abs(gait)*.045;body.rotation.z=Math.sin(stride*.5)*.028;for(const arm of arms){arm.shoulder.rotation.x=arm.side*gait*.46-.17;arm.sleeve.rotation.x=-.16-Math.max(0,arm.side*gait)*.3;arm.shoulder.rotation.z=-arm.side*.12}for(const leg of legs){leg.hip.rotation.x=-leg.side*gait*.5;leg.knee.rotation.x=Math.max(0,leg.side*gait)*.55}head.rotation.z=Math.sin(now*.0017)*.035;collar.rotation.y=Math.sin(now*.0012)*.035;invuln-=dt;if(dist<5&&now-lastDanger>3000){lastDanger=now;audioEvent('danger')}if(dist<1.15&&invuln<=0){audioEvent('hit');lives--;invuln=2.7;monster.position.copy(pos(12,9));if(lives<=0)show('GAME OVER','La entidad atrapó a Vladi.')}if(found===3&&Math.hypot(camera.position.x-ep.x,camera.position.z-ep.z)<1.5){audioEvent('win');show('¡ESCAPASTE!','Vladi encontró la salida del Nivel 0.');}hint.textContent=dist<5?'⚠ ¡ALGO SE ACERCA!':found===3?'Las llaves están completas. Buscá la puerta verde.':'Encontrá las tres llaves y escapá.';stats.textContent='🔑 '+found+'/3 · ♥ '+lives}renderer.render(scene,camera)}requestAnimationFrame(tick);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
