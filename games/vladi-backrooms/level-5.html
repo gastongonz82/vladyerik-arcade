@@ -70,10 +70,22 @@ for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
  if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);if((x*13+z*7)%11===0){const l=new THREE.PointLight('#ffd6a2',mobile?4:5,12,2);l.position.set(p.x,4.4,p.z);scene.add(l)}}
  if((x*7+z*11)%8===0){const base=cube(.14,2.8,.14,p.x+1.45,2.3,p.z+1.45,rust);base.rotation.y=.2}
 }
-const pipeGeo=new THREE.CylinderGeometry(.13,.13,S,8);
-for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++)if(!wall(x,z)&&x%3===0){
+// Connected wall-mounted industrial pipes, no isolated ceiling segments.
+const pipeGeo=new THREE.CylinderGeometry(.15,.15,S,10);
+for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++)if(!wall(x,z)&&!wall(x+1,z)&&z%3===1){
  const p=pos(x,z),pipe=new THREE.Mesh(pipeGeo,(x+z)%2?rust:steel);
- pipe.rotation.z=Math.PI/2;pipe.position.set(p.x,4.28,p.z+1.4);scene.add(pipe);
+ pipe.rotation.z=Math.PI/2;pipe.position.set(p.x+S/2,4.15,p.z+1.3);scene.add(pipe);
+ if(x%4===1){const support=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,3,8),rust);support.position.set(p.x,2.65,p.z+1.3);scene.add(support)}
+}
+const boilerMetal=mat('#656965',.7,.55),boilerDark=mat('#272c2b',.3,.75),boilerFire=new THREE.MeshBasicMaterial({color:'#f38b42'});
+for(const [x,z] of [[5,4],[10,6],[14,10],[6,13],[12,15]]){
+ const p=pos(x,z),unit=new THREE.Group();
+ const shell=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,3.2,12),boilerMetal);shell.position.y=2;unit.add(shell);
+ for(const y of [.8,2,3.2]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.92,.07,6,16),copper);ring.rotation.x=Math.PI/2;ring.position.y=y;unit.add(ring)}
+ const furnace=new THREE.Mesh(new THREE.CircleGeometry(.42,14),boilerFire);furnace.position.set(0,1.4,-.93);unit.add(furnace);
+ const rim=new THREE.Mesh(new THREE.TorusGeometry(.46,.08,6,16),boilerDark);rim.position.set(0,1.4,-.96);unit.add(rim);
+ const gauge=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.1,12),copper);gauge.rotation.x=Math.PI/2;gauge.position.set(.5,3.1,-.7);unit.add(gauge);
+ unit.position.set(p.x,0,p.z);scene.add(unit);
 }
 const valves=[];
 for(const [x,z] of [[3,3],[15,5],[5,15]]){const p=pos(x,z),group=new THREE.Group();
@@ -84,11 +96,20 @@ for(const [x,z] of [[3,3],[15,5],[5,15]]){const p=pos(x,z),group=new THREE.Group
  group.position.copy(p);scene.add(group);valves.push({group,x,z,done:false,ring})}
 const exitCell=[17,17],exitPos=pos(...exitCell),exitDoor=cube(2.6,3.6,.22,exitPos.x,1.8,exitPos.z,steel);
 const exitLamp=new THREE.PointLight('#ff6640',5,8);exitLamp.position.set(exitPos.x,3.7,exitPos.z);scene.add(exitLamp);
-const monster=new THREE.Group(),enemyBody=new THREE.Mesh(new THREE.CylinderGeometry(.45,.72,2.6,8),dark);
-enemyBody.position.y=1.5;monster.add(enemyBody);
-const enemyHead=new THREE.Mesh(new THREE.SphereGeometry(.5,12,10),rust);enemyHead.position.y=3;monster.add(enemyHead);
-for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.095,8,8),new THREE.MeshBasicMaterial({color:'#ff572c'}));eye.position.set(side*.19,3.08,-.43);monster.add(eye)}
-const monsterGlow=new THREE.PointLight('#c53a22',2,5);monsterGlow.position.y=2.9;monster.add(monsterGlow);scene.add(monster);
+// The Listener: industrial humanoid with limbs, ears and a caged face.
+const monster=new THREE.Group(),creatureSkin=mat('#252c2a',.3,.8),creatureBone=mat('#737b71',.2,.75);
+const enemyBody=new THREE.Mesh(new THREE.CylinderGeometry(.36,.57,2.1,9),creatureSkin);enemyBody.position.y=1.8;monster.add(enemyBody);
+const chest=new THREE.Mesh(new THREE.BoxGeometry(.95,.8,.55),creatureBone);chest.position.y=2.35;monster.add(chest);
+const enemyHead=new THREE.Mesh(new THREE.SphereGeometry(.48,14,10),creatureSkin);enemyHead.position.set(0,3.35,-.12);monster.add(enemyHead);
+for(const side of [-1,1]){
+ const eye=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),new THREE.MeshBasicMaterial({color:'#ff532f'}));eye.position.set(side*.2,3.42,-.53);monster.add(eye);
+ const ear=new THREE.Mesh(new THREE.ConeGeometry(.24,.65,8),creatureBone);ear.rotation.z=side*1.3;ear.position.set(side*.65,3.43,0);monster.add(ear);
+ const arm=new THREE.Mesh(new THREE.CylinderGeometry(.15,.1,1.7,8),creatureSkin);arm.position.set(side*.65,1.8,-.1);arm.rotation.z=side*.19;monster.add(arm);
+ const claw=new THREE.Mesh(new THREE.ConeGeometry(.13,.55,7),creatureBone);claw.rotation.z=Math.PI;claw.position.set(side*.82,.72,-.15);monster.add(claw);
+ const leg=new THREE.Mesh(new THREE.CylinderGeometry(.2,.13,1.35,8),creatureSkin);leg.position.set(side*.26,.65,0);monster.add(leg);
+}
+for(const x of [-.3,-.1,.1,.3]){const bar=new THREE.Mesh(new THREE.BoxGeometry(.045,.78,.06),copper);bar.position.set(x,3.4,-.55);monster.add(bar)}
+const monsterGlow=new THREE.PointLight('#c53a22',2,5);monsterGlow.position.set(0,3.2,-.5);monster.add(monsterGlow);scene.add(monster);
 const keys=new Set();let active=false,paused=true,finished=false,health=3,count=0,yaw=0,pitch=0,last=performance.now(),invuln=0,enemyRoute=[],repath=0,alertUntil=0,stepClock=0;
 let ctx=null,audioOn=true;
 function audio(){if(!audioOn)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume()}catch(e){}}
