@@ -154,7 +154,7 @@ vorickLoader.load('./vorick/vorick.glb?v=2316388-20261030',gltf=>{
  const offset=new THREE.Group();offset.add(pivot);
  const center=bounds.getCenter(new THREE.Vector3());
  pivot.position.set(-center.x,-bounds.min.y,-center.z);
- offset.scale.setScalar(2.9/size.y);offset.rotation.y=Math.PI;monster.add(offset);
+ offset.scale.setScalar(2.9/size.y);offset.rotation.y=0;monster.add(offset);
  vorickModel=offset;vorickReady=true;vorickStatus='VORICK';
  if(gltf.animations.length){vorickMixer=new THREE.AnimationMixer(model);const clip=gltf.animations.find(a=>/walk|run/i.test(a.name)&&a.tracks.length>0)||gltf.animations.find(a=>/idle/i.test(a.name)&&a.tracks.length>0)||gltf.animations.find(a=>a.tracks.length>0);if(clip){vorickMixer.clipAction(clip).play();console.info('Vorick animation',clip.name,clip.tracks.length,clip.duration)}else console.warn('Vorick GLB has no animation tracks')}else console.warn('Vorick GLB has no animations');
  concierge.visible=false;body.visible=false;
