@@ -68,40 +68,45 @@ for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
  if(wall(x,z)){cube(S,4.8,S,p.x,2.4,p.z,concrete);continue}
  cube(S,.12,S,p.x,4.83,p.z,dark);
  if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);if((x*13+z*7)%11===0){const l=new THREE.PointLight('#ffd6a2',mobile?4:5,12,2);l.position.set(p.x,4.4,p.z);scene.add(l)}}
- if((x*7+z*11)%8===0){const base=cube(.14,2.8,.14,p.x+1.45,2.3,p.z+1.45,rust);base.rotation.y=.2}
+ 
 }
-// Wall-mounted pipe assemblies. Every pipe sits against a solid wall face.
-const pipeGeo=new THREE.CylinderGeometry(.12,.12,2.4,10);
-const pipeClamp=mat('#b09a75',.68,.45);
+// Industrial room details: all hardware is mounted to actual wall surfaces.
+// No overhead pipes, unsupported vertical columns or floating machinery.
+const wallPanel=mat('#414d4b',.28,.72),trimSteel=mat('#89918b',.58,.42),warning=mat('#a67a42',.3,.6);
+const boltGeo=new THREE.CylinderGeometry(.055,.055,.05,6);
+const panelGeo=new THREE.BoxGeometry(2.45,2.65,.12);
+const stripGeo=new THREE.BoxGeometry(2.55,.11,.18);
+const boilerMetal=mat('#656965',.65,.52),boilerDark=mat('#252b2a',.3,.7);
+let boilerCount=0;
 for(let z=1;z<H-1;z++)for(let x=1;x<W-1;x++){
- if(wall(x,z)||(x*5+z*3)%4!==0)continue;
+ if(wall(x,z))continue;
+ const faces=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dz])=>wall(x+dx,z+dz));
+ if(!faces.length)continue;
  const p=pos(x,z);
- const faces=[[1,0,Math.PI/2],[0,1,0],[-1,0,-Math.PI/2],[0,-1,Math.PI]];
- const face=faces.find(([dx,dz])=>wall(x+dx,z+dz));
- if(!face)continue;
- const [dx,dz,rotation]=face;
- const mountX=p.x+dx*(S/2-.2),mountZ=p.z+dz*(S/2-.2);
- // Vertical pipe, terminating at the floor and connected to a visible valve housing.
- const pipe=new THREE.Mesh(pipeGeo,(x+z)%2?rust:steel);
- pipe.position.set(mountX,1.4,mountZ);scene.add(pipe);
- for(const y of [.38,1.35,2.35]){
-  const clamp=new THREE.Mesh(new THREE.BoxGeometry(.34,.12,.34),pipeClamp);
-  clamp.position.set(mountX,y,mountZ);scene.add(clamp);
+ // Install only selected wall panels; their backs are flush against the wall.
+ if((x*7+z*11)%3===0){
+  const [dx,dz]=faces[0],alongX=dx!==0;
+  const panel=new THREE.Mesh(panelGeo,wallPanel);
+  panel.position.set(p.x+dx*(S/2-.08),1.72,p.z+dz*(S/2-.08));
+  if(alongX)panel.rotation.y=Math.PI/2;
+  scene.add(panel);
+  const trim=new THREE.Mesh(stripGeo,trimSteel);trim.position.copy(panel.position);trim.position.y=.47;
+  if(alongX)trim.rotation.y=Math.PI/2;scene.add(trim);
  }
- const housing=new THREE.Mesh(new THREE.BoxGeometry(.55,.65,.55),dark);
- housing.position.set(mountX,.3,mountZ);scene.add(housing);
- const cap=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),copper);
- cap.position.set(mountX,2.64,mountZ);scene.add(cap);
-}
-const boilerMetal=mat('#656965',.7,.55),boilerDark=mat('#272c2b',.3,.75),boilerFire=new THREE.MeshBasicMaterial({color:'#f38b42'});
-for(const [x,z] of [[5,4],[10,6],[14,10],[6,13],[12,15]]){
- const p=pos(x,z),unit=new THREE.Group();
- const shell=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,3.2,12),boilerMetal);shell.position.y=2;unit.add(shell);
- for(const y of [.8,2,3.2]){const ring=new THREE.Mesh(new THREE.TorusGeometry(.92,.07,6,16),copper);ring.rotation.x=Math.PI/2;ring.position.y=y;unit.add(ring)}
- const furnace=new THREE.Mesh(new THREE.CircleGeometry(.42,14),boilerFire);furnace.position.set(0,1.4,-.93);unit.add(furnace);
- const rim=new THREE.Mesh(new THREE.TorusGeometry(.46,.08,6,16),boilerDark);rim.position.set(0,1.4,-.96);unit.add(rim);
- const gauge=new THREE.Mesh(new THREE.CylinderGeometry(.23,.23,.1,12),copper);gauge.rotation.x=Math.PI/2;gauge.position.set(.5,3.1,-.7);unit.add(gauge);
- unit.position.set(p.x,0,p.z);scene.add(unit);
+ // A compact wall-mounted boiler control unit, with all visible parts attached to a panel.
+ if(boilerCount<7&&(x*13+z*17)%19===0){
+  const [dx,dz]=faces[0],alongX=dx!==0;
+  const group=new THREE.Group();
+  const cabinet=new THREE.Mesh(new THREE.BoxGeometry(1.65,2.25,.42),boilerMetal);cabinet.position.y=1.72;group.add(cabinet);
+  const face=new THREE.Mesh(new THREE.BoxGeometry(1.35,1.7,.055),boilerDark);face.position.set(0,1.7,-.245);group.add(face);
+  const gauge=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,.07,14),trimSteel);gauge.rotation.x=Math.PI/2;gauge.position.set(0,2.13,-.31);group.add(gauge);
+  const dial=new THREE.Mesh(new THREE.CircleGeometry(.19,14),new THREE.MeshBasicMaterial({color:'#d2a36d'}));dial.position.set(0,2.13,-.36);group.add(dial);
+  const switchMesh=new THREE.Mesh(new THREE.BoxGeometry(.5,.17,.14),warning);switchMesh.position.set(0,1.28,-.33);group.add(switchMesh);
+  // Local -Z is the front. Rotate so the cabinet front faces the walkable cell.
+  group.position.set(p.x+dx*(S/2-.29),0,p.z+dz*(S/2-.29));
+  group.rotation.y=dx===1?Math.PI/2:dx===-1?-Math.PI/2:dz===-1?Math.PI:0;
+  scene.add(group);boilerCount++;
+ }
 }
 const valves=[];
 for(const [x,z] of [[3,3],[15,5],[5,15]]){const p=pos(x,z),group=new THREE.Group();
