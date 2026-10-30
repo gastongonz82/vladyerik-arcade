@@ -12,11 +12,11 @@ h1{font-size:clamp(29px,6vw,48px);letter-spacing:3px;margin:8px 0}h2{color:#dfb9
 button{border:1px solid #b78d52;background:#bd9256;color:#100e0a;border-radius:10px;padding:12px 19px;font-weight:900;cursor:pointer}
 #actions{position:fixed;z-index:12;top:89px;right:14px;display:flex;flex-direction:column;gap:8px}#actions button{padding:8px;width:43px;height:41px;background:#10191bc9;color:#fff}
 #interact{position:fixed;z-index:12;bottom:150px;right:18px;display:none;background:#d6a45c;color:#1a1008}
-#touch{position:fixed;z-index:11;bottom:max(18px,env(safe-area-inset-bottom));left:15px;right:15px;display:none;justify-content:space-between;align-items:end;pointer-events:none}
+#touch{position:fixed;z-index:11;bottom:max(18px,env(safe-area-inset-bottom));left:15px;right:15px;display:none;justify-content:space-between;align-items:end;gap:16px;pointer-events:none}#touch>*{flex-shrink:0}
 #pad{width:116px;height:116px;border:2px solid #d4c5a355;border-radius:50%;background:#18252699;position:relative;pointer-events:auto;touch-action:none}
 #nub{width:55px;height:55px;border-radius:50%;background:#c7b594a8;position:absolute;top:28px;left:28px;pointer-events:none}
-#run{height:70px;width:70px;border-radius:19px;pointer-events:auto;background:#e2b56d}
-#look{position:fixed;right:14px;bottom:104px;color:#fff7;font-size:10px;pointer-events:none;display:none}
+#run{height:70px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;border-radius:19px;pointer-events:auto;background:#e2b56d;padding:0 3px;font-size:10px;letter-spacing:0;white-space:nowrap;overflow:hidden}
+#look{position:fixed;right:14px;bottom:104px;color:#fff7;font-size:10px;pointer-events:none;display:none}#pad{flex:0 0 116px}#interact{max-width:calc(100vw - 30px);font-size:12px;padding:10px 12px}#hud{font-size:clamp(10px,2.7vw,13px)}#tip{font-size:clamp(11px,3vw,13px)}@media(max-width:390px){#pad{width:104px;height:104px;flex-basis:104px}#nub{top:22px;left:22px}#actions{right:9px}#actions button{width:39px;height:39px}#run{height:64px;width:64px;min-width:64px;max-width:64px;flex-basis:64px;font-size:9px}}
 @media(pointer:coarse){#touch{display:flex}#look{display:block}}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script>
@@ -30,15 +30,15 @@ button{border:1px solid #b78d52;background:#bd9256;color:#100e0a;border-radius:1
 <script type="module">
 import * as THREE from 'three';
 const $=id=>document.getElementById(id),mobile=matchMedia('(pointer:coarse)').matches;
-const scene=new THREE.Scene();scene.background=new THREE.Color('#070b0c');scene.fog=new THREE.FogExp2('#10191b',.035);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#202b2d');scene.fog=new THREE.FogExp2('#243438',.018);
 const camera=new THREE.PerspectiveCamera(74,innerWidth/innerHeight,.08,130);camera.rotation.order='YXZ';
 const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.15:1.6));renderer.setSize(innerWidth,innerHeight);
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.65;
 document.body.prepend(renderer.domElement);
-scene.add(new THREE.HemisphereLight('#5b8291','#1a0c08',1.4));
+scene.add(new THREE.HemisphereLight('#c5d6d0','#6b4b38',2.8));scene.add(new THREE.AmbientLight('#b9c9c3',1.2));
 const mat=(color,metalness=0,roughness=.85)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
-const concrete=mat('#3b4444'),floorMat=mat('#273336',.15),rust=mat('#73452f',.5),steel=mat('#53686c',.65,.35),copper=mat('#96704a',.65,.38),dark=mat('#202a2d'),glow= new THREE.MeshBasicMaterial({color:'#f4b46e'});
+const concrete=mat('#697273'),floorMat=mat('#465255',.15),rust=mat('#73452f',.5),steel=mat('#53686c',.65,.35),copper=mat('#96704a',.65,.38),dark=mat('#202a2d'),glow= new THREE.MeshBasicMaterial({color:'#f4b46e'});
 const S=4,grid=[
 '1111111111111111111',
 '1000000000000000001',
@@ -67,7 +67,7 @@ const floor=cube(W*S,.2,H*S,0,-.15,0,floorMat);
 for(let z=0;z<H;z++)for(let x=0;x<W;x++){const p=pos(x,z);
  if(wall(x,z)){cube(S,4.8,S,p.x,2.4,p.z,concrete);continue}
  cube(S,.12,S,p.x,4.83,p.z,dark);
- if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);if((x*13+z*7)%17===0){const l=new THREE.PointLight('#e9a56b',mobile?3:4,9,2);l.position.set(p.x,4.4,p.z);scene.add(l)}}
+ if((x+z)%3===0){const light=cube(1.15,.08,.3,p.x,4.73,p.z,glow);if((x*13+z*7)%11===0){const l=new THREE.PointLight('#ffd6a2',mobile?4:5,12,2);l.position.set(p.x,4.4,p.z);scene.add(l)}}
  if((x*7+z*11)%8===0){const base=cube(.14,2.8,.14,p.x+1.45,2.3,p.z+1.45,rust);base.rotation.y=.2}
 }
 const pipeGeo=new THREE.CylinderGeometry(.13,.13,S,8);
@@ -94,7 +94,7 @@ let ctx=null,audioOn=true;
 function audio(){if(!audioOn)return;try{ctx??=new (window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume()}catch(e){}}
 function beep(freq=170,dur=.15,volume=.04){if(!ctx||ctx.state!=='running'||!audioOn)return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;o.type='triangle';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.6),t+dur);g.gain.setValueAtTime(volume,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur+.02)}
 function clearInputs(){keys.clear();touchX=touchY=0;running=false;nub.style.transform='translate(0,0)'}
-function reset(){const p=pos(1,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;yaw=0;pitch=0;for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
+function reset(){const p=pos(2,1),m=pos(15,14);camera.position.set(p.x,1.65,p.z);monster.position.copy(m);health=3;count=0;invuln=0;finished=false;enemyRoute=[];repath=0;alertUntil=0;yaw=Math.PI;pitch=0;camera.rotation.set(pitch,yaw,0);for(const v of valves){v.done=false;v.ring.material=copper}exitLamp.color.set('#ff6640');$('status').textContent='VÁLVULAS 0/3 · ♥ 3';$('tip').textContent='Encontrá las tres válvulas y activá la salida de emergencia.';clearInputs()}
 function start(){audio();reset();active=true;paused=false;$('menu').style.display='none';last=performance.now()}
 function show(title,desc){paused=true;active=false;clearInputs();$('menuTitle').textContent=title;$('menuDesc').textContent=desc;$('start').textContent='VOLVER A JUGAR';$('menu').style.display='grid'}
 $('start').onclick=start;
