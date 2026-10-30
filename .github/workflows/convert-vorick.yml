@@ -1,0 +1,26 @@
+name: Convert Vorick FBX to GLB
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/convert-vorick.yml'
+      - 'games/vladi-backrooms/vorick/Vorick the Clown.fbx'
+      - 'games/vladi-backrooms/vorick/*.png'
+      - 'scripts/convert_vorick.py'
+permissions:
+  contents: write
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender
+        run: sudo apt-get update -qq && sudo apt-get install -y blender
+      - name: Convert FBX to GLB
+        run: blender --background --python scripts/convert_vorick.py
+      - name: Commit exported model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add games/vladi-backrooms/vorick/vorick.glb
+          git diff --cached --quiet || (git commit -m "Export Vorick as GLB for Level 4" && git push)
