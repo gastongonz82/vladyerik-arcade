@@ -301,7 +301,7 @@ function tick(now){requestAnimationFrame(tick);const dt=Math.min(.05,(now-last)/
  if(enemyRoute.length){const target=enemyRoute[0],vx=target.x-monster.position.x,vz=target.z-monster.position.z,d=Math.hypot(vx,vz);if(d<.22)enemyRoute.shift();else{const step=Math.min(d,dt*(hunting?2.85:1.55));monster.position.x+=vx/d*step;monster.position.z+=vz/d*step;monster.rotation.y=Math.atan2(-vx,-vz)}}
  monster.position.y=Math.sin(now*.003)*.06;enemyBody.rotation.z=Math.sin(now*.005)*.075;enemyHead.rotation.y=Math.sin(now*.002)*.14;invuln-=dt;
  if(dist<1.1&&invuln<=0){health--;invuln=3;beep(110,.65,.15);monster.position.copy(pos(15,14));enemyRoute=[];$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;if(health<=0)show('GAME OVER','La criatura de las calderas te encontró. Volvé a intentarlo.')}
- if(count===3&&Math.hypot(camera.position.x-exitPos.x,camera.position.z-exitPos.z)<1.65){escapeSound();show('¡ESCAPASTE!','Las calderas quedaron presurizadas. Abriste la salida de emergencia y sobreviviste al Oyente.')}
+ if(count===3&&Math.hypot(camera.position.x-exitPos.x,camera.position.z-exitPos.z)<1.65){escapeSound();show('¡ESCAPASTE!','Las calderas quedaron presurizadas. Sobreviviste al Oyente. <a href="level-6.html" style="display:inline-block;margin-top:14px;padding:12px 16px;border-radius:9px;background:#b84753;color:#fff;font-weight:900;text-decoration:none">CONTINUAR AL NIVEL 6 →</a>')}
  let close=false;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35)close=true;
  $('interact').style.display=close?'block':'none';if(hunting&&dist<7)$('tip').textContent='⚠ LA CRIATURA ESCUCHÓ TUS PASOS';
  }renderer.render(scene,camera)}
