@@ -22,7 +22,7 @@ function cube(parent,m,x,y,z,w,h,d){const mesh=new THREE.Mesh(boxGeo,m);mesh.pos
 let seed=392781;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
 function createSection(index){const group=new THREE.Group(),z=-index*chunkLength-14;
 cube(group,floorMat,0,-.16,z,8,.32,chunkLength);cube(group,ceilingMat,0,4.7,z,8,.3,chunkLength);for(const x of [-4,4]){cube(group,wallMat,x,2.25,z,.32,4.7,chunkLength);cube(group,trimMat,x*.965,1.12,z,.1,.12,chunkLength);cube(group,trimMat,x*.965,3.78,z,.1,.1,chunkLength)}
-for(let j=0;j<4;j++){const pz=-index*chunkLength-4-j*6.5;cube(group,trimMat,0,4.52,pz,7.6,.13,.22);cube(group,glowMat,0,4.43,pz,3.1,.06,.12);for(const x of [-3.84,3.84]){cube(group,doorMat,x,1.8,pz, .1,2.9,1.8);cube(group,trimMat,x*.98,3.22,pz,.12,.12,1.9)}}
+for(let j=0;j<4;j++){const pz=-index*chunkLength-4-j*6.5;cube(group,trimMat,0,4.52,pz,7.6,.13,.22);cube(group,glowMat,0,4.43,pz,3.1,.06,.12);for(const x of [-3.84,3.84]){cube(group,doorMat,x,1.8,pz, .1,2.9,1.8);cube(group,trimMat,x*.98,3.22,pz,.12,.12,1.9);cube(group,trimMat,x*.94,4.1,pz-1.3,.12,.12,4.5)}}
 if(index>0&&index<Math.ceil(finishDistance/chunkLength)-1){const lane=Math.floor(rand()*3)-1,oz=-index*chunkLength-7-rand()*13;
 const kind=rand();if(kind<.52){cube(group,obstacleMat,lane*2.35,.56,oz,1.55,1.12,1.2);cube(group,black,lane*2.35,1.16,oz,1.65,.12,1.25)}
 else{cube(group,obstacleMat,lane*2.35,1.05,oz,1.35,2.1,.55);cube(group,trimMat,lane*2.35,2.15,oz,1.55,.1,.7)}
