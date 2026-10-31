@@ -15,7 +15,7 @@ button{border:1px solid #b78d52;background:#bd9256;color:#100e0a;border-radius:1
 #touch{position:fixed;z-index:11;bottom:max(18px,env(safe-area-inset-bottom));left:15px;right:15px;display:none;justify-content:space-between;align-items:end;gap:16px;pointer-events:none}#touch>*{flex-shrink:0}
 #pad{width:116px;height:116px;border:2px solid #d4c5a355;border-radius:50%;background:#18252699;position:relative;pointer-events:auto;touch-action:none}
 #nub{width:55px;height:55px;border-radius:50%;background:#c7b594a8;position:absolute;top:28px;left:28px;pointer-events:none}
-#run{height:70px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;border-radius:19px;pointer-events:auto;background:#e2b56d;padding:0 3px;font-size:10px;letter-spacing:0;white-space:nowrap;overflow:hidden}
+#gameButtons{display:flex;gap:9px;align-items:end;pointer-events:none}#flashlight{height:70px;width:70px;flex:0 0 70px;border-radius:19px;pointer-events:auto;background:#26373a;border-color:#8aa7a5;font-size:24px;touch-action:manipulation}#run{height:70px;width:70px;min-width:70px;max-width:70px;flex:0 0 70px;border-radius:19px;pointer-events:auto;background:#e2b56d;padding:0 3px;font-size:10px;letter-spacing:0;white-space:nowrap;overflow:hidden}
 #look{position:fixed;right:14px;bottom:104px;color:#fff7;font-size:10px;pointer-events:none;display:none}#pad{flex:0 0 116px}#interact{max-width:calc(100vw - 30px);font-size:12px;padding:10px 12px}#hud{font-size:clamp(10px,2.7vw,13px)}#tip{font-size:clamp(11px,3vw,13px)}@media(max-width:390px){#pad{width:104px;height:104px;flex-basis:104px}#nub{top:22px;left:22px}#actions{right:9px}#actions button{width:39px;height:39px}#run{height:64px;width:64px;min-width:64px;max-width:64px;flex-basis:64px;font-size:9px}}
 @media(pointer:coarse){#touch{display:flex}#look{display:block}}
 </style>
@@ -23,9 +23,9 @@ button{border:1px solid #b78d52;background:#bd9256;color:#100e0a;border-radius:1
 </head><body>
 <div id="hud"><span>VLADI · BACKROOMS NIVEL 5</span><span id="status">VÁLVULAS 0/3 · ♥ 3</span></div>
 <div id="tip">Encontrá las tres válvulas y activá la salida de emergencia.</div><div id="reticle">+</div>
-<div id="actions"><button id="flashlight" aria-label="Encender o apagar linterna" title="Linterna (F)">🔦</button><button id="sound" aria-label="Sonido">🔊</button><button id="pause" aria-label="Pausar">Ⅱ</button><button id="full" aria-label="Pantalla completa">⛶</button></div>
+<div id="actions"><button id="sound" aria-label="Sonido">🔊</button><button id="pause" aria-label="Pausar">Ⅱ</button><button id="full" aria-label="Pantalla completa">⛶</button></div>
 <button id="interact">ACTIVAR VÁLVULA</button>
-<div id="touch"><div id="pad"><div id="nub"></div></div><button id="run">CORRER</button></div><div id="look">DESLIZÁ PARA MIRAR</div>
+<div id="touch"><div id="pad"><div id="nub"></div></div><div id="gameButtons"><button id="flashlight" aria-label="Encender o apagar linterna" title="Linterna (F)">🔦</button><button id="run">CORRER</button></div></div><div id="look">DESLIZÁ PARA MIRAR</div>
 <div id="menu"><div id="panel"><h2>VLADI · BACKROOMS</h2><h1 id="menuTitle">NIVEL 5</h1><h2>SALA DE CALDERAS</h2><p id="menuDesc">Tres válvulas. Una salida. Algo escucha tus pasos entre las tuberías.<br>Movete con WASD, mirá con el mouse, Shift para correr y E para activar válvulas. También admite pantalla táctil y joystick.</p><button id="start">ENTRAR A LAS CALDERAS</button><p style="font-size:12px">Usá auriculares para una experiencia más inmersiva.</p></div></div>
 <script type="module">
 import * as THREE from 'three';
