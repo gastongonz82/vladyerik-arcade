@@ -23,7 +23,7 @@ button{border:1px solid #b78d52;background:#bd9256;color:#100e0a;border-radius:1
 </head><body>
 <div id="hud"><span>VLADI · BACKROOMS NIVEL 5</span><span id="status">VÁLVULAS 0/3 · ♥ 3</span></div>
 <div id="tip">Encontrá las tres válvulas y activá la salida de emergencia.</div><div id="reticle">+</div>
-<div id="actions"><button id="sound" aria-label="Sonido">🔊</button><button id="pause" aria-label="Pausar">Ⅱ</button><button id="full" aria-label="Pantalla completa">⛶</button></div>
+<div id="actions"><button id="flashlight" aria-label="Encender o apagar linterna" title="Linterna (F)">🔦</button><button id="sound" aria-label="Sonido">🔊</button><button id="pause" aria-label="Pausar">Ⅱ</button><button id="full" aria-label="Pantalla completa">⛶</button></div>
 <button id="interact">ACTIVAR VÁLVULA</button>
 <div id="touch"><div id="pad"><div id="nub"></div></div><button id="run">CORRER</button></div><div id="look">DESLIZÁ PARA MIRAR</div>
 <div id="menu"><div id="panel"><h2>VLADI · BACKROOMS</h2><h1 id="menuTitle">NIVEL 5</h1><h2>SALA DE CALDERAS</h2><p id="menuDesc">Tres válvulas. Una salida. Algo escucha tus pasos entre las tuberías.<br>Movete con WASD, mirá con el mouse, Shift para correr y E para activar válvulas. También admite pantalla táctil y joystick.</p><button id="start">ENTRAR A LAS CALDERAS</button><p style="font-size:12px">Usá auriculares para una experiencia más inmersiva.</p></div></div>
@@ -36,6 +36,14 @@ const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:'high-
 renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.15:1.6));renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.22;
 document.body.prepend(renderer.domElement);
+// Camera-mounted flashlight: one inexpensive spotlight, no shadow rendering.
+const flashlight=new THREE.SpotLight('#fff1d2',mobile?4.2:5.2,27,Math.PI/7,.62,1.2);
+flashlight.castShadow=false;flashlight.position.set(.18,-.13,-.1);
+const flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,-.12,-12);
+camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;scene.add(camera);
+let flashlightOn=true;
+function toggleFlashlight(){flashlightOn=!flashlightOn;flashlight.visible=flashlightOn;document.getElementById('flashlight').style.opacity=flashlightOn?'1':'.45'}
+document.getElementById('flashlight').addEventListener('click',toggleFlashlight);
 scene.add(new THREE.HemisphereLight('#a7bbb6','#33241c',1.45));scene.add(new THREE.AmbientLight('#879c97',.48));
 const mat=(color,metalness=0,roughness=.85)=>new THREE.MeshStandardMaterial({color,metalness,roughness});
 const concrete=mat('#697273'),floorMat=mat('#465255',.15),rust=mat('#73452f',.5),steel=mat('#53686c',.65,.35),copper=mat('#96704a',.65,.38),dark=mat('#202a2d'),glow= new THREE.MeshBasicMaterial({color:'#f4b46e'});
@@ -268,7 +276,7 @@ function route(from,to){const [sx,sz]=cell(from.x,from.z),[gx,gz]=cell(to.x,to.z
  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,nz=z+dz,nk=nx+','+nz;if(!wall(nx,nz)&&!seen.has(nk)){seen.add(nk);prev.set(nk,k);q.push([nx,nz])}}}return []}
 function activate(){if(!active||paused)return;for(const v of valves)if(!v.done&&Math.hypot(camera.position.x-v.group.position.x,camera.position.z-v.group.position.z)<2.35){v.done=true;v.ring.material=glow;count++;metalHit(.075);steamHiss();alertUntil=performance.now()+7000;$('status').textContent='VÁLVULAS '+count+'/3 · ♥ '+health;$('tip').textContent=count===3?'¡Sistema presurizado! Buscá la salida verde.':'Válvula activada. ¡El ruido atrajo a la criatura!';if(count===3){exitLamp.color.set('#63ff9c');exitDoor.material=glow;escapeStarted=performance.now();escapeSound()}return}}
 $('interact').onclick=activate;
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)activate();if(k==='escape'&&active)$('pause').click()});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys.add(k);if(k==='e'&&!e.repeat)activate();if(k==='f'&&!e.repeat)toggleFlashlight();if(k==='escape'&&active)$('pause').click()});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));addEventListener('blur',clearInputs);
 renderer.domElement.addEventListener('click',()=>{if(active&&!paused&&!mobile)renderer.domElement.requestPointerLock?.()});
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement&&active&&!paused){yaw-=e.movementX*.0023;pitch=Math.max(-1.2,Math.min(1.2,pitch-e.movementY*.0023))}});
