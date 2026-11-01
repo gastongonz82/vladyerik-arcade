@@ -34,6 +34,18 @@ for(let z=1;z>=-112;z-=22){for(const x of [-16,16]){box(world,wood,x,.55,z,1.2,.
  for(const x of [-21.5,21.5]){box(world,metal,x,2.3,z,.5,3.5,2.4);box(world,screen,x>0?21.2:-21.2,2.6,z,.1,1.5,1.8)}
 }
 for(const z of [-17,-52,-87]){box(world,metal,0,5.6,z,9,1.1,.25);box(world,screen,0,5.8,z+.16,7,.13,.05);for(const x of [-2.8,2.8])box(world,warning,x,5.35,z+.16,.75,.13,.05)}
+// Revestimiento de estación: cerámicos y banda de identificación.
+const ceramic=mat('#b4c5c3'),blueBand=mat('#28698c');
+for(const side of [-1,1]){
+ const x=side*23.04;
+ box(world,ceramic,x,2.1,-55,.13,4.1,146);
+ box(world,blueBand,x,3.25,-55,.18,.48,146);
+ for(const z of [-10,-42,-74,-106]){
+  box(world,metal,side*22.8,3.1,z,.25,1.4,6);
+  box(world,screen,side*22.6,3.1,z,.06,1.1,5.5);
+ }
+}
+for(const x of [-2.45,2.45])box(world,warning,x,.12,-55,.27,.05,148);
 // Parked train along a distant track section, leaving the platform route unobstructed.
 const train=new THREE.Group();train.position.set(0,0,-80);scene.add(train);
 box(train,metal,0,2.4,0,3.5,4.6,30);box(train,concrete,0,4.75,0,3.3,.3,30);
