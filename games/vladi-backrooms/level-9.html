@@ -68,15 +68,18 @@ for(const side of [-1,1])for(let i=0;i<3;i++){
  box(world,wood,side*29.7,.75,z-3.3,2,1.5,1.2);
  box(world,screen,side*29.7,1.6,z-3.3,1.7,.08,1);
 }
-// Identidad visual del subte: escaleras de acceso, ductos, mapas y carteles.
-const ochre=mat('#c58d50'),pipeMat=mat('#626e70'),stairs=mat('#807d77'),posterMat=mat('#e5d9bd');
+// Identidad visual del subte: accesos de servicio, ductos, mapas y carteles.
+const ochre=mat('#c58d50'),pipeMat=mat('#626e70'),posterMat=mat('#e5d9bd');
 for(const side of [-1,1]){
+ // Accesos cerrados y coherentes: no mostrar escaleras que terminan en el aire.
  for(const z of [18,-62,-135]){
-  // Escalera a un vestíbulo superior, ubicada al lateral sin tapar la circulación.
   const sx=side*28;
-  for(let i=0;i<8;i++)box(world,stairs,sx, .15+i*.27,z+i*.65,5.4,.28,1.05);
-  for(const x of [sx-2.8,sx+2.8])box(world,metal,x,1.3,z+2.6,.14,2.4,7);
-  box(world,ochre,sx,3.7,z+5.4,5.8,.32,.8);
+  box(world,metal,sx,3.2,z,7.5,6.4,.5);
+  box(world,black,sx,2.7,z+.29,5.8,4.8,.08);
+  box(world,ochre,sx,5.7,z+.34,6.8,.35,.12);
+  box(world,metal,sx-2.8,2.8,z+.34,.24,5.1,.18);
+  box(world,metal,sx+2.8,2.8,z+.34,.24,5.1,.18);
+  box(world,screen,sx,5.2,z+.37,4.5,.42,.09);
  }
  // Conductos de ventilación y cableado en el cielorraso.
  box(world,pipeMat,side*22,9.35,-65,.34,.34,200);
