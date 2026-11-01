@@ -111,9 +111,13 @@ for(const side of [-1,1]){
   }
   box(world,metal,sx-4.24,4.7,-12,.1,2.1,4);
   box(world,screen,sx-4.15,4.7,-12,.05,1.7,3.5);
-  // Puerta lateral hacia la pasarela de mantenimiento, con acceso despejado.
-  box(world,metal,sx+4.15,4.5,-16,.12,2.6,2.9);
-  box(world,black,sx+4.07,4.45,-16,.07,2.25,2.45);
+  // Marco de mantenimiento, sin puerta falsa ni salida bloqueada.
+  box(world,ochre,sx+3.9,5.8,-16,.18,.15,3.3);
+  // Ventanal interior con vista real al andén y luz de emergencia.
+  box(world,metal,sx+3.9,5.3,-10,.15,2.5,5.4);
+  box(world,screen,sx+3.78,5.3,-10,.035,2.1,4.9);
+  const emergency=new THREE.PointLight('#ed8d60',mobile?.55:.8,12,2);
+  emergency.position.set(sx,5.9,-7);scene.add(emergency);
   box(world,ochre,sx,6.25,-19.5,6,.35,.3);
   box(world,metal,sx,5.1,landingEnd-.3,6.3,.3,.2);
   box(world,screen,sx,4.75,landingEnd-.12,4.8,.38,.08);
