@@ -36,6 +36,22 @@ for(let z=33;z>=-160;z-=12){
 }
 const lights=[],lightPanels=[];
 for(let z=34;z>=-160;z-=12){const p=box(world,neon,0,7.7,z,12,.12,.4);lightPanels.push(p);const l=new THREE.PointLight('#a3d6e1',mobile?.48:.7,21,2);l.position.set(0,7.1,z);scene.add(l);lights.push(l)}
+// Estación clausurada: escombros, humedad, azulejos perdidos y corrosión.
+const damp=mat('#33403d'),rust=mat('#67473b'),debris=mat('#67635a'),pale=mat('#9e9a87');
+for(let i=0;i<110;i++){
+ const z=-159+(i*37.7)%193,side=i%2?-1:1;
+ const x=side*(9+(i*13.1)%23),size=.28+(i%7)*.13;
+ box(world,i%4===0?rust:debris,x,.055,z,size,.1,.3+(i%5)*.12);
+ if(i%6===0)box(world,damp,side*35.02,1.1+(i%8)*.82,z,.055,.6+(i%4)*.4,1.2+(i%3)*.7);
+ if(i%11===0)box(world,pale,side*34.98,4.2,z,.065,.65,.85);
+}
+for(const z of [-33,-79,-125]){
+ for(const side of [-1,1]){
+  box(world,damp,side*15,.07,z,7,.025,3.4);
+  box(world,rust,side*34.9,6,z,.18,.22,9);
+  for(const dz of [-2,0,2])box(world,debris,side*(17+dz),.12,z+dz,.8,.22,.55);
+ }
+}
 // Platform benches, station maps, ticket machines, and departure signs.
 for(let z=24;z>=-158;z-=22){for(const x of [-26,26]){box(world,wood,x,.55,z,1.2,.22,3);box(world,metal,x,.95,z,1.2,.7,.18);box(world,metal,x,.25,z-1.1,.18,.5,.2);box(world,metal,x,.25,z+1.1,.18,.5,.2)}
  for(const x of [-33.5,33.5]){box(world,metal,x,2.3,z,.5,3.5,2.4);box(world,screen,x>0?33.2:-33.2,2.6,z,.1,1.5,1.8)}
