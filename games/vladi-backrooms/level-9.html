@@ -103,7 +103,7 @@ const obstacles=[];
 function solid(x,z,w,d){obstacles.push({x,z,w,d})}
 for(let z=24;z>=-158;z-=22)for(const x of [-26,26])solid(x,z,1.4,3.3);
 for(let z=33;z>=-160;z-=12)for(const x of [-27,27])solid(x,z,.9,.9);
-function canWalk(x,z){if(x < -34.8||x > 34.8||z < -164||z > 37)return false;for(const o of obstacles){if(Math.abs(x-o.x)<o.w/2+.38&&Math.abs(z-o.z)<o.d/2+.38)return false}return true}
+function canWalk(x,z){if(x < -34.8||x > 34.8||z < -164||z > 37)return false;if(Math.abs(x)<3.7&&![-14,-90,-144].some(b=>Math.abs(z-b)<1.35))return false;for(const o of obstacles){if(Math.abs(x-o.x)<o.w/2+.38&&Math.abs(z-o.z)<o.d/2+.38)return false}return true}
 const fuseItems=[];for(const [x,z] of [[-22,-28],[22,-94],[-22,-146]]){const group=new THREE.Group();group.position.set(x,1,z);scene.add(group);box(group,metal,0,0,0,.6,.9,.3);box(group,green,0,.15,.18,.38,.25,.08);for(const dx of [-.19,.19])box(group,neon,dx,-.25,.18,.08,.16,.08);const glow=new THREE.PointLight('#8fffd0',1.2,7);glow.position.set(x,1.8,z);scene.add(glow);fuseItems.push({group,glow,x,z,found:false})}
 const stalker=new THREE.Group();scene.add(stalker);const coat=mat('#2d343b'),skin=mat('#9eabb3');box(stalker,coat,0,1.8,0,1.25,2.1,.7);box(stalker,skin,0,3.12,-.08,.7,.85,.65);for(const x of [-.48,.48]){box(stalker,coat,x,.55,0,.34,1.5,.35);box(stalker,coat,x*1.8,1.85,0,.27,1.85,.32);box(stalker,red,x*.36,3.22,-.42,.12,.1,.06)}box(stalker,black,0,3.63,0,.9,.2,.85);const legs=stalker.children.slice(2,4),arms=stalker.children.slice(4,6);stalker.position.set(12,0,-40);
 // Revisor: silueta reconocible, uniforme, placa y linterna propia.
