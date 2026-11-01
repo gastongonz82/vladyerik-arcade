@@ -111,6 +111,12 @@ for(const side of [-1,1]){
    const z=from+i+.5,h=(i+1)*.2;
    box(world,concrete,sx,h/2-.1,z,5.5,h-.19,.94);
   }
+  // Acceso continuo sin desnivel desde la última huella hasta el vestíbulo.
+  box(world,concrete,sx,top-.12,-33.5,5.6,.24,9.2);
+  for(const x of [sx-3.0,sx+3.0]){
+   box(world,metal,x,3.75,-33.5,.12,1.1,9.2);
+   box(world,ochre,x,4.35,-33.5,.14,.11,9.2);
+  }
   // Sala de control: mesa de operaciones, pantallas y puerta de mantenimiento.
   const deskMat=mat('#54524f'),monitorMat=new THREE.MeshBasicMaterial({color:'#8bc9ac'});
   box(world,deskMat,sx,3.65,-5.5,5.2,.7,1.3);
@@ -191,6 +197,33 @@ for(const side of [-1,1]){
   box(train,ceramic,side*1.94,1.2,z,.04,.25,1.55);
  }
 }
+// Material ferroviario: bogies, faros, cabina y puertas con profundidad.
+const trainTrim=mat('#d4c9b4'),wheelMat=mat('#151b20'),lampMat=new THREE.MeshBasicMaterial({color:'#ffe2a0'});
+for(const z of [-10,10]){
+ for(const x of [-1.15,1.15]){
+  box(train,wheelMat,x,.12,z,.62,.85,1.05);
+  box(train,metal,x,.12,z,.35,.38,1.35);
+ }
+}
+for(const end of [-1,1]){
+ box(train,trainTrim,0,3.65,end*14.88,3.15,.15,.08);
+ for(const x of [-1.05,1.05])box(train,lampMat,x,1.15,end*15.08,.44,.28,.12);
+ box(train,black,0,2.85,end*15.08,2.8,1.5,.09);
+ box(train,screen,0,3.95,end*15.08,1.9,.32,.09);
+}
+for(const side of [-1,1]){
+ for(const z of [-10,0,10]){
+  for(const offset of [-.63,.63]){
+   box(train,trainTrim,side*1.99,2.38,z+offset,.07,3.05,.075);
+  }
+  box(train,trainTrim,side*1.99,3.94,z,.07,.11,1.55);
+  box(train,trainTrim,side*1.99,1.03,z,.07,.12,1.55);
+ }
+ for(const z of [-13,-7,-3,3,7,13]){
+  box(train,trainTrim,side*1.9,3.88,z,.07,.13,2.15);
+  box(train,black,side*1.96,3.03,z,.035,1.2,1.9);
+ }
+}
 const tunnel=box(world,black,0,3.2,-127.5,7,6.5,.4);
 for(const x of [-3.5,3.5])box(world,concrete,x,3.5,-127.1,.6,7,.65);
 box(world,concrete,0,6.9,-127.1,7.6,.65,.65);
@@ -199,7 +232,7 @@ const exit=new THREE.Group();exit.position.set(-22,0,-160);scene.add(exit);box(e
 // Colisiones 2D simples y económicas: límites, vidrieras, separadores y mobiliario.
 const obstacles=[];
 function solid(x,z,w,d){obstacles.push({x,z,w,d})}
-for(let z=24;z>=-158;z-=22)for(const x of [-26,26])solid(x,z,1.4,3.3);
+for(let z=24;z>=-158;z-=22)for(const x of [-26,26]){if(x===-26&&z>=-60&&z<=-10)continue;solid(x,z,1.4,3.3)}
 for(let z=33;z>=-160;z-=12)for(const x of [-27,27]){if(x===-27&&z>-60&&z<-10)continue;solid(x,z,.9,.9)};
 function canWalk(x,z){if(x < -34.8||x > 34.8||z < -164||z > 37)return false;if(Math.abs(x)<2.2&&z>-80&&z<-48)return false;for(const o of obstacles){if(Math.abs(x-o.x)<o.w/2+.38&&Math.abs(z-o.z)<o.d/2+.38)return false}return true}
 const fuseItems=[];for(const [x,z] of [[-22,-28],[22,-94],[-22,-146]]){const group=new THREE.Group();group.position.set(x,1,z);scene.add(group);box(group,metal,0,0,0,.6,.9,.3);box(group,green,0,.15,.18,.38,.25,.08);for(const dx of [-.19,.19])box(group,neon,dx,-.25,.18,.08,.16,.08);const glow=new THREE.PointLight('#8fffd0',1.2,7);glow.position.set(x,1.8,z);scene.add(glow);fuseItems.push({group,glow,x,z,found:false})}
