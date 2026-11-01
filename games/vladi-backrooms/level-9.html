@@ -71,16 +71,23 @@ for(const side of [-1,1])for(let i=0;i<3;i++){
 // Identidad visual del subte: accesos de servicio, ductos, mapas y carteles.
 const ochre=mat('#c58d50'),pipeMat=mat('#626e70'),posterMat=mat('#e5d9bd');
 for(const side of [-1,1]){
- // Accesos cerrados y coherentes: no mostrar escaleras que terminan en el aire.
- for(const z of [18,-62,-135]){
-  const sx=side*28;
-  box(world,metal,sx,3.2,z,7.5,6.4,.5);
-  box(world,black,sx,2.7,z+.29,5.8,4.8,.08);
-  box(world,ochre,sx,5.7,z+.34,6.8,.35,.12);
-  box(world,metal,sx-2.8,2.8,z+.34,.24,5.1,.18);
-  box(world,metal,sx+2.8,2.8,z+.34,.24,5.1,.18);
-  box(world,screen,sx,5.2,z+.37,4.5,.42,.09);
+ // Escalera transitable hasta un entrepiso real, sin columnas atravesadas.
+ const sx=side*19;
+ const stairStart=-37,stairEnd=-21,deckEnd=-6,deckY=3.2;
+ for(let i=0;i<16;i++){
+  const z=stairStart+(i+.5),height=(i+1)*.2;
+  box(world,concrete,sx,height/2,z,7.4,height,1.01);
+  box(world,ochre,sx,height+.035,z-.39,7.3,.07,.13);
  }
+ box(world,concrete,sx,deckY-.15,(stairEnd+deckEnd)/2,7.4,.3,deckEnd-stairEnd);
+ for(const x of [sx-3.9,sx+3.9]){
+  box(world,metal,x,1.85,(stairStart+stairEnd)/2,.13,3.7,16);
+  box(world,metal,x,4.05,(stairEnd+deckEnd)/2,.13,1.7,15);
+  box(world,ochre,x,2.95,(stairStart+stairEnd)/2,.17,.14,16);
+  box(world,ochre,x,4.85,(stairEnd+deckEnd)/2,.17,.14,15);
+ }
+ box(world,metal,sx,6.1,deckEnd-.3,8.4,.4,.4);
+ box(world,screen,sx,5.7,deckEnd-.05,6.5,.42,.08);
  // Conductos de ventilación y cableado en el cielorraso.
  box(world,pipeMat,side*22,9.35,-65,.34,.34,200);
  box(world,ochre,side*22.55,9.35,-65,.12,.12,200);
@@ -158,18 +165,18 @@ $('start').onclick=reset;$('use').onclick=interact;$('torch').onclick=()=>{flash
 addEventListener('keydown',e=>{keys.add(e.code);if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyE')interact();if(e.code==='Space'&&!e.repeat)jumpQueued=true;if(e.code==='KeyF'){flashOn=!flashOn;torch.visible=flashOn}if(e.code==='Escape'&&active)$('pause').click()});addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>{keys.clear();padX=padY=0;runTouch=false});
 let looking=false,lx=0,ly=0;renderer.domElement.addEventListener('pointerdown',e=>{looking=true;lx=e.clientX;ly=e.clientY;if(!mobile&&renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock()});addEventListener('pointerup',()=>looking=false);addEventListener('pointermove',e=>{if(!active||paused)return;let dx=0,dy=0;if(document.pointerLockElement===renderer.domElement){dx=e.movementX;dy=e.movementY}else if(looking){dx=e.clientX-lx;dy=e.clientY-ly;lx=e.clientX;ly=e.clientY}else return;yaw-=dx*.003;pitch=Math.max(-1.2,Math.min(1.2,pitch-dy*.0025))});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('button,#touch,canvas'))e.preventDefault()});document.addEventListener('selectstart',e=>{if(e.target.closest('button,#touch,#hud,#msg,canvas'))e.preventDefault()});$('jump').addEventListener('pointerdown',e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);jumpHeld=true;jumpQueued=true});$('jump').addEventListener('pointerup',()=>jumpHeld=false);$('jump').addEventListener('pointercancel',()=>jumpHeld=false);const pad=$('pad'),nub=$('nub');function movePad(e){const r=pad.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(x,y)),scale=Math.min(1,44/len);padX=x*scale/44;padY=y*scale/44;nub.style.transform='translate('+(padX*38)+'px,'+(padY*38)+'px)'}pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);movePad(e)});pad.addEventListener('pointermove',e=>{if(pad.hasPointerCapture(e.pointerId))movePad(e)});function stopPad(){padX=padY=0;nub.style.transform=''}pad.addEventListener('pointerup',stopPad);pad.addEventListener('pointercancel',stopPad);$('sprint').addEventListener('pointerdown',e=>{e.currentTarget.setPointerCapture(e.pointerId);runTouch=true});$('sprint').addEventListener('pointerup',()=>runTouch=false);$('sprint').addEventListener('pointercancel',()=>runTouch=false);
-function frame(now){requestAnimationFrame(frame);const dt=Math.min(.045,(now-last)/1000);last=now;if(active&&!paused){elapsed+=dt;const gp=navigator.getGamepads?.()[0],ax=gp&&Math.abs(gp.axes[0])>.15?gp.axes[0]:0,ay=gp&&Math.abs(gp.axes[1])>.15?gp.axes[1]:0;const fw=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-padY-ay,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+padX+ax;if(gp){if(Math.abs(gp.axes[2]||0)>.16)yaw-=gp.axes[2]*dt*2.4;if(Math.abs(gp.axes[3]||0)>.16)pitch=Math.max(-1.2,Math.min(1.2,pitch-gp.axes[3]*dt*1.8));if(gp.buttons[0]?.pressed&&!frame.wasUse){interact()}frame.wasUse=!!gp.buttons[0]?.pressed;if(gp.buttons[4]?.pressed)runTouch=true;else if(!mobile)runTouch=false}const norm=Math.max(1,Math.hypot(fw,side)),speed=(runTouch||keys.has('ShiftLeft')?7:4.1)*dt;const nx=px+(-Math.sin(yaw)*fw+Math.cos(yaw)*side)/norm*speed,nz=pz+(-Math.cos(yaw)*fw-Math.sin(yaw)*side)/norm*speed;const platformHeight=0,trackHeight=-1.35;
-const onTrack=Math.abs(px)<3.65;
-const nextOnTrack=Math.abs(nx)<3.65;
-const grounded=playerY<=(onTrack?trackHeight:platformHeight)+.06;
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.045,(now-last)/1000);last=now;if(active&&!paused){elapsed+=dt;const gp=navigator.getGamepads?.()[0],ax=gp&&Math.abs(gp.axes[0])>.15?gp.axes[0]:0,ay=gp&&Math.abs(gp.axes[1])>.15?gp.axes[1]:0;const fw=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-padY-ay,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+padX+ax;if(gp){if(Math.abs(gp.axes[2]||0)>.16)yaw-=gp.axes[2]*dt*2.4;if(Math.abs(gp.axes[3]||0)>.16)pitch=Math.max(-1.2,Math.min(1.2,pitch-gp.axes[3]*dt*1.8));if(gp.buttons[0]?.pressed&&!frame.wasUse){interact()}frame.wasUse=!!gp.buttons[0]?.pressed;if(gp.buttons[4]?.pressed)runTouch=true;else if(!mobile)runTouch=false}const norm=Math.max(1,Math.hypot(fw,side)),speed=(runTouch||keys.has('ShiftLeft')?7:4.1)*dt;const nx=px+(-Math.sin(yaw)*fw+Math.cos(yaw)*side)/norm*speed,nz=pz+(-Math.cos(yaw)*fw-Math.sin(yaw)*side)/norm*speed;const floorAt=(x,z)=>{if(Math.abs(x)<3.65)return -1.35;
+ if(Math.abs(Math.abs(x)-19)<3.7){if(z>=-37&&z< -21)return Math.min(3.2,Math.floor(z+37+1)*.2);if(z>=-21&&z<=-6)return 3.2}
+ return 0};
+const currentFloor=floorAt(px,pz),grounded=playerY<=currentFloor+.06;
 if((jumpQueued||gp?.buttons?.[0]?.pressed&&!frame.lastJump)&&grounded){verticalSpeed=6.3;tone(190,.12,.015)}
 frame.lastJump=!!gp?.buttons?.[0]?.pressed;jumpQueued=false;
 verticalSpeed-=15.5*dt;playerY+=verticalSpeed*dt;
-const nextFloor=nextOnTrack?trackHeight:platformHeight;
-const canClimb= !nextOnTrack&&onTrack&&playerY>=-.12;
-if(canWalk(nx,pz)&&(nextOnTrack===onTrack||nextOnTrack||canClimb))px=nx;
-if(canWalk(px,nz))pz=nz;
-const floorNow=Math.abs(px)<3.65?trackHeight:platformHeight;
+const tryMove=(x,z)=>{if(!canWalk(x,z))return false;const h=floorAt(x,z);if(h>playerY+.27)return false;return true};
+if(tryMove(nx,pz))px=nx;
+if(tryMove(px,nz))pz=nz;
+const floorNow=floorAt(px,pz);
 if(playerY<floorNow){playerY=floorNow;verticalSpeed=0}
+if(grounded&&verticalSpeed<=0&&floorNow>currentFloor&&floorNow-currentFloor<=.25){playerY=floorNow;verticalSpeed=0}
 camera.position.set(px,1.7+playerY+Math.sin(elapsed*10)*Math.min(.04,Math.hypot(fw,side)*.02),pz);camera.rotation.set(pitch,yaw,0);for(let i=0;i<lights.length;i++){lights[i].intensity=(i%5===0?.38:1.05)*(Math.sin(elapsed*2+i*3.7)>.94?.08:1);lightPanels[i].visible=lights[i].intensity>.1;}for(const f of fuseItems)if(!f.found){f.group.rotation.y+=dt*.7;f.group.position.y=1+Math.sin(elapsed*2+f.z)*.13}near=null;let nearest=2.4;for(const f of fuseItems)if(!f.found){const d=Math.hypot(px-f.x,pz-f.z);if(d<nearest){near=f;nearest=d}}if(Math.hypot(px+22,pz+160)<3.8&&near===null)near='exit';$('use').style.display=near?'block':'none';$('use').textContent=near==='exit'?'ACTIVAR SALIDA':'RECOGER CREDENCIAL';const remaining=fuseItems.filter(f=>!f.found).sort((a,b)=>Math.hypot(px-a.x,pz-a.z)-Math.hypot(px-b.x,pz-b.z));const target=remaining[0];$('stats').textContent='CREDENCIALES '+found+'/3 · ♥ '+health+(target?' · SIGUIENTE '+Math.round(Math.hypot(px-target.x,pz-target.z))+'m':' · SALIDA');const pursuing=Math.hypot(px-stalker.position.x,pz-stalker.position.z)<19;const targetX=pursuing?px:Math.sin(elapsed*.31)*16,targetZ=pursuing?pz:Math.max(-150,Math.min(-20,-80+Math.sin(elapsed*.12)*65));const mx=(targetX-stalker.position.x)*Math.min(1,dt*(pursuing?.7:.42)),mz=(targetZ-stalker.position.z)*Math.min(1,dt*(pursuing?.7:.42));if(canWalk(stalker.position.x+mx,stalker.position.z))stalker.position.x+=mx;if(canWalk(stalker.position.x,stalker.position.z+mz))stalker.position.z+=mz;const dx=px-stalker.position.x,dz=pz-stalker.position.z;const targetAngle=Math.atan2(-dx,-dz),delta=Math.atan2(Math.sin(targetAngle-stalker.rotation.y),Math.cos(targetAngle-stalker.rotation.y));stalker.rotation.y+=delta*Math.min(1,dt*2.2);legs[0].rotation.x=Math.sin(elapsed*5)*.25;legs[1].rotation.x=-Math.sin(elapsed*5)*.25;arms[0].rotation.x=-Math.sin(elapsed*5)*.16;arms[1].rotation.x=Math.sin(elapsed*5)*.16;stalker.position.y=Math.abs(Math.sin(elapsed*5))*.055;guardLight.intensity=.55+.3*Math.sin(elapsed*3);const dist=Math.hypot(dx,dz);if(dist<2&&invuln<=0){health--;invuln=3;tone(65,.5,.12);$('msg').textContent='¡EL REVISOR TE ENCONTRÓ!';$('damage').style.opacity='.35'}invuln-=dt;$('damage').style.opacity=Math.max(0,parseFloat($('damage').style.opacity||0)-dt*.4);if(dist<11&&now-lastScare>3700){lastScare=now;tone(50,.55,.03)}if(now-lastAmbient>11000&&soundOn){lastAmbient=now;tone(55+Math.random()*35,1.6,.012)}if(health<=0)show('GAME OVER','El revisor te atrapó en la estación de trenes.')}renderer.render(scene,camera)}requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script></body></html>
