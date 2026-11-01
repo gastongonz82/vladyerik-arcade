@@ -69,10 +69,24 @@ for(const z of [-22,-78]){
  box(world,metal,-12,6.7,z,.15,1.2,.15);
 }
 // Parked train along a distant track section, leaving the platform route unobstructed.
-const train=new THREE.Group();train.position.set(0,0,-80);scene.add(train);
+const train=new THREE.Group();train.position.set(0,0,-46);scene.add(train);
 box(train,metal,0,2.4,0,3.5,4.6,30);box(train,concrete,0,4.75,0,3.3,.3,30);
 for(const z of [-12,-6,0,6,12]){for(const x of [-1.79,1.79])box(train,glass,x,2.8,z,.06,1.8,3.2);box(train,screen,0,4.15,z,2.4,.18,2.2)}
 for(const z of [-14.8,14.8]){box(train,black,0,2.4,z,2.8,3.5,.13);box(train,signal,0,4.25,z,.9,.2,.15)}
+// Ventanillas, puertas y bandas laterales de un tren de subte.
+for(const side of [-1,1]){
+ box(train,blueBand,side*1.82,1.65,0,.08,.38,29.7);
+ for(const z of [-10,0,10]){
+  box(train,metal,side*1.84,2.4,z,.12,3.5,1.65);
+  box(train,black,side*1.91,2.8,z,.04,1.8,1.25);
+  box(train,screen,side*1.94,3.0,z,.04,1.1,1.08);
+  box(train,ceramic,side*1.94,1.2,z,.04,.25,1.55);
+ }
+}
+const tunnel=box(world,black,0,3.2,-127.5,7,6.5,.4);
+for(const x of [-3.5,3.5])box(world,concrete,x,3.5,-127.1,.6,7,.65);
+box(world,concrete,0,6.9,-127.1,7.6,.65,.65);
+
 const exit=new THREE.Group();exit.position.set(-12,0,-122);scene.add(exit);box(exit,metal,0,3,0,7,6,.65);const door=box(exit,black,0,2.5,.4,4.4,4.8,.2);const exitLight=box(exit,red,0,5.55,.5,4,.3,.3);const exitLamp=new THREE.PointLight('#e85a66',1.8,11);exitLamp.position.set(-12,5,-121);scene.add(exitLamp);
 // Colisiones 2D simples y económicas: límites, vidrieras, separadores y mobiliario.
 const obstacles=[];
