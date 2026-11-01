@@ -22,7 +22,7 @@
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script><script type="module">
 import * as THREE from 'three';
 const $=id=>document.getElementById(id),mobile=matchMedia('(pointer:coarse)').matches;
-const lowPower=mobile&&(navigator.hardwareConcurrency||4)<=4;
+const lowPower=mobile&&((navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||4)<=4);
 const scene=new THREE.Scene();scene.background=new THREE.Color('#11161b');scene.fog=new THREE.FogExp2('#192126',.013);
 const camera=new THREE.PerspectiveCamera(82,innerWidth/innerHeight,.07,235);camera.rotation.order='YXZ';
 const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,lowPower?.55:mobile?.72:1.35));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;document.body.prepend(renderer.domElement);
