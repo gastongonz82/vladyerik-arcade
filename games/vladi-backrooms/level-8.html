@@ -14,7 +14,35 @@ function box(parent,m,x,y,z,w,h,d){const a=new THREE.Mesh(geo,m);a.position.set(
 const world=new THREE.Group();scene.add(world);
 box(world,tile,0,-.15,-55,66,.3,148);box(world,dark,0,9.4,-55,66,.4,148);
 for(let z=15;z>=-125;z-=5){box(world,metal,0,-.005,z,66,.012,.07);for(let x=-30;x<=30;x+=5)box(world,metal,x,-.004,z,.07,.012,5)}
-for(const side of [-1,1]){box(world,wall,side*32.5,4.6,-55,.6,9.3,148);for(let z=10;z>=-119;z-=13){const x=side*23.8;box(world,wood,x,0,z,16,.18,12);box(world,wall,side*15.8,4.2,z,.35,8.4,.35);box(world,wall,side*31.5,4.2,z,.35,8.4,.35);for(const dz of [-3.9,3.9])box(world,glass,side*16.05,3.3,z-5.8+dz,.08,5.8,3.0);box(world,metal,side*16.05,6.2,z-5.8,.15,.14,10.8);box(world,metal,side*16,6.25,z-5.8,.25,.22,11);box(world,metal,side*16,.3,z-5.8,.25,.5,11);const sign=box(world,side===1?neon:green,side*23,7.8,z-5.5,7,.3,.1);sign.rotation.y=0;for(let j=0;j<3;j++){box(world,wood,side*(20+j*3.2),.8,z-3.4,1.5,1.5,1);box(world,metal,side*(20+j*3.2),1.6,z-3.4,1.6,.12,1.1)}box(world,metal,side*16.5,1,z-5.8,.4,2.2,.4)}}
+// Locales modulares: fachada alineada, entrada central y mobiliario contra paredes.
+const shopFloor=mat('#4d575b'),shopTrim=mat('#8d9291'),shelf=mat('#484a4b'),display=mat('#897c69');
+for(const side of [-1,1]){
+ box(world,wall,side*32.5,4.6,-55,.6,9.3,148);
+ for(let z=10;z>=-119;z-=13){
+  const centerZ=z-6.5,frontX=side*16.05,backX=side*31.8;
+  box(world,shopFloor,side*24,0,centerZ,15.7,.08,12.6);
+  // Separadores entre locales: no invaden el corredor ni la entrada.
+  box(world,wall,side*24,3.3,z,16,.22,.28);
+  box(world,wall,side*24,3.3,z-12.9,16,.22,.28);
+  for(const zz of [z,z-12.9])box(world,metal,frontX,3.3,zz,.28,6.6,.28);
+  // Dos vidrieras y una puerta central despejada de 4.8 metros.
+  for(const dz of [-4.3,4.3]){
+   box(world,glass,frontX,3.15,centerZ+dz,.08,5.5,3.7);
+   box(world,metal,frontX,6,centerZ+dz,.18,.2,3.9);
+  }
+  box(world,metal,frontX,6.2,centerZ,.26,.3,12.8);
+  box(world,metal,frontX,.27,centerZ,.22,.5,12.8);
+  box(world,side===1?neon:green,frontX,7.1,centerZ,.15,.5,7.2);
+  // Estanterías contra pared trasera; centro del local libre.
+  for(const dz of [-3.7,0,3.7]){
+   box(world,shelf,side*29.6,1.2,centerZ+dz,2.3,2.4,2.7);
+   for(const h of [.6,1.3,2])box(world,display,side*29.1,h,centerZ+dz,2.5,.13,2.6);
+  }
+  // Mostrador lateral, sin bloquear la puerta ni el paso.
+  box(world,wood,side*21.8,.7,centerZ-4,2.5,1.4,1.1);
+  box(world,shopTrim,side*21.8,1.44,centerZ-4,2.65,.13,1.2);
+ }
+}
 const decor=new THREE.Group();scene.add(decor);const plant=mat('#345b4c'),pot=mat('#65666a'),trim=mat('#b49b73');for(let z=0;z>=-112;z-=24){for(const x of [-13,13]){box(decor,pot,x,.4,z,1.2,.8,1.2);for(let i=0;i<4;i++){const leaf=box(decor,plant,x+Math.sin(i*1.57)*.28,1.15,z+Math.cos(i*1.57)*.28,.24,1.25,.24);leaf.rotation.z=Math.sin(i*1.57)*.3}box(decor,trim,x,1,z,1.3,.12,1.3)}}for(const z of [-20,-55,-90]){box(decor,metal,0,.06,z,4,.12,4);box(decor,trim,0,.13,z,3.5,.035,3.5);for(const x of [-1.6,1.6])box(decor,metal,x,.7,z,.12,1.2,.12)}
 const lights=[];for(let z=10;z>=-120;z-=10){box(world,neon,0,9.08,z,13,.12,.4);const light=new THREE.PointLight('#a7dbe4',mobile?.55:.85,19,2);light.position.set(0,8.7,z);scene.add(light);lights.push(light);for(const x of [-7,7])box(world,metal,x,8.9,z,.3,.6,.3)}
 for(let z=-3;z>=-116;z-=17){for(const x of [-10,10]){box(world,wood,x,.65,z,1.2,1.2,2.4);box(world,metal,x,1.35,z,1.4,.14,2.5);box(world,wall,x,1.6,z,1.1,.45,1.7)}}
