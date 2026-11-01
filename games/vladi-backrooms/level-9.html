@@ -52,6 +52,16 @@ for(const z of [-33,-79,-125]){
   for(const dz of [-2,0,2])box(world,debris,side*(17+dz),.12,z+dz,.8,.22,.55);
  }
 }
+// Cartelería clausurada, bancos deteriorados y cableado colgante.
+const caution=mat('#a07e46'),wire=mat('#262d30');
+for(const z of [-25,-67,-109,-149]){
+ for(const side of [-1,1]){
+  box(world,wire,side*31,5.7,z,.12,5.5,.12);
+  box(world,caution,side*31,3.1,z,1.8,.14,2.6);
+  box(world,black,side*31,2.1,z,.22,1.7,2.3);
+  box(world,rust,side*25,.25,z,2.6,.3,.9);
+ }
+}
 // Platform benches, station maps, ticket machines, and departure signs.
 for(let z=24;z>=-158;z-=22){for(const x of [-26,26]){box(world,wood,x,.55,z,1.2,.22,3);box(world,metal,x,.95,z,1.2,.7,.18);box(world,metal,x,.25,z-1.1,.18,.5,.2);box(world,metal,x,.25,z+1.1,.18,.5,.2)}
  for(const x of [-33.5,33.5]){box(world,metal,x,2.3,z,.5,3.5,2.4);box(world,screen,x>0?33.2:-33.2,2.6,z,.1,1.5,1.8)}
