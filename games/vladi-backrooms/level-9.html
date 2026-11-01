@@ -30,7 +30,7 @@ for(let z=35;z>=-165;z-=2.8)box(world,wood,0,-1.18,z,6.4,.13,.4);
 // No hay pasarelas sobre las vías: los trenes tienen el gálibo libre.
 // El jugador puede bajar al lecho ferroviario y saltar para volver al andén.
 for(let z=33;z>=-160;z-=12){
- for(const x of [-27,27]){box(world,concrete,x,4.9,z,.75,9.8,.75);box(world,metal,x,7.25,z,1.4,.25,1.4)}
+ for(const x of [-27,27]){if(x===-27&&z<=-30&&z>=-60)continue;box(world,concrete,x,4.9,z,.75,9.8,.75);box(world,metal,x,7.25,z,1.4,.25,1.4)}
  box(world,metal,0,8.03,z,22,.25,.65);
  box(world,neon,0,7.75,z,13,.1,.4);
 }
@@ -71,23 +71,27 @@ for(const side of [-1,1])for(let i=0;i<3;i++){
 // Identidad visual del subte: accesos de servicio, ductos, mapas y carteles.
 const ochre=mat('#c58d50'),pipeMat=mat('#626e70'),posterMat=mat('#e5d9bd');
 for(const side of [-1,1]){
- // Escalera transitable hasta un entrepiso real, sin columnas atravesadas.
- const sx=side*19;
- const stairStart=-37,stairEnd=-21,deckEnd=-6,deckY=3.2;
- for(let i=0;i<16;i++){
-  const z=stairStart+(i+.5),height=(i+1)*.2;
-  box(world,concrete,sx,height/2,z,7.4,height,1.01);
-  box(world,ochre,sx,height+.035,z-.39,7.3,.07,.13);
+ // Una sola escalera de acceso al vestíbulo, con peldaños visibles y descansillo.
+ if(side===-1){
+  const sx=-29,from=-54,to=-38,landingEnd=-29,top=3.2;
+  for(let i=0;i<16;i++){
+   const z=from+i+.5,h=(i+1)*.2;
+   box(world,concrete,sx,h-.095,z,5.6,.19,.96);
+   box(world,ochre,sx,h+.015,z-.43,5.6,.035,.09);
+  }
+  box(world,concrete,sx,top-.12,(to+landingEnd)/2,5.6,.24,to-landingEnd<0?landingEnd-to:to-landingEnd);
+  for(const x of [sx-2.95,sx+2.95]){
+   // Largueros inclinados: no son muros altos que oculten los escalones.
+   const railSlope=box(world,metal,x,2.35,(from+to)/2,.1,.13,17.2);
+   railSlope.rotation.x=-Math.atan2(3.2,16);
+   box(world,metal,x,4.2,(to+landingEnd)/2,.1,.12,9);
+   for(const z of [from+1,from+5,from+9,from+13]){
+    box(world,metal,x,1.2+(z-from)*.2,z,.1,.9,.1);
+   }
+  }
+  box(world,metal,sx,5.1,landingEnd-.3,6.3,.3,.2);
+  box(world,screen,sx,4.75,landingEnd-.12,4.8,.38,.08);
  }
- box(world,concrete,sx,deckY-.15,(stairEnd+deckEnd)/2,7.4,.3,deckEnd-stairEnd);
- for(const x of [sx-3.9,sx+3.9]){
-  box(world,metal,x,1.85,(stairStart+stairEnd)/2,.13,3.7,16);
-  box(world,metal,x,4.05,(stairEnd+deckEnd)/2,.13,1.7,15);
-  box(world,ochre,x,2.95,(stairStart+stairEnd)/2,.17,.14,16);
-  box(world,ochre,x,4.85,(stairEnd+deckEnd)/2,.17,.14,15);
- }
- box(world,metal,sx,6.1,deckEnd-.3,8.4,.4,.4);
- box(world,screen,sx,5.7,deckEnd-.05,6.5,.42,.08);
  // Conductos de ventilación y cableado en el cielorraso.
  box(world,pipeMat,side*22,9.35,-65,.34,.34,200);
  box(world,ochre,side*22.55,9.35,-65,.12,.12,200);
@@ -166,7 +170,7 @@ addEventListener('keydown',e=>{keys.add(e.code);if(['Space','ArrowUp','ArrowDown
 let looking=false,lx=0,ly=0;renderer.domElement.addEventListener('pointerdown',e=>{looking=true;lx=e.clientX;ly=e.clientY;if(!mobile&&renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock()});addEventListener('pointerup',()=>looking=false);addEventListener('pointermove',e=>{if(!active||paused)return;let dx=0,dy=0;if(document.pointerLockElement===renderer.domElement){dx=e.movementX;dy=e.movementY}else if(looking){dx=e.clientX-lx;dy=e.clientY-ly;lx=e.clientX;ly=e.clientY}else return;yaw-=dx*.003;pitch=Math.max(-1.2,Math.min(1.2,pitch-dy*.0025))});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('button,#touch,canvas'))e.preventDefault()});document.addEventListener('selectstart',e=>{if(e.target.closest('button,#touch,#hud,#msg,canvas'))e.preventDefault()});$('jump').addEventListener('pointerdown',e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);jumpHeld=true;jumpQueued=true});$('jump').addEventListener('pointerup',()=>jumpHeld=false);$('jump').addEventListener('pointercancel',()=>jumpHeld=false);const pad=$('pad'),nub=$('nub');function movePad(e){const r=pad.getBoundingClientRect(),x=e.clientX-r.left-r.width/2,y=e.clientY-r.top-r.height/2,len=Math.max(1,Math.hypot(x,y)),scale=Math.min(1,44/len);padX=x*scale/44;padY=y*scale/44;nub.style.transform='translate('+(padX*38)+'px,'+(padY*38)+'px)'}pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);movePad(e)});pad.addEventListener('pointermove',e=>{if(pad.hasPointerCapture(e.pointerId))movePad(e)});function stopPad(){padX=padY=0;nub.style.transform=''}pad.addEventListener('pointerup',stopPad);pad.addEventListener('pointercancel',stopPad);$('sprint').addEventListener('pointerdown',e=>{e.currentTarget.setPointerCapture(e.pointerId);runTouch=true});$('sprint').addEventListener('pointerup',()=>runTouch=false);$('sprint').addEventListener('pointercancel',()=>runTouch=false);
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.045,(now-last)/1000);last=now;if(active&&!paused){elapsed+=dt;const gp=navigator.getGamepads?.()[0],ax=gp&&Math.abs(gp.axes[0])>.15?gp.axes[0]:0,ay=gp&&Math.abs(gp.axes[1])>.15?gp.axes[1]:0;const fw=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-padY-ay,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+padX+ax;if(gp){if(Math.abs(gp.axes[2]||0)>.16)yaw-=gp.axes[2]*dt*2.4;if(Math.abs(gp.axes[3]||0)>.16)pitch=Math.max(-1.2,Math.min(1.2,pitch-gp.axes[3]*dt*1.8));if(gp.buttons[0]?.pressed&&!frame.wasUse){interact()}frame.wasUse=!!gp.buttons[0]?.pressed;if(gp.buttons[4]?.pressed)runTouch=true;else if(!mobile)runTouch=false}const norm=Math.max(1,Math.hypot(fw,side)),speed=(runTouch||keys.has('ShiftLeft')?7:4.1)*dt;const nx=px+(-Math.sin(yaw)*fw+Math.cos(yaw)*side)/norm*speed,nz=pz+(-Math.cos(yaw)*fw-Math.sin(yaw)*side)/norm*speed;const floorAt=(x,z)=>{if(Math.abs(x)<3.65)return -1.35;
- if(Math.abs(Math.abs(x)-19)<3.7){if(z>=-37&&z< -21)return Math.min(3.2,Math.floor(z+37+1)*.2);if(z>=-21&&z<=-6)return 3.2}
+ if(Math.abs(x+29)<2.8){if(z>=-54&&z< -38)return Math.min(3.2,Math.floor(z+54+1)*.2);if(z>=-38&&z<=-29)return 3.2}
  return 0};
 const currentFloor=floorAt(px,pz),grounded=playerY<=currentFloor+.06;
 if((jumpQueued||gp?.buttons?.[0]?.pressed&&!frame.lastJump)&&grounded){verticalSpeed=6.3;tone(190,.12,.015)}
