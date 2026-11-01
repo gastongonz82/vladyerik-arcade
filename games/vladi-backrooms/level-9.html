@@ -46,6 +46,28 @@ for(const side of [-1,1]){
  }
 }
 for(const x of [-2.45,2.45])box(world,warning,x,.12,-55,.27,.05,148);
+// Carteles de estación con texto real, legibles desde el andén.
+function labelMaterial(top,bottom){
+ const c=document.createElement('canvas');c.width=512;c.height=128;
+ const g=c.getContext('2d');g.fillStyle='#13547b';g.fillRect(0,0,512,128);
+ g.fillStyle='#f7f6ed';g.textAlign='center';g.font='bold 42px Arial';g.fillText(top,256,57);
+ g.font='bold 21px Arial';g.fillText(bottom,256,98);
+ const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
+ return new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});
+}
+const nameMat=labelMaterial('ESTACIÓN CERO','ANDÉN SIN SALIDA');
+for(const z of [1,-31,-63,-95]){
+ for(const side of [-1,1]){
+  const plaque=new THREE.Mesh(new THREE.PlaneGeometry(5.6,1.4),nameMat);
+  plaque.position.set(side*22.72,3.2,z);plaque.rotation.y=side===1?-Math.PI/2:Math.PI/2;world.add(plaque);
+ }
+}
+const timetable=labelMaterial('PRÓXIMO TREN','SERVICIO SUSPENDIDO');
+for(const z of [-22,-78]){
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(5.5,1.35),timetable);
+ sign.position.set(-12,5.8,z+.2);world.add(sign);
+ box(world,metal,-12,6.7,z,.15,1.2,.15);
+}
 // Parked train along a distant track section, leaving the platform route unobstructed.
 const train=new THREE.Group();train.position.set(0,0,-80);scene.add(train);
 box(train,metal,0,2.4,0,3.5,4.6,30);box(train,concrete,0,4.75,0,3.3,.3,30);
