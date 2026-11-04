@@ -177,7 +177,26 @@ const dragonBallBoxArt={
   "roms/Dragon%20Ball%20Z%20-%20Hyper%20Dimension%20%28Japan%29%20%5BEn%20by%20Unknown%20v1.0%5D.zip": "Dragon Ball Z - Hyper Dimension (Japan)",
   "roms/Dragon%20Ball%20Z%20-%20Super%20Butouden%203%20%28Japan%29.zip": "Dragon Ball Z - Super Butouden 3 (Japan)"
 };
+const correctedBoxArt={
+  "roms/Aladdin%20%28U%29%20%5B%21%5D.zip": "Aladdin (USA)",
+  "roms/Cruis%27n%20USA%20%28USA%29%20%28Rev%20A%29.zip": "Cruis'n USA (USA)",
+  "roms/Doom%20%28USA%29.zip": "Doom (USA)",
+  "roms/Doom%2064%20%28USA%29.zip": "Doom 64 (USA)",
+  "roms/Indiana%20Jones%20and%20the%20Last%20Crusade%20%28USA%29.zip": "Indiana Jones and the Last Crusade (USA)",
+  "roms/International%20Superstar%20Soccer%20%28USA%29.zip": "International Superstar Soccer (USA)",
+  "roms/Mario%20Kart%2064%20%28E%29%20%28V1.1%29%20%5B%21%5D.zip": "Mario Kart 64 (Europe)",
+  "roms/Mario%20Tennis%20%28U%29%20%5B%21%5D.zip": "Mario Tennis (USA)",
+  "roms/Marvel%20Super%20Heroes%20-%20War%20of%20the%20Gems%20%28USA%29.zip": "Marvel Super Heroes - War of the Gems (USA)"
+};
+const correctedNoArt=new Set(["roms/Sonic%20the%20Hedgehog%204%20%28World%29%20%28Unl%29.zip","roms/Street%20Fighter%20EX%20%28World%29%20%28Unl%29.zip"]);
+const correctedArtPaths=new Set(["roms/Aladdin%20%28U%29%20%5B%21%5D.zip","roms/Cruis%27n%20USA%20%28USA%29%20%28Rev%20A%29.zip","roms/Doom%20%28USA%29.zip","roms/Doom%2064%20%28USA%29.zip","roms/Indiana%20Jones%20and%20the%20Last%20Crusade%20%28USA%29.zip","roms/International%20Superstar%20Soccer%20%28USA%29.zip","roms/Mario%20Kart%2064%20%28E%29%20%28V1.1%29%20%5B%21%5D.zip","roms/Mario%20Tennis%20%28U%29%20%5B%21%5D.zip","roms/Marvel%20Super%20Heroes%20-%20War%20of%20the%20Gems%20%28USA%29.zip","roms/Sonic%20the%20Hedgehog%204%20%28World%29%20%28Unl%29.zip","roms/Street%20Fighter%20EX%20%28World%29%20%28Unl%29.zip"]);
 function coverCandidates(game){
+ if(correctedNoArt.has(game.path))return [];
+ if(correctedBoxArt[game.path]){
+  const system=thumbSystems[game.system];
+  return system?['Named_Boxarts','Named_Titles','Named_Snaps'].map(type=>'https://thumbnails.libretro.com/'+encodeURIComponent(system)+'/'+type+'/'+encodeURIComponent(correctedBoxArt[game.path])+'.png'):[];
+ }
+
  if(dragonBallBoxArt[game.path])return [
   'https://thumbnails.libretro.com/Nintendo%20-%20Super%20Nintendo%20Entertainment%20System/Named_Boxarts/'+encodeURIComponent(dragonBallBoxArt[game.path])+'.png'
  ];
@@ -318,12 +337,12 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
  const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const pinnedCovers={};
- const localCover=ignoreHosted?null:(pinnedCovers[game.path]||hostedCovers[game.path]);const remoteCover=ignoreHosted||/^(roms\/Aladdin%20%28USA%29%20%28Beta%29|roms\/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29)\.zip$/.test(game.path)?null:remoteHostedCovers[game.path];
+ const localCover=ignoreHosted||correctedArtPaths.has(game.path)?null:(pinnedCovers[game.path]||hostedCovers[game.path]);const remoteCover=ignoreHosted||correctedArtPaths.has(game.path)||/^(roms\/Aladdin%20%28USA%29%20%28Beta%29|roms\/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29)\.zip$/.test(game.path)?null:remoteHostedCovers[game.path];
  if(localCover){const localImg=document.createElement('img');localImg.alt='Portada de '+cleanName(game.name);localImg.loading=priority?'eager':'lazy';localImg.decoding='async';localImg.onload=()=>fallbackImage.remove();localImg.onerror=()=>{localImg.remove();if(!pinnedCovers[game.path])setArtwork(target,game,{priority,ignoreHosted:true})};target.append(localImg);localImg.src='./'+localCover+(localCover.includes('?')?'&':'?')+'coverVersion=20261027b';return;}
  if(remoteCover){const hostedImg=document.createElement('img');hostedImg.alt='Portada de '+cleanName(game.name);hostedImg.loading=priority?'eager':'lazy';hostedImg.decoding='async';hostedImg.onload=()=>fallbackImage.remove();hostedImg.onerror=()=>{hostedImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(hostedImg);hostedImg.src=base+remoteCover;return;}
  const urls=coverCandidates(game);if(!urls.length)return;
  const coverKey=game.system+'|'+cleanName(game.name);
- const cached=coverMemory.has(coverKey)?coverMemory.get(coverKey):savedCovers[coverKey];
+ const cached=correctedArtPaths.has(game.path)?null:(coverMemory.has(coverKey)?coverMemory.get(coverKey):savedCovers[coverKey]);
  if(cached===false&&game.system!=='arcade'&&!dragonBallBoxArt[game.path])return;
  const candidates=typeof cached==='string'?[cached,...urls.filter(url=>url!==cached)]:urls;
  let idx=0;
