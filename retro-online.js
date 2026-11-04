@@ -171,7 +171,16 @@ function rememberCover(key,value){
  }catch(_){}
 }
 
+// Portadas exactas de las dos ediciones japonesas de Dragon Ball Z para SNES.
+// Usar la carátula de Japón aunque Hyper Dimension tenga traducción al inglés.
+const dragonBallBoxArt={
+  "roms/Dragon%20Ball%20Z%20-%20Hyper%20Dimension%20%28Japan%29%20%5BEn%20by%20Unknown%20v1.0%5D.zip": "Dragon Ball Z - Hyper Dimension (Japan)",
+  "roms/Dragon%20Ball%20Z%20-%20Super%20Butouden%203%20%28Japan%29.zip": "Dragon Ball Z - Super Butouden 3 (Japan)"
+};
 function coverCandidates(game){
+ if(dragonBallBoxArt[game.path])return [
+  'https://thumbnails.libretro.com/Nintendo%20-%20Super%20Nintendo%20Entertainment%20System/Named_Boxarts/'+encodeURIComponent(dragonBallBoxArt[game.path])+'.png'
+ ];
  const fixed={'roms/Aladdin%20%28USA%29%20%28Beta%29.zip':['Sega - Mega Drive - Genesis','Aladdin (USA)'],'roms/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29.zip':['Nintendo - Super Nintendo Entertainment System','Contra III - The Alien Wars (USA)']};
  if(fixed[game.path]){const [sys,title]=fixed[game.path];return ['Named_Boxarts','Named_Titles','Named_Snaps'].map(type=>'https://thumbnails.libretro.com/'+encodeURIComponent(sys)+'/'+type+'/'+encodeURIComponent(title)+'.png');}
 
@@ -315,7 +324,7 @@ function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  const urls=coverCandidates(game);if(!urls.length)return;
  const coverKey=game.system+'|'+cleanName(game.name);
  const cached=coverMemory.has(coverKey)?coverMemory.get(coverKey):savedCovers[coverKey];
- if(cached===false&&game.system!=='arcade')return;
+ if(cached===false&&game.system!=='arcade'&&!dragonBallBoxArt[game.path])return;
  const candidates=typeof cached==='string'?[cached,...urls.filter(url=>url!==cached)]:urls;
  let idx=0;
  const img=document.createElement('img');img.alt='Portada de '+cleanName(game.name);img.decoding='async';img.loading=priority?'eager':'lazy';
