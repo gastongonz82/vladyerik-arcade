@@ -186,7 +186,7 @@ const correctedBoxArt={
   "roms/International%20Superstar%20Soccer%20%28USA%29.zip": "International Superstar Soccer (USA)",
   "roms/Mario%20Kart%2064%20%28E%29%20%28V1.1%29%20%5B%21%5D.zip": "Mario Kart 64 (Europe)",
   "roms/Mario%20Tennis%20%28U%29%20%5B%21%5D.zip": "Mario Tennis (USA)",
-  "roms/Marvel%20Super%20Heroes%20-%20War%20of%20the%20Gems%20%28USA%29.zip": "Marvel Super Heroes - War of the Gems (USA)"
+  "roms/Marvel%20Super%20Heroes%20-%20War%20of%20the%20Gems%20%28USA%29.zip": "Marvel Super Heroes in War of the Gems (USA)"
 };
 const correctedNoArt=new Set(["roms/Sonic%20the%20Hedgehog%204%20%28World%29%20%28Unl%29.zip","roms/Street%20Fighter%20EX%20%28World%29%20%28Unl%29.zip"]);
 const correctedArtPaths=new Set(["roms/Aladdin%20%28U%29%20%5B%21%5D.zip","roms/Cruis%27n%20USA%20%28USA%29%20%28Rev%20A%29.zip","roms/Doom%20%28USA%29.zip","roms/Doom%2064%20%28USA%29.zip","roms/Indiana%20Jones%20and%20the%20Last%20Crusade%20%28USA%29.zip","roms/International%20Superstar%20Soccer%20%28USA%29.zip","roms/Mario%20Kart%2064%20%28E%29%20%28V1.1%29%20%5B%21%5D.zip","roms/Mario%20Tennis%20%28U%29%20%5B%21%5D.zip","roms/Marvel%20Super%20Heroes%20-%20War%20of%20the%20Gems%20%28USA%29.zip","roms/Sonic%20the%20Hedgehog%204%20%28World%29%20%28Unl%29.zip","roms/Street%20Fighter%20EX%20%28World%29%20%28Unl%29.zip"]);
@@ -333,10 +333,23 @@ function coverCandidates(game){
  }
  return urls;
 }
+// Las versiones no oficiales no tienen boxart oficial verificable: portada propia, distinta y estable.
+function unofficialGameCover(game){
+ const sonic=/Sonic%20the%20Hedgehog%204/.test(game.path);
+ const fighter=/Street%20Fighter%20EX/.test(game.path);
+ if(!sonic&&!fighter)return null;
+ const title=sonic?'SONIC 4':'STREET FIGHTER EX';
+ const subtitle=sonic?'UNOFFICIAL SNES EDITION':'UNOFFICIAL SNES EDITION';
+ const c1=sonic?'#0341ad':'#731b32',c2=sonic?'#04c6ef':'#ff9c32';
+ const emblem=sonic?'<circle cx="220" cy="128" r="69" fill="none" stroke="#ffe164" stroke-width="17"/><path d="M130 230L315 90" stroke="#fff" stroke-width="12" opacity=".28"/>':'<path d="M85 220L170 68L235 190L316 64" fill="none" stroke="#ffcc57" stroke-width="19" stroke-linejoin="round" opacity=".85"/>';
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="440" height="320" viewBox="0 0 440 320"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="'+c1+'"/><stop offset="1" stop-color="#09132e"/></linearGradient></defs><rect width="440" height="320" rx="10" fill="url(#g)"/><path d="M0 260L440 100M0 300L440 140" stroke="'+c2+'" stroke-width="30" opacity=".18"/>'+emblem+'<rect x="20" y="18" width="400" height="284" rx="8" fill="none" stroke="'+c2+'" stroke-width="3"/><text x="220" y="44" fill="#fff" font-family="Arial,sans-serif" font-size="16" font-weight="bold" text-anchor="middle">VLADYERIK RETRO</text><rect x="26" y="232" width="388" height="66" rx="5" fill="#09132e" opacity=".92"/><text x="220" y="262" fill="#fff" font-family="Arial,sans-serif" font-size="'+(sonic?35:28)+'" font-weight="900" text-anchor="middle">'+title+'</text><text x="220" y="284" fill="'+c2+'" font-family="Arial,sans-serif" font-size="11" font-weight="bold" text-anchor="middle">'+subtitle+'</text></svg>';
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
 function setArtwork(target,game,{priority=false,ignoreHosted=false}={}){
  target.replaceChildren();
  const fallback=document.createElement('span');fallback.className='online-fallback';fallback.textContent=({nes:'🎮',snes:'🎮',segaMD:'🕹️',segaGG:'🎮',n64:'🎮'})[game.system]||'🎮';target.append(fallback);
  const fallbackImage=document.createElement('img');fallbackImage.alt='Carátula VLADYERIK de '+cleanName(game.name);fallbackImage.src=onlineGameArtwork(game);fallback.replaceWith(fallbackImage);const pinnedCovers={};
+ const unofficialCover=unofficialGameCover(game);if(unofficialCover){fallbackImage.src=unofficialCover;return;}
  const localCover=ignoreHosted||correctedArtPaths.has(game.path)?null:(pinnedCovers[game.path]||hostedCovers[game.path]);const remoteCover=ignoreHosted||correctedArtPaths.has(game.path)||/^(roms\/Aladdin%20%28USA%29%20%28Beta%29|roms\/Contra%20III%20-%20The%20Alien%20Wars%20%28USA%29)\.zip$/.test(game.path)?null:remoteHostedCovers[game.path];
  if(localCover){const localImg=document.createElement('img');localImg.alt='Portada de '+cleanName(game.name);localImg.loading=priority?'eager':'lazy';localImg.decoding='async';localImg.onload=()=>fallbackImage.remove();localImg.onerror=()=>{localImg.remove();if(!pinnedCovers[game.path])setArtwork(target,game,{priority,ignoreHosted:true})};target.append(localImg);localImg.src='./'+localCover+(localCover.includes('?')?'&':'?')+'coverVersion=20261027b';return;}
  if(remoteCover){const hostedImg=document.createElement('img');hostedImg.alt='Portada de '+cleanName(game.name);hostedImg.loading=priority?'eager':'lazy';hostedImg.decoding='async';hostedImg.onload=()=>fallbackImage.remove();hostedImg.onerror=()=>{hostedImg.remove();setArtwork(target,game,{priority,ignoreHosted:true})};target.append(hostedImg);hostedImg.src=base+remoteCover;return;}
