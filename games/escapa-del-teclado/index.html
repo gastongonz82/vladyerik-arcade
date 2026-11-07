@@ -20,7 +20,37 @@
  #flash{top:47px;right:6px}
 }
 #sound{position:fixed;top:106px;right:10px;z-index:6;padding:9px;min-width:43px}#sound.muted{opacity:.55}@media(pointer:coarse) and (orientation:landscape){#sound{top:89px;right:6px;padding:6px;min-width:38px}}#run.sprinting{background:linear-gradient(120deg,#f95b36,#e21f75);border-color:#ffcf5d;box-shadow:0 0 18px #ff8c36bb;color:white}#run:active{transform:scale(.95)}
-</style></head><body><div id="hud"><span>⌨️ ESCAPA DEL TECLADO</span><span id="stats">SPEED 0 · ETAPA 1</span></div><div id="notice">Superá 10 sectores, evitá trampas y ganá +1 Speed por tecla.</div><button id="pause">Ⅱ</button><button id="flash">🔦</button><button id="sound" aria-label="Silenciar sonido" title="Activar o silenciar música y efectos">🔊</button><div id="touch"><div id="pad"><div id="nub"></div></div><div id="actions"><button id="jump">SALTAR</button><button id="run">CORRER</button></div></div><div id="cross"></div><div id="hurt"></div><div id="menu"><div id="panel"><h1>⌨️ ESCAPA DEL TECLADO</h1><p>Corré, saltá y ganá velocidad sobre diez sectores RGB llenos de trampas. Superá huecos y checkpoints mientras sube la lava.</p><p><b>PC:</b> WASD o flechas · Mouse para mirar · Espacio saltar · Shift correr · F linterna · Esc pausa.<br><b>Celular:</b> joystick, deslizar para mirar, saltar y correr.</p><button id="start">JUGAR</button></div></div>
+/* Mobile landscape: safe areas, non-overlapping controls and fullscreen viewport */
+html,body{height:100%;height:100dvh}#fullscreen{position:fixed;top:158px;right:10px;z-index:8;min-width:43px;padding:9px}
+#menu{overflow-y:auto;overscroll-behavior:contain}#panel{max-height:calc(100dvh - 24px);overflow-y:auto}
+@media(pointer:coarse) and (orientation:landscape){
+ #hud{top:0;left:env(safe-area-inset-left,0px);right:env(safe-area-inset-right,0px);grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);padding:calc(env(safe-area-inset-top,0px) + 4px) 57px 0 8px;gap:5px}
+ #hud span{font-size:clamp(9px,1.8vh,12px);padding:4px 6px;white-space:normal}
+ #touch{left:calc(env(safe-area-inset-left,0px) + 12px);right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);align-items:flex-end}
+ #pad{width:clamp(76px,22vh,116px);height:clamp(76px,22vh,116px);flex:none}
+ #actions{gap:clamp(6px,1.5vw,14px);margin-right:0}
+ #actions button{height:clamp(44px,13vh,64px);min-width:clamp(64px,11vw,90px);font-size:clamp(10px,2vh,13px);padding:5px}
+ #pause,#flash,#sound,#fullscreen{right:calc(env(safe-area-inset-right,0px) + 7px);padding:5px;min-width:36px;min-height:32px;font-size:14px}
+ #pause{top:calc(env(safe-area-inset-top,0px) + 4px)}
+ #flash{top:calc(env(safe-area-inset-top,0px) + 41px)}
+ #sound{top:calc(env(safe-area-inset-top,0px) + 78px)}
+ #fullscreen{top:calc(env(safe-area-inset-top,0px) + 115px)}
+ #notice{top:calc(env(safe-area-inset-top,0px) + 45px);left:50%;max-width:40vw;padding:4px 8px;font-size:10px}
+ #panel{width:min(600px,92vw);padding:12px 18px;font-size:clamp(11px,2.5vh,15px)}
+ #panel h1{font-size:clamp(19px,5vh,32px);margin:3px 0}
+ #panel p{margin:7px 0;line-height:1.35}
+ #panel button{padding:8px 16px}
+}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:390px){
+ #hud{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr)}
+ #notice{top:calc(env(safe-area-inset-top,0px) + 36px)}
+ #pause,#flash,#sound,#fullscreen{min-height:29px}
+ #flash{top:calc(env(safe-area-inset-top,0px) + 36px)}
+ #sound{top:calc(env(safe-area-inset-top,0px) + 68px)}
+ #fullscreen{top:calc(env(safe-area-inset-top,0px) + 100px)}
+ #panel{max-height:calc(100dvh - 10px)}
+}
+</style></head><body><div id="hud"><span>⌨️ ESCAPA DEL TECLADO</span><span id="stats">SPEED 0 · ETAPA 1</span></div><div id="notice">Superá 10 sectores, evitá trampas y ganá +1 Speed por tecla.</div><button id="pause">Ⅱ</button><button id="flash">🔦</button><button id="sound" aria-label="Silenciar sonido" title="Activar o silenciar música y efectos">🔊</button><button id="fullscreen" aria-label="Activar pantalla completa" title="Pantalla completa">⛶</button><div id="touch"><div id="pad"><div id="nub"></div></div><div id="actions"><button id="jump">SALTAR</button><button id="run">CORRER</button></div></div><div id="cross"></div><div id="hurt"></div><div id="menu"><div id="panel"><h1>⌨️ ESCAPA DEL TECLADO</h1><p>Corré, saltá y ganá velocidad sobre diez sectores RGB llenos de trampas. Superá huecos y checkpoints mientras sube la lava.</p><p><b>PC:</b> WASD o flechas · Mouse para mirar · Espacio saltar · Shift correr · F linterna · Esc pausa.<br><b>Celular:</b> joystick, deslizar para mirar, saltar y correr.</p><button id="start">JUGAR</button></div></div>
 <script>window.addEventListener('error',function(e){const n=document.getElementById('notice');if(n)n.textContent='Error de carga: '+(e.message||'revisá la conexión');});window.addEventListener('unhandledrejection',function(e){const n=document.getElementById('notice');if(n)n.textContent='No se pudo iniciar el motor 3D: '+String(e.reason||'error');});</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script><script type="module">
 import * as THREE from 'three';
@@ -100,7 +130,10 @@ $('sound').onclick=()=>{soundOn=!soundOn;$('sound').textContent=soundOn?'🔊':'
 
 function groundAt(x,z){let best=-1000,idx=-1;for(let i=0;i<platforms.length;i++){const p=platforms[i];if(Math.abs(x-p.x)<p.w/2-.12&&Math.abs(z-p.z)<p.d/2-.12&&p.y>best){best=p.y;idx=i}}return {height:best,index:idx}}
 function end(title,msg){if(title.includes('VICTORIA'))effect('win');active=false;paused=true;$('menu').style.display='grid';$('panel').innerHTML='<h1>'+title+'</h1><p>'+msg+'</p><button id="retry">REINTENTAR</button>';$('retry').onclick=reset;document.exitPointerLock?.()}
-function reset(){initAudio();musicBeat=0;lastStepSound=-1;px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;visitedKeys.clear();sprintingNow=false;$('run').classList.remove('sprinting');jumpBuffer=0;coyote=0;groundedLast=false;stage=1;invuln=0;lavaHeight=-11;lastPlatform=-1;checkpoint.x=0;checkpoint.z=11;checkpoint.y=0;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='10 sectores RGB: esquivá trampas y llegá a la META.';$('notice').classList.remove('is-hidden');last=performance.now()}
+async function enterFullscreen(){if(!mobile)return;try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen({navigationUI:'hide'})}catch(e){}try{if(screen.orientation?.lock)await screen.orientation.lock('landscape')}catch(e){}resizeGame()}
+$('fullscreen').onclick=async()=>{if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}try{screen.orientation?.unlock?.()}catch(e){}}else await enterFullscreen();resizeGame()};
+document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=document.fullscreenElement?'⤢':'⛶';$('fullscreen').setAttribute('aria-label',document.fullscreenElement?'Salir de pantalla completa':'Activar pantalla completa');resizeGame()});
+function reset(){if(mobile)enterFullscreen();initAudio();musicBeat=0;lastStepSound=-1;px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;visitedKeys.clear();sprintingNow=false;$('run').classList.remove('sprinting');jumpBuffer=0;coyote=0;groundedLast=false;stage=1;invuln=0;lavaHeight=-11;lastPlatform=-1;checkpoint.x=0;checkpoint.z=11;checkpoint.y=0;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='10 sectores RGB: esquivá trampas y llegá a la META.';$('notice').classList.remove('is-hidden');last=performance.now()}
 $('start').onclick=reset;document.addEventListener('pointerdown',()=>{if(active&&soundOn&&audioCtx?.state==='suspended')audioCtx.resume().catch(()=>{})},{passive:true});$('pause').onclick=()=>{if(!active)return;paused=!paused;$('menu').style.display=paused?'grid':'none';if(paused){$('panel').innerHTML='<h1>PAUSA</h1><p>El teclado sigue esperando...</p><button id="resume">CONTINUAR</button>';$('resume').onclick=()=>{paused=false;$('menu').style.display='none'}}};
 $('flash').onclick=()=>{flash=!flash;torch.visible=flash};
 addEventListener('keydown',e=>{keys.add(e.code);if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyF'){$('flash').click()}if(e.code==='Escape'&&active)$('pause').click()});addEventListener('keyup',e=>keys.delete(e.code));
@@ -128,5 +161,5 @@ if(active&&ground.index===platforms.length-1&&Math.abs(pz-finishZ)<4){wins++;end
 $('stats').textContent=(sprinting?'⚡ TURBO ':'🚶 CAMINAR ')+Math.round(speed*10)/10+' · SPEED +'+speedPoints+' · SECTOR '+stage+'/10 · VIDAS '+Math.max(0,health);
 }
 musicTick();renderer.render(scene,camera)}
-requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+requestAnimationFrame(frame);function resizeGame(){const w=document.documentElement.clientWidth||innerWidth,h=document.documentElement.clientHeight||innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}addEventListener('resize',resizeGame);addEventListener('orientationchange',()=>requestAnimationFrame(resizeGame));if(window.visualViewport)visualViewport.addEventListener('resize',resizeGame);
 </script></body></html>
