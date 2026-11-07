@@ -37,7 +37,7 @@ for(let z=12;z>=-350;z-=14){box(world,metal,0,-8,z,38,.35,.4)}
 // Teclado completo: filas, teclas grandes y sectores de parkour.
 const platforms=[],hazards=[],movingObstacles=[],colors=['#13bfff','#b545ff','#ff4eab','#2affba'];
 const keyBase=material('#0b0e18'),keyTop=material('#171c2b'),keySide=material('#090c17');
-const edgeMaterials=colors.map(c=>new THREE.MeshBasicMaterial({color:c}));const softGlow=colors.map(c=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.28,depthWrite:false}));
+const edgeMaterials=colors.map(c=>new THREE.MeshBasicMaterial({color:c}));const decorative=[];const softGlow=colors.map(c=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.28,depthWrite:false}));
 const neonLights=[];for(let i=0;i<10;i++){const z=-8-i*35;for(const x of [-21,21]){const m=box(world,new THREE.MeshBasicMaterial({color:colors[i%4]}),x,1.8,z,.22,5.5,24);neonLights.push({mesh:m,i})}box(world,metal,0,-2.5,z,43,.5,27)}
 const labelCache=new Map(),capMaterials=new Map();
 function labelTexture(label){if(labelCache.has(label))return labelCache.get(label);const c=document.createElement('canvas');c.width=512;c.height=512;const ctx=c.getContext('2d');ctx.fillStyle='#171c2b';ctx.fillRect(0,0,512,512);ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#c7f8ff';ctx.shadowBlur=22;ctx.fillStyle='#f5fbff';ctx.font='900 '+(label.length>5?75:label.length>3?102:label.length>2?128:180)+'px Arial,system-ui,sans-serif';ctx.fillText(label,256,250,465);ctx.shadowBlur=0;const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());labelCache.set(label,t);return t}
@@ -46,7 +46,7 @@ function platform(x,z,w,d,y=0,label='',section=0,tint=section%4){const g=new THR
 box(g,keyBase,0,-.36,0,w,.7,d);
 box(g,edgeMaterials[tint%4],0,-.055,0,w-.07,.15,d-.07);
 const cap=new THREE.Mesh(geo,[keySide,keySide,label?capMaterial(label):keyTop,keySide,keySide,keySide]);
-cap.position.y=.055;cap.scale.set(w-.25,.21,d-.25);g.add(cap);
+cap.position.y=.055;cap.scale.set(w-.25,.21,d-.25);g.add(cap);box(g,keySide,0,-.15,0,w-.18,.16,d-.18);
 box(g,edgeMaterials[tint%4],0,-.73,0,w+.06,.09,d+.06);
 platforms.push({x,z,w,d,y,group:g,section});return g}
 platform(0,11,14,9,0,'START',0);platform(0,6.2,8,3.6,0,'↓',0);
@@ -54,6 +54,9 @@ const rows=[['ESC','1','2','3','4','5','6','7','8','9','0','DEL'],['TAB','Q','W'
 for(let section=0;section<10;section++){const base=2-section*35;for(let row=0;row<5;row++){for(let col=0;col<12;col++){const label=rows[row][col],x=(col-5.5)*3.15,z=base-row*3.8,y=section*.24;const danger=section>0&&((col*7+row*11+section*3)%17)<Math.min(7,section);if(danger)continue;const p=platform(x,z,2.85,3.35,y,label,section,(col+Math.floor(row/2)+section)%4);if(section>1&&(col+row*3+section)%19===0){hazards.push({x,z,y,phase:section*.8+col,mesh:box(p,red,0,.28,0,2.1,.28,.35)})}}}}
 // Teclado gamer gigante: chasis, RGB perimetral, separadores y barras de luz.
 for(let section=0;section<10;section++){const centerZ=-5.6-section*35,y=section*.24;box(world,keyBase,0,y-1.25,centerZ,40,.55,23);for(const x of [-20.2,20.2]){box(world,edgeMaterials[section%4],x,y-1.0,centerZ,.16,.16,23);box(world,softGlow[section%4],x,y-.95,centerZ,.6,.08,23)}for(const z of [centerZ-11.7,centerZ+11.7])box(world,edgeMaterials[(section+1)%4],0,y-1.02,z,40,.15,.16)}
+// RGB underglow, futuristic desk hardware and visual markers.
+const trimDark=new THREE.MeshBasicMaterial({color:'#11182d'}),accentWhite=new THREE.MeshBasicMaterial({color:'#d2faff'});
+for(let section=0;section<10;section++){const z=-7-section*35,y=section*.24;for(const x of [-22.5,22.5]){box(world,trimDark,x,y-1.7,z,2,1.3,29);for(let k=0;k<6;k++){const bar=box(world,edgeMaterials[(section+k)%4],x,y-.9,z-12+k*4.5,.12,.2,2.7);decorative.push({bar,phase:section+k*.8})}}for(const zz of [z-14,z+14]){box(world,trimDark,0,y-1.65,zz,45,.8,1.2);for(let x=-19;x<=19;x+=9)box(world,edgeMaterials[(section+Math.round(x/9)+8)%4],x,y-1.1,zz,5,.14,.2)}}
 // Puentes y checkpoints entre los diez teclados.
 for(let section=0;section<9;section++){const z=-18-section*35,y=section*.24;
  platform(0,z,6.8,4,y,'CHECK',section);
@@ -67,7 +70,7 @@ platform(0,finishZ,15,9,9*.24,'META',3);
 const portal=new THREE.Group();portal.position.set(0,9*.24,finishZ);scene.add(portal);
 for(const x of [-5.4,5.4])box(portal,metal,x,3,0,.7,6,.7);
 box(portal,metal,0,6,0,11,.7,.7);
-box(portal,new THREE.MeshBasicMaterial({color:'#7cffc4',transparent:true,opacity:.3}),0,3,0,9.8,5,.15);
+box(portal,new THREE.MeshBasicMaterial({color:'#7cffc4',transparent:true,opacity:.3}),0,3,0,9.8,5,.15);for(let k=0;k<5;k++){const ring=box(portal,edgeMaterials[k%4],0,1.3+k*.85,-.15,8.7-k*.5,.1,.2);ring.rotation.z=(k%2?1:-1)*.035}
 // Señalización aérea de sectores, sin tapar el recorrido.
 const sectorSignMaterial=new THREE.MeshBasicMaterial({color:'#6be7ff'});for(let i=0;i<10;i++){const z=-8-i*35;box(world,sectorSignMaterial,-20,4,z,.18,3,.18);box(world,sectorSignMaterial,20,4,z,.18,3,.18);box(world,sectorSignMaterial,0,5.5,z,40,.14,.14)}
 const checkpoint={x:0,z:11,y:0};const visitedKeys=new Set();let speedPoints=0,lastPlatform=-1,stage=1,wins=0,lavaHeight=-11;
@@ -96,7 +99,8 @@ vy-=20*dt;py+=vy*dt;
 if(vy<=0&&ground.height>-100&&py<=ground.height&&py>=ground.height-1.2){py=ground.height;vy=0;if(ground.index!==lastPlatform){lastPlatform=ground.index;if(!visitedKeys.has(ground.index)){visitedKeys.add(ground.index);speedPoints++}const nextStage=Math.max(1,Math.min(10,Math.floor((-pz+2)/35)+1));if(nextStage>stage){stage=nextStage;checkpoint.x=0;checkpoint.z=-27-(stage-2)*35;checkpoint.y=(stage-1)*.24;$('notice').textContent='CHECKPOINT · SECTOR '+stage}}}
 for(const m of movingObstacles){const x=Math.sin(elapsed*m.speed+m.phase)*13;m.beam.position.x=x;m.aura.position.x=x;if(Math.abs(px-x)<2.55&&Math.abs(pz-m.z)<.45&&Math.abs(py-m.y)<.85&&invuln<=0){invuln=1.4;health--;px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡LÁSER! VIDAS '+Math.max(0,health)+'/3';if(health<=0)end('FIN DEL JUEGO','Los láseres te atraparon. Intentá de nuevo.')}}
 for(const h of hazards){h.mesh.position.y=.25+Math.sin(elapsed*2+h.phase)*.14;if(active&&Math.abs(px-h.x)<1.05&&Math.abs(pz-h.z)<.65&&Math.abs(py-h.y)<.55&&invuln<=0){invuln=1.4;health--;px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡TRAMPA! VIDAS '+health+'/3';if(health<=0){end('FIN DEL JUEGO','Llegaste al sector '+stage+'. Intentá de nuevo.');break}}}invuln=Math.max(0,invuln-dt);
-for(const light of neonLights)light.mesh.material.color.setHSL((elapsed*.045+light.i*.13)%1,.85,.56);lavaHeight=Math.min(-1.6,lavaHeight+dt*.015);lava.position.y=lavaHeight;if(py<lavaHeight+.4&&active){health--;if(health<=0){end('FIN DEL JUEGO','Llegaste al sector '+stage+'. Intentá de nuevo.')}px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡CAÍSTE! Volvés al último checkpoint.'}
+for(const light of neonLights)light.mesh.material.color.setHSL((elapsed*.045+light.i*.13)%1,.85,.56);for(const d of decorative)d.bar.scale.y=.2+Math.sin(elapsed*2+d.phase)*.055;
+lavaHeight=Math.min(-1.6,lavaHeight+dt*.015);lava.position.y=lavaHeight;if(py<lavaHeight+.4&&active){health--;if(health<=0){end('FIN DEL JUEGO','Llegaste al sector '+stage+'. Intentá de nuevo.')}px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡CAÍSTE! Volvés al último checkpoint.'}
 camera.position.set(px,2.15+py,pz);camera.rotation.set(pitch-.22,yaw,0);if(!low){for(let i=0;i<trail.length;i++){const t=trail[i];t.position.set(px+Math.sin(elapsed*7-i*.5)*.22,py+.25,pz+Math.cos(elapsed*7-i*.5)*.22+i*.48);t.visible=(Math.abs(fw)+Math.abs(side))>.15}}
 if(active&&ground.index===platforms.length-1&&Math.abs(pz-finishZ)<4){wins++;end('¡VICTORIA!','Ganaste '+wins+' victoria(s). ¡Escapaste de la lava RGB!')}
 $('stats').textContent='SPEED +'+speedPoints+' · SECTOR '+stage+'/10 · VIDAS '+Math.max(0,health)+' · WINS '+wins;
