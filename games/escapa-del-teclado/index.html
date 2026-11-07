@@ -37,14 +37,14 @@ const portal=new THREE.Group();portal.position.set(0,9*.24,finishZ);scene.add(po
 for(const x of [-5.4,5.4])box(portal,metal,x,3,0,.7,6,.7);
 box(portal,metal,0,6,0,11,.7,.7);
 box(portal,new THREE.MeshBasicMaterial({color:'#7cffc4',transparent:true,opacity:.3}),0,3,0,9.8,5,.15);
-const checkpoint={x:0,z:11,y:0};let speedPoints=0,lastPlatform=-1,stage=1,wins=0,lavaHeight=-11;
+const checkpoint={x:0,z:11,y:0};const visitedKeys=new Set();let speedPoints=0,lastPlatform=-1,stage=1,wins=0,lavaHeight=-11;
 const lava=box(scene,new THREE.MeshBasicMaterial({color:'#ff3e25'}),0,-11,-165,60,.35,380);
 const trail=[];const trailMaterial=new THREE.MeshBasicMaterial({color:'#7d4aff',transparent:true,opacity:.55});for(let i=0;i<9;i++){const t=box(scene,trailMaterial,0,-50,0,.28,.09,.55);trail.push(t)}
 const torch=new THREE.SpotLight('#e6faff',3,28,Math.PI/8,.5,1.5);torch.position.set(0,0,0);torch.target.position.set(0,0,-5);camera.add(torch,torch.target);scene.add(camera);
 let px=0,pz=11,yaw=0,pitch=0,py=0,vy=0,active=false,paused=true,health=3,found=0,invuln=0,elapsed=0,flash=true,runTouch=false,padX=0,padY=0,last=performance.now(),lastWarning=0;const keys=new Set();
 function groundAt(x,z){let best=-1000,idx=-1;for(let i=0;i<platforms.length;i++){const p=platforms[i];if(Math.abs(x-p.x)<p.w/2-.12&&Math.abs(z-p.z)<p.d/2-.12&&p.y>best){best=p.y;idx=i}}return {height:best,index:idx}}
 function end(title,msg){active=false;paused=true;$('menu').style.display='grid';$('panel').innerHTML='<h1>'+title+'</h1><p>'+msg+'</p><button id="retry">REINTENTAR</button>';$('retry').onclick=reset;document.exitPointerLock?.()}
-function reset(){px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;stage=1;invuln=0;lavaHeight=-11;lastPlatform=-1;checkpoint.x=0;checkpoint.z=11;checkpoint.y=0;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='10 sectores RGB: esquivá trampas y llegá a la META.';last=performance.now()}
+function reset(){px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;visitedKeys.clear();stage=1;invuln=0;lavaHeight=-11;lastPlatform=-1;checkpoint.x=0;checkpoint.z=11;checkpoint.y=0;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='10 sectores RGB: esquivá trampas y llegá a la META.';last=performance.now()}
 $('start').onclick=reset;$('pause').onclick=()=>{if(!active)return;paused=!paused;$('menu').style.display=paused?'grid':'none';if(paused){$('panel').innerHTML='<h1>PAUSA</h1><p>El teclado sigue esperando...</p><button id="resume">CONTINUAR</button>';$('resume').onclick=()=>{paused=false;$('menu').style.display='none'}}};
 $('flash').onclick=()=>{flash=!flash;torch.visible=flash};
 addEventListener('keydown',e=>{keys.add(e.code);if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyF'){$('flash').click()}if(e.code==='Escape'&&active)$('pause').click()});addEventListener('keyup',e=>keys.delete(e.code));
@@ -59,12 +59,12 @@ const speed=Math.min(12.5,5.3+speedPoints*.035+stage*.2)*(keys.has('ShiftLeft')|
 const before=groundAt(px,pz);px=nx;pz=nz;const ground=groundAt(px,pz);const grounded=before.height>-100&&Math.abs(py-before.height)<.14&&vy<=0;
 if((keys.has('Space')||jumpQueued)&&grounded)vy=9.6;jumpQueued=false;
 vy-=20*dt;py+=vy*dt;
-if(vy<=0&&ground.height>-100&&py<=ground.height&&py>=ground.height-1.2){py=ground.height;vy=0;if(ground.index!==lastPlatform){lastPlatform=ground.index;speedPoints++;const nextStage=Math.max(1,Math.min(10,Math.floor((-pz+2)/35)+1));if(nextStage>stage){stage=nextStage;checkpoint.x=0;checkpoint.z=-18-(stage-2)*35;checkpoint.y=(stage-2)*.24;$('notice').textContent='CHECKPOINT · SECTOR '+stage}}}
+if(vy<=0&&ground.height>-100&&py<=ground.height&&py>=ground.height-1.2){py=ground.height;vy=0;if(ground.index!==lastPlatform){lastPlatform=ground.index;if(!visitedKeys.has(ground.index)){visitedKeys.add(ground.index);speedPoints++}const nextStage=Math.max(1,Math.min(10,Math.floor((-pz+2)/35)+1));if(nextStage>stage){stage=nextStage;checkpoint.x=0;checkpoint.z=-27-(stage-2)*35;checkpoint.y=(stage-1)*.24;$('notice').textContent='CHECKPOINT · SECTOR '+stage}}}
 for(const h of hazards){h.mesh.position.y=.25+Math.sin(elapsed*2+h.phase)*.14;if(Math.abs(px-h.x)<1.05&&Math.abs(pz-h.z)<.65&&Math.abs(py-h.y)<.55&&invuln<=0){invuln=1.4;health--;px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡TRAMPA! VIDAS '+health+'/3';if(health<=0){end('FIN DEL JUEGO','Llegaste al sector '+stage+'. Intentá de nuevo.');break}}}invuln=Math.max(0,invuln-dt);
-for(const light of neonLights)light.mesh.material.color.setHSL((elapsed*.045+light.i*.13)%1,.85,.56);lavaHeight=Math.min(-1.6,lavaHeight+dt*.015);lava.position.y=lavaHeight;if(py<lavaHeight+.4){health--;if(health<=0){end('FIN DEL JUEGO','Llegaste al sector '+stage+'. Intentá de nuevo.')}px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡CAÍSTE! Volvés al último checkpoint.'}
+for(const light of neonLights)light.mesh.material.color.setHSL((elapsed*.045+light.i*.13)%1,.85,.56);lavaHeight=Math.min(-1.6,lavaHeight+dt*.015);lava.position.y=lavaHeight;if(py<lavaHeight+.4&&active){health--;if(health<=0){end('FIN DEL JUEGO','Llegaste al sector '+stage+'. Intentá de nuevo.')}px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡CAÍSTE! Volvés al último checkpoint.'}
 camera.position.set(px,1.65+py,pz);camera.rotation.set(pitch,yaw,0);if(!low){for(let i=0;i<trail.length;i++){const t=trail[i];t.position.set(px+Math.sin(elapsed*7-i*.5)*.22,py+.25,pz+Math.cos(elapsed*7-i*.5)*.22+i*.48);t.visible=(Math.abs(fw)+Math.abs(side))>.15}}
-if(ground.index===platforms.length-1&&Math.abs(pz-finishZ)<4){wins++;end('¡VICTORIA!','Ganaste '+wins+' victoria(s). ¡Escapaste de la lava RGB!')}
-$('stats').textContent='SPEED +'+speedPoints+' · SECTOR '+stage+'/10 · VIDAS '+health+' · WINS '+wins;
+if(active&&ground.index===platforms.length-1&&Math.abs(pz-finishZ)<4){wins++;end('¡VICTORIA!','Ganaste '+wins+' victoria(s). ¡Escapaste de la lava RGB!')}
+$('stats').textContent='SPEED +'+speedPoints+' · SECTOR '+stage+'/10 · VIDAS '+Math.max(0,health)+' · WINS '+wins;
 }
 renderer.render(scene,camera)}
 requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
