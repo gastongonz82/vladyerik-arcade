@@ -10,10 +10,10 @@ const renderer=new THREE.WebGLRenderer({antialias:!mobile,powerPreference:'high-
 scene.add(new THREE.HemisphereLight('#8eaccc','#1b2037',1.4));const lamp=new THREE.DirectionalLight('#93c7db',1.2);lamp.position.set(10,22,8);scene.add(lamp);
 const geo=new THREE.BoxGeometry(1,1,1),material=(c,glow)=>new THREE.MeshStandardMaterial({color:c,roughness:.72,metalness:.12,emissive:glow||'#000000'}),floor=material('#3c4b60'),wall=material('#29374b'),dark=material('#101725'),metal=material('#687c8d'),pink=material('#e15d93'),keymat=material('#b5dce1'),yellow=new THREE.MeshBasicMaterial({color:'#ffeb7a'}),green=new THREE.MeshBasicMaterial({color:'#72ffc8'}),red=new THREE.MeshBasicMaterial({color:'#ff455c'}),black=material('#0c0e14');
 function box(parent,mat,x,y,z,w,h,d){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(w,h,d);parent.add(m);return m}
-const world=new THREE.Group();scene.add(world);box(world,floor,0,-.45,-45,48,.9,130);box(world,dark,0,10,-45,48,.5,130);
-for(const x of [-24,24])box(world,wall,x,4.8,-45,.8,10,130);
-for(const z of [18,-108])box(world,wall,0,4.8,z,48,10,.8);
-for(let z=12;z>=-100;z-=14){for(const x of [-19,19])box(world,metal,x,4.5,z,.9,9,.9);box(world,metal,0,8.8,z,38,.35,.4);box(world,new THREE.MeshBasicMaterial({color:'#a5e9f0'}),0,8.55,z,12,.09,.45)}
+const world=new THREE.Group();scene.add(world);box(world,dark,0,-18,-45,80,.5,150);
+for(const x of [-24,24])box(world,wall,x,-8,-45,.8,18,130);
+for(const z of [18,-108])box(world,wall,0,-8,z,48,18,.8);
+for(let z=12;z>=-100;z-=14){box(world,metal,0,-8,z,38,.35,.4)}
 // Parkour sobre un teclado suspendido: cada tecla es una plataforma real.
 const platforms=[],pads=[],colors=['#72d8ee','#ff91c1','#f5d36c','#9cf2b4'];
 function platform(x,z,w,d,y=0,label=''){const group=new THREE.Group();group.position.set(x,y,z);scene.add(group);
@@ -32,7 +32,7 @@ const torch=new THREE.SpotLight('#e6faff',3,28,Math.PI/8,.5,1.5);torch.position.
 let px=0,pz=11,yaw=0,pitch=0,py=0,vy=0,active=false,paused=true,health=3,found=0,invuln=0,elapsed=0,flash=true,runTouch=false,padX=0,padY=0,last=performance.now(),lastWarning=0;const keys=new Set();
 function groundAt(x,z){let best=-1000,idx=-1;for(let i=0;i<platforms.length;i++){const p=platforms[i];if(Math.abs(x-p.x)<p.w/2-.12&&Math.abs(z-p.z)<p.d/2-.12&&p.y>best){best=p.y;idx=i}}return {height:best,index:idx}}
 function end(title,msg){active=false;paused=true;$('menu').style.display='grid';$('panel').innerHTML='<h1>'+title+'</h1><p>'+msg+'</p><button id="retry">REINTENTAR</button>';$('retry').onclick=reset;document.exitPointerLock?.()}
-function reset(){px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;lastPlatform=-1;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='Saltá entre las teclas y llegá a la META.';last=performance.now()}
+function reset(){px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;lastPlatform=-1;checkpoint.x=0;checkpoint.z=11;checkpoint.y=0;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='Saltá entre las teclas y llegá a la META.';last=performance.now()}
 $('start').onclick=reset;$('pause').onclick=()=>{if(!active)return;paused=!paused;$('menu').style.display=paused?'grid':'none';if(paused){$('panel').innerHTML='<h1>PAUSA</h1><p>El teclado sigue esperando...</p><button id="resume">CONTINUAR</button>';$('resume').onclick=()=>{paused=false;$('menu').style.display='none'}}};
 $('flash').onclick=()=>{flash=!flash;torch.visible=flash};
 addEventListener('keydown',e=>{keys.add(e.code);if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyF'){$('flash').click()}if(e.code==='Escape'&&active)$('pause').click()});addEventListener('keyup',e=>keys.delete(e.code));
