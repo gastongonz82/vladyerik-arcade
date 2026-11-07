@@ -1,6 +1,6 @@
 <!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>ESCAPA DEL TECLADO · VLADI ARCADE</title><style>
 *{box-sizing:border-box;touch-action:none;-webkit-user-select:none;user-select:none}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d16;color:#fff;font-family:system-ui,Arial}canvas{display:block}button{border:1px solid #74e8e4;border-radius:12px;background:#123b48dd;color:white;font-weight:800;padding:12px;cursor:pointer}#hud{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;justify-content:space-between;gap:10px;padding:12px 14px;z-index:4;font-weight:800;font-size:clamp(11px,2.3vw,16px);text-shadow:0 2px 5px #000;pointer-events:none}#notice{position:fixed;top:52px;left:50%;transform:translateX(-50%);z-index:4;background:#091a2ce8;border:1px solid #61d4d4;border-radius:12px;padding:9px 15px;text-align:center;max-width:75vw;font-size:12px;pointer-events:none}#menu{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:#020711e8;padding:20px}#panel{width:min(480px,95vw);padding:25px;background:linear-gradient(145deg,#1b3145,#080d1b);border:1px solid #6fe5e2;border-radius:20px;box-shadow:0 15px 60px #000}h1{font-size:clamp(26px,6vw,46px);margin:10px 0}p{line-height:1.55}#panel button{margin:6px}#touch{position:fixed;bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;display:none;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:7}#pad{width:112px;height:112px;border:2px solid #8ceeea;border-radius:50%;background:#15414b9e;position:relative;pointer-events:auto}#nub{position:absolute;width:42px;height:42px;left:33px;top:33px;background:#a7f5ee;border-radius:50%}#actions{display:flex;gap:8px;pointer-events:auto}#actions button{min-width:67px;height:64px}#pause{position:fixed;top:58px;right:12px;z-index:6;padding:9px}#flash{position:fixed;top:105px;right:12px;z-index:6;padding:9px}#hurt{position:fixed;inset:0;background:#f33;opacity:0;pointer-events:none;z-index:3}#cross{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.5;pointer-events:none}#cross:after{content:'+';font-size:22px}@media(pointer:coarse){#touch{display:flex}}@media(pointer:coarse) and (orientation:landscape){#touch{right:70px;bottom:9px}#pad{width:clamp(82px,24vh,110px);height:clamp(82px,24vh,110px)}#nub{width:38%;height:38%;left:31%;top:31%}#actions button{min-width:55px;height:48px;font-size:10px;padding:5px}#pause{top:48px}#flash{top:93px}#notice{top:44px;max-width:48vw}}
-</style></head><body><div id="hud"><span>⌨️ ESCAPA DEL TECLADO</span><span id="stats">TECLAS 0/3 · ♥ 3</span></div><div id="notice">Buscá las teclas brillantes. ¡El teclado te está buscando!</div><button id="pause">Ⅱ</button><button id="flash">🔦</button><div id="touch"><div id="pad"><div id="nub"></div></div><div id="actions"><button id="jump">SALTAR</button><button id="run">CORRER</button></div></div><div id="cross"></div><div id="hurt"></div><div id="menu"><div id="panel"><h1>⌨️ ESCAPA DEL TECLADO</h1><p>Un teclado gigante despertó en un laboratorio abandonado. Encontrá las tres teclas de seguridad, evitá al monstruo y escapá por el portal.</p><p><b>PC:</b> WASD o flechas · Mouse para mirar · Espacio saltar · Shift correr · F linterna · Esc pausa.<br><b>Celular:</b> joystick, deslizar para mirar, saltar y correr.</p><button id="start">JUGAR</button></div></div>
+</style></head><body><div id="hud"><span>⌨️ ESCAPA DEL TECLADO</span><span id="stats">SPEED 0 · ETAPA 1</span></div><div id="notice">Corré y saltá sobre las teclas gigantes.</div><button id="pause">Ⅱ</button><button id="flash">🔦</button><div id="touch"><div id="pad"><div id="nub"></div></div><div id="actions"><button id="jump">SALTAR</button><button id="run">CORRER</button></div></div><div id="cross"></div><div id="hurt"></div><div id="menu"><div id="panel"><h1>⌨️ ESCAPA DEL TECLADO</h1><p>Corré por encima de un teclado gigante. Saltá entre teclas, acumulá velocidad y llegá a la meta sin caerte.</p><p><b>PC:</b> WASD o flechas · Mouse para mirar · Espacio saltar · Shift correr · F linterna · Esc pausa.<br><b>Celular:</b> joystick, deslizar para mirar, saltar y correr.</p><button id="start">JUGAR</button></div></div>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js"}}</script><script type="module">
 import * as THREE from 'three';
 const $=id=>document.getElementById(id),mobile=matchMedia('(pointer:coarse)').matches,low=mobile&&((navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||4)<=4);
@@ -14,24 +14,25 @@ const world=new THREE.Group();scene.add(world);box(world,floor,0,-.45,-45,48,.9,
 for(const x of [-24,24])box(world,wall,x,4.8,-45,.8,10,130);
 for(const z of [18,-108])box(world,wall,0,4.8,z,48,10,.8);
 for(let z=12;z>=-100;z-=14){for(const x of [-19,19])box(world,metal,x,4.5,z,.9,9,.9);box(world,metal,0,8.8,z,38,.35,.4);box(world,new THREE.MeshBasicMaterial({color:'#a5e9f0'}),0,8.55,z,12,.09,.45)}
-// Pasillos de teclas gigantes: obstáculos con huecos reales para esquivarlos.
-const obstacles=[];function solid(x,z,w,d){obstacles.push({x,z,w,d})}
-for(let row=0;row<8;row++){const z=5-row*13;for(let col=-2;col<=2;col++){if((row+col+6)%4===0)continue;const x=col*7;box(world,black,x,.7,z,5.5,1.5,4.7);box(world,keymat,x,1.5,z,5.1,.2,4.3);box(world,metal,x,1.62,z,3.3,.04,1.1);solid(x,z,5.5,4.7)}}
-for(const z of [-12,-50,-88]){box(world,metal,-21,2,z,.6,4,6);box(world,pink,-20.6,2.8,z,.1,1.5,3.8)}
-// Tres teclas recuperables.
-const collectibles=[];for(const [x,z] of [[-14,-17],[14,-56],[-14,-92]]){const g=new THREE.Group();g.position.set(x,1.5,z);scene.add(g);box(g,green,0,0,0,1.1,.3,1.1);box(g,metal,0,-.28,0,1.25,.3,1.25);collectibles.push({x,z,g,found:false})}
-const portal=new THREE.Group();portal.position.set(0,0,-103);scene.add(portal);for(const x of [-3.2,3.2])box(portal,metal,x,3.2,0,.8,6.5,.8);box(portal,metal,0,6.5,0,7,.7,.8);const gate=box(portal,red,0,3.1,0,5.3,5.5,.18);
-// Teclado monstruoso con dientes, ojos y patas.
-const monster=new THREE.Group();scene.add(monster);box(monster,black,0,2.3,0,5.4,2.2,3.6);box(monster,metal,0,3.4,0,5.1,.4,3.4);
-for(let x=-2;x<=2;x++)for(let z=-1;z<=1;z++)box(monster,keymat,x*.92,3.67,z*.88,.75,.18,.65);
-for(const x of [-1.25,1.25]){box(monster,red,x,2.65,-1.88,.85,.65,.12);box(monster,black,x,2.65,-1.97,.3,.45,.1)}
-for(let x=-2;x<=2;x++)box(monster,yellow,x*.72,1.65,-1.92,.36,.58,.28);
-for(const x of [-2.2,2.2]){box(monster,metal,x,.8,1.1,.55,1.5,.6);box(monster,metal,x,.8,-1.1,.55,1.5,.6)}
+// Parkour sobre un teclado suspendido: cada tecla es una plataforma real.
+const platforms=[],pads=[],colors=['#72d8ee','#ff91c1','#f5d36c','#9cf2b4'];
+function platform(x,z,w,d,y=0,label=''){const group=new THREE.Group();group.position.set(x,y,z);scene.add(group);
+ box(group,black,0,-.34,0,w,.65,d);
+ const top=material(colors[platforms.length%colors.length]);box(group,top,0,.04,0,w-.16,.16,d-.16);
+ box(group,metal,0,-.44,0,w+.12,.12,d+.12);
+ if(label){const canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;const ctx=canvas.getContext('2d');ctx.fillStyle='#17202d';ctx.font='bold 58px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,128,64);const tex=new THREE.CanvasTexture(canvas);const letter=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(w-1,2.5),1.2),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));letter.rotation.x=-Math.PI/2;letter.position.y=.14;group.add(letter)}
+ platforms.push({x,z,w,d,y,group});return group}
+platform(0,11,11,10,0,'START');
+const labels=['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X','C','V','B','N','M','SHIFT','ENTER','SPACE'];
+for(let i=0;i<29;i++){const z=3-i*3.65,x=Math.sin(i*.67)*6.5,y=i%7===0?.6:0;platform(x,z,5.8,3.45,y,labels[i]);}
+platform(0,-105,12,8,0,'META');
+const portal=new THREE.Group();portal.position.set(0,0,-105);scene.add(portal);for(const x of [-4.5,4.5])box(portal,metal,x,3,0,.7,6,.7);box(portal,metal,0,6,0,9,.7,.7);const gate=box(portal,new THREE.MeshBasicMaterial({color:'#7cffc4',transparent:true,opacity:.3}),0,3,0,8,5,.15);
+const collectibles=[],monster={position:new THREE.Vector3(100,0,100)},checkpoint={x:0,z:11,y:0};let speedPoints=0,lastPlatform=-1;
 const torch=new THREE.SpotLight('#e6faff',3,28,Math.PI/8,.5,1.5);torch.position.set(0,0,0);torch.target.position.set(0,0,-5);camera.add(torch,torch.target);scene.add(camera);
 let px=0,pz=11,yaw=0,pitch=0,py=0,vy=0,active=false,paused=true,health=3,found=0,invuln=0,elapsed=0,flash=true,runTouch=false,padX=0,padY=0,last=performance.now(),lastWarning=0;const keys=new Set();
-function canWalk(x,z){if(x < -22.7||x>22.7||z< -105||z>16)return false;for(const o of obstacles)if(Math.abs(x-o.x)<o.w/2+.43&&Math.abs(z-o.z)<o.d/2+.43)return false;return true}
+function groundAt(x,z){let best=-1000,idx=-1;for(let i=0;i<platforms.length;i++){const p=platforms[i];if(Math.abs(x-p.x)<p.w/2-.12&&Math.abs(z-p.z)<p.d/2-.12&&p.y>best){best=p.y;idx=i}}return {height:best,index:idx}}
 function end(title,msg){active=false;paused=true;$('menu').style.display='grid';$('panel').innerHTML='<h1>'+title+'</h1><p>'+msg+'</p><button id="retry">REINTENTAR</button>';$('retry').onclick=reset;document.exitPointerLock?.()}
-function reset(){px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;invuln=0;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;monster.position.set(14,0,-38);for(const k of collectibles){k.found=false;k.g.visible=true}gate.material=red;$('menu').style.display='none';$('notice').textContent='Encontrá 3 teclas de seguridad y escapá.';last=performance.now()}
+function reset(){px=0;pz=11;py=0;vy=0;yaw=0;pitch=0;health=3;found=0;speedPoints=0;lastPlatform=-1;elapsed=0;active=true;paused=false;runTouch=false;padX=padY=0;$('menu').style.display='none';$('notice').textContent='Saltá entre las teclas y llegá a la META.';last=performance.now()}
 $('start').onclick=reset;$('pause').onclick=()=>{if(!active)return;paused=!paused;$('menu').style.display=paused?'grid':'none';if(paused){$('panel').innerHTML='<h1>PAUSA</h1><p>El teclado sigue esperando...</p><button id="resume">CONTINUAR</button>';$('resume').onclick=()=>{paused=false;$('menu').style.display='none'}}};
 $('flash').onclick=()=>{flash=!flash;torch.visible=flash};
 addEventListener('keydown',e=>{keys.add(e.code);if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.code==='KeyF'){$('flash').click()}if(e.code==='Escape'&&active)$('pause').click()});addEventListener('keyup',e=>keys.delete(e.code));
@@ -41,18 +42,16 @@ const pad=$('pad'),nub=$('nub');function movePad(e){const r=pad.getBoundingClien
 pad.addEventListener('pointerdown',e=>{pad.setPointerCapture(e.pointerId);movePad(e)});pad.addEventListener('pointermove',e=>{if(pad.hasPointerCapture(e.pointerId))movePad(e)});function stopPad(){padX=padY=0;nub.style.left='31%';nub.style.top='31%'}pad.addEventListener('pointerup',stopPad);pad.addEventListener('pointercancel',stopPad);
 let jumpQueued=false;$('jump').onpointerdown=()=>jumpQueued=true;$('run').onpointerdown=()=>runTouch=true;$('run').onpointerup=$('run').onpointercancel=()=>runTouch=false;
 function frame(now){requestAnimationFrame(frame);if(low&&now-(frame.lastDraw||0)<32)return;frame.lastDraw=now;const dt=Math.min(.05,(now-last)/1000);last=now;
-if(active&&!paused){elapsed+=dt;const fw=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-padY,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+padX,n=Math.max(1,Math.hypot(fw,side)),speed=(keys.has('ShiftLeft')||runTouch?7:4.2)*dt,nx=px+(-Math.sin(yaw)*fw+Math.cos(yaw)*side)*speed/n,nz=pz+(-Math.cos(yaw)*fw-Math.sin(yaw)*side)*speed/n;
-if(canWalk(nx,pz))px=nx;if(canWalk(px,nz))pz=nz;
-if((keys.has('Space')||jumpQueued)&&py<=.02){vy=6.2}jumpQueued=false;vy-=16*dt;py=Math.max(0,py+vy*dt);if(py===0)vy=0;
+if(active&&!paused){elapsed+=dt;const fw=(keys.has('KeyW')||keys.has('ArrowUp')?1:0)-(keys.has('KeyS')||keys.has('ArrowDown')?1:0)-padY,side=(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0)+padX,n=Math.max(1,Math.hypot(fw,side));
+const speed=Math.min(12,4.5+speedPoints*.12)*(keys.has('ShiftLeft')||runTouch?1.35:1),nx=px+(-Math.sin(yaw)*fw+Math.cos(yaw)*side)*speed*dt/n,nz=pz+(-Math.cos(yaw)*fw-Math.sin(yaw)*side)*speed*dt/n;
+const before=groundAt(px,pz);px=nx;pz=nz;const ground=groundAt(px,pz);const grounded=py<=before.height+.12&&vy<=0;
+if((keys.has('Space')||jumpQueued)&&grounded)vy=8.8;jumpQueued=false;
+vy-=20*dt;py+=vy*dt;
+if(vy<=0&&ground.height>-100&&py<=ground.height&&py>=ground.height-1.2){py=ground.height;vy=0;if(ground.index!==lastPlatform){lastPlatform=ground.index;speedPoints++;if(ground.index%5===0){checkpoint.x=px;checkpoint.z=pz;checkpoint.y=py;$('notice').textContent='CHECKPOINT · SPEED +1'}}}
+if(py< -12){px=checkpoint.x;pz=checkpoint.z;py=checkpoint.y;vy=0;$('notice').textContent='¡CAÍSTE! Volvés al último checkpoint.'}
 camera.position.set(px,1.65+py,pz);camera.rotation.set(pitch,yaw,0);
-for(const k of collectibles){if(k.found)continue;k.g.rotation.y+=dt*1.3;k.g.position.y=1.5+Math.sin(elapsed*2+k.z)*.15;if(Math.hypot(px-k.x,pz-k.z)<2){k.found=true;k.g.visible=false;found++;$('notice').textContent='¡TECLA CONSEGUIDA! '+found+'/3';if(found===3){gate.material=green;$('notice').textContent='¡PORTAL DESBLOQUEADO! CORRÉ HACIA EL FINAL'}}}
-const dist=Math.hypot(px-monster.position.x,pz-monster.position.z),chasing=dist<25;const tx=chasing?px:Math.sin(elapsed*.25)*13,tz=chasing?pz:-48+Math.sin(elapsed*.2)*35;const mx=(tx-monster.position.x)*dt*(chasing?.7:.35),mz=(tz-monster.position.z)*dt*(chasing?.7:.35);
-if(canWalk(monster.position.x+mx,monster.position.z))monster.position.x+=mx;if(canWalk(monster.position.x,monster.position.z+mz))monster.position.z+=mz;monster.rotation.y=Math.atan2(-(px-monster.position.x),-(pz-monster.position.z));monster.position.y=Math.sin(elapsed*4)*.12;
-if(dist<3.6&&invuln<=0){health--;invuln=2.5;$('hurt').style.opacity='.35';$('notice').textContent='¡EL TECLADO TE ATRAPÓ!';if(health<=0)end('GAME OVER','El teclado monstruoso te encontró.')}
-invuln-=dt;$('hurt').style.opacity=Math.max(0,parseFloat($('hurt').style.opacity||0)-dt*.6);
-if(found===3&&Math.hypot(px,pz+103)<3.5)end('¡ESCAPASTE!','¡Conseguiste las tres teclas y escapaste del teclado!');
-if(elapsed-lastWarning>35){lastWarning=elapsed;$('notice').textContent='ESCUCHÁS TECLAS GOLPEANDO DETRÁS TUYO...'}
-$('stats').textContent='TECLAS '+found+'/3 · ♥ '+health;
+if(ground.index===platforms.length-1&&Math.abs(pz+105)<3)end('¡ESCAPASTE!','Completaste el recorrido sobre el teclado gigante. SPEED '+speedPoints);
+$('stats').textContent='SPEED '+speedPoints+' · ETAPA '+Math.max(1,Math.min(29,ground.index+1));
 }
 renderer.render(scene,camera)}
 requestAnimationFrame(frame);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
